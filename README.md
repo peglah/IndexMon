@@ -17,9 +17,9 @@ Then open http://localhost and log in with `admin` / `admin`.
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `PROWLARR_API_KEY` | Yes | — | Prowlarr API key (Settings → General) |
-| `PROWLARR_BASE_URL` | Yes | — | Prowlarr URL (e.g. `http://prowlarr:9696`) |
+| `PROWLARR_BASE_URL` | No | `http://prowlarr:9696` | Prowlarr URL |
 | `AUTOBRR_API_KEY` | Yes | — | Autobrr API key (Settings → API Keys) |
-| `AUTOBRR_BASE_URL` | Yes | — | Autobrr URL (e.g. `http://autobrr:7474`) |
+| `AUTOBRR_BASE_URL` | No | `http://autobrr:7474` | Autobrr URL |
 | `ADMIN_PASSWORD_HASH` | No | `admin` | Salted SHA-256 hash. Generate via `backend/scripts/hash.sh yourpass` |
 | `APRISE_URLS` | No | — | Comma-separated Apprise notification URLs |
 
