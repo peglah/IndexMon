@@ -1,0 +1,16 @@
+
+
+services:
+  indexmon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: indexmon
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "3000:3000"
+    volumes:
+      - ./data:/app/data
+    env_file:
+      - .env
