@@ -22,6 +22,13 @@
 - **Custom session auth**. `POST /api/auth/login` `{"password":"admin"}` → `{"token":"..."}`
 - Token: random string stored in `sessions` table (24h expiry). Frontend keeps in `localStorage.token`, auto-attached via `utils/axios.ts` interceptor `Authorization: Bearer`. Backend validates against `sessions`.
 
+## Alerts
+- Alerts are routed through an **Apprise API** container (e.g. `caronc/apprise-api` or `lscr.io/linuxserver/apprise-api`).
+- `APPRISE_API_URL` → the HTTP endpoint of the Apprise API (e.g. `http://192.168.41.4:8084`).
+- `APRISE_URLS` → Apprise-format notification URLs (e.g. `ntfy://host/topic?token=...`, `slack://...`).
+- The backend POSTs `{urls, body, title}` to `{APPRISE_API_URL}/notify`. The Apprise API handles protocol translation.
+- If `APPRISE_API_URL` is unset, alerts are skipped with a warning.
+
 ## API
 | Endpoint | Auth | Notes |
 |---|---|---|
@@ -50,6 +57,7 @@
 - **Name matching**: Normalized (lowercased, stripped punctuation/`#`/`(api)`/whitespace). Aliases: `mtv`→`morethantv`, `td`→`torrentday`, `tl`→`torrentleech`.
 - **Autobrr absent vs down**: Indexer without Autobrr → green (`—` in table, green tile). Indexer with Autobrr that's disconnected/unmonitored → yellow tile, red `DOWN` in table.
 - **History**: Inserted on every `GET /api/indexers` call. Downtime computed by querying most recent `up` entry per down indexer. Availability via `AVG(CASE WHEN status='up' THEN 100.0 ELSE 0 END)` over 24h window.
+- **`APPRISE_API_URL`**: HTTP endpoint of the Apprise API. If unset, alerts are skipped with a warning.
 - **`APRISE_URLS`**: Comma-separated. Empty entries filtered via `.filter(Boolean)` at `apprise.ts:4`.
 - **`ADMIN_PASSWORD_HASH`**: Salted SHA-256 hash (`salt$hash` hex). Generated via `backend/scripts/hash.sh yourpassword`. Unset → defaults to SHA-256 of `admin` (no salt). Checked in `init-db.cjs` on every startup; `UPDATE` after `INSERT OR IGNORE` ensures hash refreshes when env var changes.
 - **Env vars**: All config via `.env` injected by `docker-compose.yml`. No `VITE_` vars (polling interval hardcoded, Vite proxy target hardcoded).
