@@ -3,6 +3,9 @@ import { knex } from '../config/database';
 import { sendAlert } from './apprise';
 import { hasDefinition } from './definitions';
 
+const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
+let lastCleanup = 0;
+
 interface AutobrrChannel {
   id: number;
   enabled: boolean;
@@ -147,6 +150,13 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
         .max('last_checked as last_up')
         .whereIn('indexer_id', downIds)
         .where('status', 'up')
+        .whereExists(function () {
+          this.select('*')
+            .from('indexer_history as ih2')
+            .whereRaw('ih2.indexer_id = indexer_history.indexer_id')
+            .whereRaw('ih2.last_checked > indexer_history.last_checked')
+            .whereRaw('(julianday(ih2.last_checked) - julianday(indexer_history.last_checked)) * 1440 <= 5');
+        })
         .groupBy('indexer_id');
       const upTimeMap = new Map(rows.map((r) => [r.indexer_id, new Date(r.last_up as string).getTime()]));
       for (const indexer of downIndexers) {
@@ -194,6 +204,31 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
     }
     if (messages.length > 0) {
       sendAlert(messages.join('\n'));
+    }
+
+    if (Date.now() - lastCleanup > CLEANUP_INTERVAL_MS) {
+      lastCleanup = Date.now();
+      const threshold = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
+      const lastUps = await knex('indexer_history')
+        .select('indexer_id')
+        .max('last_checked as last_up')
+        .where('status', 'up')
+        .groupBy('indexer_id');
+      const protectIds: number[] = [];
+      for (const row of lastUps) {
+        const lu = row.last_up as string;
+        const keep = await knex('indexer_history')
+          .select('id')
+          .where('indexer_id', row.indexer_id)
+          .where('last_checked', '>=', lu)
+          .whereRaw('(julianday(last_checked) - julianday(?)) * 1440 <= 5', [lu]);
+        protectIds.push(...keep.map((r: any) => r.id));
+      }
+      if (protectIds.length > 0) {
+        await knex('indexer_history').where('last_checked', '<', threshold).whereNotIn('id', protectIds).delete();
+      } else {
+        await knex('indexer_history').where('last_checked', '<', threshold).delete();
+      }
     }
 
     return merged;
