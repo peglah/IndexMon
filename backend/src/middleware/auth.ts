@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { knex } from '../config/database';
-import { createHash } from 'crypto';
+import { createHash, randomBytes } from 'crypto';
 
 const verifyPassword = (input: string, stored: string): boolean => {
   let salt = '';
@@ -22,7 +22,7 @@ const login = async (req: Request, res: Response) => {
   }
 
   // Create a session token (simplified for demo)
-  const sessionToken = Math.random().toString(36).substring(2);
+  const sessionToken = randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 24h
 
   await knex('sessions').insert({

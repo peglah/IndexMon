@@ -1,3 +1,5 @@
+process.env.DB_PATH = ':memory:';
+
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',

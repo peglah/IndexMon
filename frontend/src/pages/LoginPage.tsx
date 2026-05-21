@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/ui/button';
 
@@ -15,8 +16,12 @@ export const LoginPage = () => {
     try {
       await login(password);
       navigate('/');
-    } catch {
-      setError('Invalid credentials');
+    } catch (err) {
+      if (axios.isAxiosError(err) && err.response?.status === 401) {
+        setError('Invalid credentials');
+      } else {
+        setError('Connection error. Please try again.');
+      }
     }
   };
 

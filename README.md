@@ -33,15 +33,3 @@ cd backend && npm run dev
 # Frontend (port 5173, proxies /api to 3000)
 cd frontend && npm run dev
 ```
-
-## CI/CD
-
-GitHub Actions builds and pushes to `ghcr.io/<owner>/<repo>`:
-
-- **Push to `main`** → `develop` image
-- **Push tag `v*`** → `vX.Y.Z` + `latest` images
-- **PRs to `main`** → lint + typecheck + test only
-
-## Auth
-
-Custom session auth. Login via `POST /api/auth/login` with `{"username":"admin","password":"admin"}`. Returns a Bearer token (24h expiry). No registration UI — password set via `ADMIN_PASSWORD_HASH` env var.

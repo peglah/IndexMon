@@ -39,6 +39,8 @@ const createTables = () => {
       status TEXT NOT NULL,
       last_checked TIMESTAMP NOT NULL
     );
+
+    CREATE INDEX IF NOT EXISTS idx_indexer_history_lookup ON indexer_history(indexer_id, last_checked);
   `);
 
   console.log("Database initialized successfully.");
