@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const sendAlert = async (message: string) => {
-  const urls = process.env.APRISE_URLS?.split(',').filter(Boolean) || [];
+  const urls = process.env.APPRISE_URLS?.split(',').filter(Boolean) || [];
   if (!urls.length) return;
 
   const apiUrl = process.env.APPRISE_API_URL;

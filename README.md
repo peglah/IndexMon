@@ -22,7 +22,7 @@ Then open http://localhost and log in with `admin` / `admin`.
 | `AUTOBRR_BASE_URL` | No | `http://autobrr:7474` | Autobrr URL |
 | `ADMIN_PASSWORD_HASH` | No | `admin` | Salted SHA-256 hash. Generate via `backend/scripts/hash.sh yourpass` |
 | `APPRISE_API_URL` | No | — | HTTP endpoint of your Apprise API (e.g. `http://192.168.41.4:8084`) |
-| `APRISE_URLS` | No | — | Comma-separated Apprise notification URLs (e.g. `ntfy://host/topic?token=...`) |
+| `APPRISE_URLS` | No | — | Comma-separated Apprise notification URLs (e.g. `ntfy://host/topic?token=...`) |
 
 
 ## Development
