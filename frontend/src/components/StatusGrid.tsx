@@ -33,8 +33,15 @@ export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
         return (
           <div key={indexer.id} className="group relative flex">
             <div
-              className={`aspect-square w-full rounded-md ${tileColor(status)} hover:scale-110 transition-transform cursor-default`}
-            />
+              className={`aspect-square w-full rounded-md ${tileColor(status)} hover:scale-110 transition-transform cursor-default flex items-center justify-center`}
+            >
+              <img
+                src={`/api/indexers/icon/${indexer.id.replace('prowlarr-', '')}`}
+                alt=""
+                className="w-5 h-5"
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+              />
+            </div>
             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
               <div className="bg-popover text-popover-foreground text-xs font-medium px-2 py-1 rounded shadow-md border border-border whitespace-nowrap">
                 {displayName}
