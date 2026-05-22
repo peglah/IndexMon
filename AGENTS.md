@@ -16,51 +16,46 @@
   Command order: lint → typecheck → test (backend). Frontend build runs `tsc && vite build`.
 - **Build backend**: `npx tsc -p tsconfig.json` (or `npm run build`)
 - **Migrations**: `cd backend && npx knex migrate:make <name>` / `npx knex migrate:latest`
-- **Frontend install**: `npm install --legacy-peer-deps` (required due to React 19 RC)
+- **Frontend install**: Requires `--legacy-peer-deps` (React 19 RC)
 
 ## Auth
 - **Custom session auth**. `POST /api/auth/login` `{"password":"admin"}` → `{"token":"..."}`
-- Token: random string stored in `sessions` table (24h expiry). Frontend keeps in `localStorage.token`, auto-attached via `utils/axios.ts` interceptor `Authorization: Bearer`. Backend validates against `sessions`.
-
-## Alerts
-- Alerts are routed through an **Apprise API** container (e.g. `caronc/apprise-api` or `lscr.io/linuxserver/apprise-api`).
-- `APPRISE_API_URL` → the HTTP endpoint of the Apprise API (e.g. `http://192.168.41.4:8084`).
-- `APPRISE_URLS` → Apprise-format notification URLs (e.g. `ntfy://host/topic?token=...`, `slack://...`).
-- The backend POSTs `{urls, body, title}` to `{APPRISE_API_URL}/notify`. The Apprise API handles protocol translation.
-- If `APPRISE_API_URL` is unset, alerts are skipped with a warning.
+- Token in `localStorage.token`, auto-attached via `utils/axios.ts` interceptor `Authorization: Bearer`. Backend validates against `sessions` table (24h expiry).
+- Default password is `admin`. Override via `ADMIN_PASSWORD_HASH` env var (salted SHA-256, generate with `backend/scripts/hash.sh`).
 
 ## API
 | Endpoint | Auth | Notes |
 |---|---|---|
-| `POST /api/auth/login` | No | SHA-256 (salted) validate against `users` table. Body: `{password}` only. |
+| `POST /api/auth/login` | No | Body: `{password}` only |
 | `POST /api/auth/logout` | Yes | Deletes session row |
 | `GET /api/indexers` | Yes | Fetches Prowlarr + Autobrr inline, writes history, computes downtime + 24h uptime %, fires Apprise alerts |
 | `GET /api/indexers/history` | Yes | Maps `indexer_id`→`indexerId`, `last_checked`→`timestamp` |
-| `GET /api/indexers/icon/:prowlarrId` | No | Serves cached favicon PNG from `/app/data/icons/` (no auth — used by `<img>` tags) |
+| `GET /api/indexers/icon/:prowlarrId` | No | Serves cached favicon from `/app/data/icons/` (no auth — `<img>` tags can't send headers) |
 
 ## Architecture
-- **Frontend**: React 19 RC + React Router + TanStack Query + Tailwind (CSS vars for light/dark). **No Chart.js.**
-  - `DashboardPage.tsx`: two-column grid — `IndexerTable` (left) + `StatusGrid` (right). "Last checked" footer in `YYYY-MM-DD hh:mm:ss`.
-  - `StatusGrid.tsx`: 5-column grid of colored `aspect-square` tiles. Red (Prowlarr down) → Yellow (Autobrr down) → Green. Hover tooltip shows name.
-  - `IndexerTable.tsx`: Favicon column (leftmost, 5x5 PNG from Prowlarr's `/MediaCover/{id}/icon.png`, cached to `/app/data/icons/`), Prowlarr column (green `UP` / red duration pill), Autobrr column (green `UP` / red `DOWN` / `—` when absent), Availability (no decimals, 24h window).
-  - **Dark mode**: `class` strategy. Inline `<script>` in `index.html` sets `dark` class before React. Dashboard has Sun/Moon toggle persisting to `localStorage.theme`. Listens to `prefers-color-scheme` when no manual override. Login page has no toggle.
+- **Frontend**: React 19 RC + React Router + TanStack Query + Tailwind (CSS vars for light/dark).
+  - `DashboardPage.tsx`: two-column grid — `IndexerTable` (left) + `StatusGrid` (right). "Last checked" footer.
+  - `StatusGrid.tsx`: 5-column grid of colored `aspect-square` tiles. Red (Prowlarr down) → Yellow (Autobrr down) → Green → Grey (autobrrMissing). Hover tooltip shows name.
+  - `IndexerTable.tsx`: Favicon column (leftmost), Prowlarr column (green `UP` / red duration pill), Autobrr column (green `UP` / red `DOWN` / `—` when absent), Availability (no decimals, 24h window).
+  - **Dark mode**: `class` strategy. Inline `<script>` in `index.html` sets `dark` class before React. Dashboard has Sun/Moon toggle persisting to `localStorage.theme`. Login page has no toggle.
   - `(API)` suffix stripped from indexer names in all displays.
-  - Frontend polling via TanStack Query `refetchInterval` (hardcoded 15s). No backend polling — `polling.ts` exists but is dead code (not imported).
-- **Backend**: Express + Knex + Zod + helmet. **No express-rate-limit wired up** (in deps but unused).
-  - **DB**: SQLite. Runtime path from `DB_PATH` env var, default `/app/data/indexmon.db`. `knexfile.ts` uses `data/db.sqlite` — only used for migration CLI, not runtime.
-  - **Two sqlite drivers**: `sqlite3` (used by knex) and `better-sqlite3` (used directly by `init-db.cjs`). Both are dependencies.
+  - Frontend polling via TanStack Query `refetchInterval` (15s hardcoded). No backend polling — `polling.ts` exists but is dead code.
+- **Backend**: Express + Knex + Zod + helmet. `express-rate-limit` in deps but NOT wired.
+  - **DB**: SQLite. Runtime path from `DB_PATH` env var, default `/app/data/indexmon.db`. `knexfile.ts` uses `data/db.sqlite` — only for migration CLI, not runtime.
+  - **Two sqlite drivers**: `sqlite3` (knex) and `better-sqlite3` (`init-db.cjs` schema setup). Both are deps.
   - **Schema** (from `backend/scripts/init-db.cjs`): `users`, `sessions`, `indexer_history`
   - Backend dev uses `tsx watch` for hot reload.
 
 ## Quirks
-- **Prowlarr field**: `enable` (not `enabled`). Header: `X-Api-Key`. Also checks `status.disabledTill` — if set to a future date, Prowlarr auto-disabled the indexer due to failures (falls to `'down'`).
-- **Autobrr**: Endpoint `/api/irc` (not `/api/indexers`). Header: `X-API-Token` (not `X-Api-Key`). Status = `channel.monitoring && network.connected`.
+- **Prowlarr field**: `enable` (not `enabled`). Header: `X-Api-Key`. Checks `status.disabledTill` — future date means Prowlarr auto-disabled the indexer (falls to `'down'`).
+- **Autobrr**: Endpoint `/api/irc` (not `/api/indexers`). Header: `X-API-Token`. Status = `channel.monitoring && network.connected` (not `enabled`).
 - **Name matching**: Normalized (lowercased, stripped punctuation/`#`/`(api)`/whitespace). Aliases: `mtv`→`morethantv`, `td`→`torrentday`, `tl`→`torrentleech`.
 - **Autobrr absent vs down**: Indexer without Autobrr → green (`—` in table, green tile). Indexer with Autobrr that's disconnected/unmonitored → yellow tile, red `DOWN` in table.
-- **History**: Inserted on every `GET /api/indexers` call. Downtime computed by querying most recent `up` entry per down indexer. Availability via `AVG(CASE WHEN status='up' THEN 100.0 ELSE 0 END)` over 24h window.
-- **`APPRISE_API_URL`**: HTTP endpoint of the Apprise API. If unset, alerts are skipped with a warning.
-- **`APPRISE_URLS`**: Comma-separated. Empty entries filtered via `.filter(Boolean)` at `apprise.ts:4`.
-- **`ADMIN_PASSWORD_HASH`**: Salted SHA-256 hash (`salt$hash` hex). Generated via `backend/scripts/hash.sh yourpassword`. Unset → defaults to SHA-256 of `admin` (no salt). Checked in `init-db.cjs` on every startup; `UPDATE` after `INSERT OR IGNORE` ensures hash refreshes when env var changes.
-- **Env vars**: All config via `.env` injected by `docker-compose.yml`. No `VITE_` vars (polling interval hardcoded, Vite proxy target hardcoded).
-- **Port 3000 also exposed** on host (not just via nginx proxy), matching `docker-compose.yml`.
-- **CI/CD**: GitHub Actions (`.github/workflows/ci.yml`). Push to main → `develop` image. Tag `v*` → semver + `latest` image. Both pushed to `ghcr.io/<owner>/<repo>`. Lint/typecheck/test run on all pushes and PRs. Test DB path via `DB_PATH` env var.
+- **Favicons**: Backend fetches `{indexer.siteUrl}/favicon.ico` directly from each indexer's domain (not Prowlarr media). Cached in `/app/data/icons/` with 24h TTL; force-downloaded on first poll after container start. `siteUrl` sourced from Prowlarr's `indexerUrls[0]`. Icon route detects PNG vs ICO via magic bytes. **No third-party fallback service**.
+- **`CollapsibleSection`**: Inner wrapper `overflow-hidden` only applies when collapsed — otherwise tooltips clipped on mobile top row.
+- **History**: Inserted on every `GET /api/indexers`. Downtime computed by querying most recent `up` entry per down indexer. Availability via `AVG(CASE WHEN status='up' THEN 100.0 ELSE 0 END)` over 24h window.
+- **Alerts**: Apprise API. Backend POSTs `{urls, body, title}` to `{APPRISE_API_URL}/notify`. `APPRISE_URLS` comma-separated, empty entries filtered. If `APPRISE_API_URL` unset, alerts skipped. Alert dedup in-memory via `alertedDownIds` Set (reset on restart). On any new down transition, lists ALL currently-down indexers.
+- **`ADMIN_PASSWORD_HASH`**: Salted SHA-256 (`salt$hash` hex). Unset → defaults to SHA-256 of `admin` (no salt). `init-db.cjs` runs `UPDATE` after `INSERT OR IGNORE` on every startup so hash refreshes when env var changes.
+- **Env vars**: All via `.env` injected by `docker-compose.yml`. No `VITE_` vars (polling interval hardcoded, Vite proxy target hardcoded).
+- **Port 3000** also exposed on host (not just via nginx proxy).
+- **CI/CD**: GitHub Actions (`.github/workflows/ci.yml`). Push to main → `develop` image. Tag `v*` → semver + `latest`. Both pushed to `ghcr.io/<owner>/<repo>`. Lint/typecheck/test run on all pushes and PRs. Test DB path via `DB_PATH` env var.
