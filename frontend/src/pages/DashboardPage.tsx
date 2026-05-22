@@ -1,3 +1,4 @@
+import { CollapsibleSection } from '../components/CollapsibleSection';
 import { IndexerTable } from '../components/IndexerTable';
 import { StatusGrid } from '../components/StatusGrid';
 import { useIndexers } from '../hooks/useIndexers';
@@ -65,14 +66,12 @@ export const DashboardPage = () => {
         </button>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1">
-        <div className="bg-card p-6 rounded-lg shadow-md">
-          <h2 className="text-xl font-semibold mb-4">Current Status</h2>
+        <CollapsibleSection title="Current Status">
           {indexers && <IndexerTable indexers={indexers} />}
-        </div>
-        <div className="bg-card p-6 rounded-lg shadow-md overflow-visible">
-          <h2 className="text-xl font-semibold mb-4">Overview</h2>
+        </CollapsibleSection>
+        <CollapsibleSection title="Overview">
           {indexers && <StatusGrid indexers={indexers} />}
-        </div>
+        </CollapsibleSection>
       </div>
       {lastChecked && (
         <div className="text-sm text-muted-foreground text-center mt-auto pt-4 border-t border-border">
