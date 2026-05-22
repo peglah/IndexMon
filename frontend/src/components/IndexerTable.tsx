@@ -61,6 +61,7 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
     <Table>
       <TableHeader>
         <TableRow>
+          <TableHead className="w-8"></TableHead>
           <TableHead>Indexer</TableHead>
           <TableHead>Prowlarr</TableHead>
           <TableHead>Autobrr</TableHead>
@@ -72,6 +73,14 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
           const abUp = !!(indexer.autobrr?.connected && indexer.autobrr?.monitoring);
           return (
             <TableRow key={indexer.id}>
+              <TableCell className="w-8 p-1">
+                <img
+                  src={`/api/indexers/icon/${indexer.id.replace('prowlarr-', '')}`}
+                  alt=""
+                  className="w-5 h-5"
+                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                />
+              </TableCell>
               <TableCell className="font-medium">{indexer.name.replace(/\s*\(API\)/gi, '')}</TableCell>
               <TableCell>
                 <StatusCell status={indexer.status} downtimeMinutes={indexer.downtimeMinutes} />

@@ -1,4 +1,6 @@
 import axios from 'axios';
+import fs from 'fs';
+import path from 'path';
 import { knex } from '../config/database';
 import { sendAlert } from './apprise';
 import { hasDefinition } from './definitions';
@@ -39,6 +41,7 @@ interface Indexer {
   uptimePercentage?: number;
   autobrr?: AutobrrStatus | null;
   autobrrMissing?: boolean;
+  siteUrl?: string;
 }
 
 const CHANNEL_ALIASES: Record<string, string> = {
@@ -95,6 +98,7 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
       name: indexer.name,
       status: indexer.enable && !(indexer.status?.disabledTill && new Date(indexer.status.disabledTill) > new Date()) ? 'up' : 'down',
       lastChecked: new Date().toISOString(),
+      siteUrl: indexer.indexerUrls?.[0] as string | undefined,
     }));
   } catch (error) {
     console.error('Failed to fetch indexers from Prowlarr:', error);
@@ -116,6 +120,38 @@ const fetchAutobrrNetworks = async (): Promise<AutobrrNetwork[]> => {
 
 const alertedDownIds = new Set<string>();
 let firstPoll = true;
+
+const ICONS_DIR = path.join(
+  path.dirname(process.env.DB_PATH || '/app/data/indexmon.db'),
+  'icons',
+);
+const ICON_TTL_MS = 24 * 60 * 60 * 1000;
+
+const cacheIcons = async (indexers: Indexer[]): Promise<void> => {
+  fs.mkdirSync(ICONS_DIR, { recursive: true });
+  await Promise.all(
+    indexers.map(async (indexer) => {
+      const prowlarrId = indexer.id.replace('prowlarr-', '');
+      const cachePath = path.join(ICONS_DIR, `${prowlarrId}.png`);
+      try {
+        const stat = fs.statSync(cachePath);
+        if (!firstPoll && Date.now() - stat.mtimeMs < ICON_TTL_MS) return;
+      } catch {
+        // missing, will download
+      }
+      if (!indexer.siteUrl) return;
+      try {
+        const url = `${indexer.siteUrl.replace(/\/+$/, '')}/favicon.ico`;
+        const resp = await axios.get(url, { responseType: 'arraybuffer', timeout: 5000 });
+        if (resp.data && resp.data.byteLength > 0) {
+          fs.writeFileSync(cachePath, resp.data);
+        }
+      } catch {
+        // favicon unavailable, skip silently
+      }
+    }),
+  );
+};
 
 export const fetchIndexers = async (): Promise<Indexer[]> => {
   try {
@@ -256,6 +292,8 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
         await knex('indexer_history').where('last_checked', '<', threshold).delete();
       }
     }
+
+    cacheIcons(merged);
 
     return merged;
   } catch (error) {

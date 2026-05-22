@@ -1,4 +1,6 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
 import helmet from 'helmet';
 import cors from 'cors';
 import indexerRoutes from './routes/indexers';
@@ -15,6 +17,32 @@ app.use(express.json());
 
 // Routes
 app.use('/api/auth', authRoutes);
+
+// Unprotected icon route (img tags in browser don't send auth headers)
+const iconContentType = (filePath: string): string => {
+  try {
+    const fd = fs.openSync(filePath, 'r');
+    const buf = Buffer.alloc(4);
+    fs.readSync(fd, buf, 0, 4, 0);
+    fs.closeSync(fd);
+    if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'image/png';
+    if (buf[0] === 0x00 && buf[1] === 0x00 && buf[2] === 0x01 && buf[3] === 0x00) return 'image/x-icon';
+  } catch { /* fall through */ }
+  return 'image/png';
+};
+
+app.get('/api/indexers/icon/:prowlarrId', (req, res) => {
+  const iconsDir = path.join(
+    path.dirname(process.env.DB_PATH || '/app/data/indexmon.db'),
+    'icons',
+  );
+  const filePath = path.join(iconsDir, `${req.params.prowlarrId}.png`);
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).end();
+  }
+  res.type(iconContentType(filePath)).sendFile(filePath);
+});
+
 app.use('/api/indexers', authMiddleware, indexerRoutes);
 
 // Error handling

@@ -36,12 +36,13 @@
 | `POST /api/auth/logout` | Yes | Deletes session row |
 | `GET /api/indexers` | Yes | Fetches Prowlarr + Autobrr inline, writes history, computes downtime + 24h uptime %, fires Apprise alerts |
 | `GET /api/indexers/history` | Yes | Maps `indexer_id`→`indexerId`, `last_checked`→`timestamp` |
+| `GET /api/indexers/icon/:prowlarrId` | No | Serves cached favicon PNG from `/app/data/icons/` (no auth — used by `<img>` tags) |
 
 ## Architecture
 - **Frontend**: React 19 RC + React Router + TanStack Query + Tailwind (CSS vars for light/dark). **No Chart.js.**
   - `DashboardPage.tsx`: two-column grid — `IndexerTable` (left) + `StatusGrid` (right). "Last checked" footer in `YYYY-MM-DD hh:mm:ss`.
   - `StatusGrid.tsx`: 5-column grid of colored `aspect-square` tiles. Red (Prowlarr down) → Yellow (Autobrr down) → Green. Hover tooltip shows name.
-  - `IndexerTable.tsx`: Prowlarr column (green `UP` / red duration pill), Autobrr column (green `UP` / red `DOWN` / `—` when absent), Availability (no decimals, 24h window).
+  - `IndexerTable.tsx`: Favicon column (leftmost, 5x5 PNG from Prowlarr's `/MediaCover/{id}/icon.png`, cached to `/app/data/icons/`), Prowlarr column (green `UP` / red duration pill), Autobrr column (green `UP` / red `DOWN` / `—` when absent), Availability (no decimals, 24h window).
   - **Dark mode**: `class` strategy. Inline `<script>` in `index.html` sets `dark` class before React. Dashboard has Sun/Moon toggle persisting to `localStorage.theme`. Listens to `prefers-color-scheme` when no manual override. Login page has no toggle.
   - `(API)` suffix stripped from indexer names in all displays.
   - Frontend polling via TanStack Query `refetchInterval` (hardcoded 15s). No backend polling — `polling.ts` exists but is dead code (not imported).
