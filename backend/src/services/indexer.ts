@@ -135,7 +135,8 @@ const cacheIcons = async (indexers: Indexer[]): Promise<void> => {
       const cachePath = path.join(ICONS_DIR, `${prowlarrId}.png`);
       try {
         const stat = fs.statSync(cachePath);
-        if (!firstPoll && Date.now() - stat.mtimeMs < ICON_TTL_MS) return;
+        const jitterMs = (Math.random() - 0.5) * 60 * 60 * 1000;
+        if (!firstPoll && Date.now() - stat.mtimeMs < ICON_TTL_MS + jitterMs) return;
       } catch {
         // missing, will download
       }
