@@ -44,10 +44,14 @@ export const DashboardPage = () => {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  const { data: indexers, isLoading } = useIndexers();
+  const { data: indexers, isLoading, isError } = useIndexers();
 
   if (isLoading) {
     return <div className="p-8">Loading...</div>;
+  }
+
+  if (isError) {
+    return <div className="p-8 text-destructive">Failed to load indexer data.</div>;
   }
 
   const lastChecked = indexers?.[0]?.lastChecked;

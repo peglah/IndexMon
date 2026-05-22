@@ -19,6 +19,7 @@ export const useIndexers = () => {
     queryKey: ['indexers'],
     queryFn: fetchIndexers,
     refetchInterval: POLLING_INTERVAL_MS,
+    retry: false,
   });
 };
 
@@ -26,5 +27,6 @@ export const useIndexerHistory = () => {
   return useQuery({
     queryKey: ['indexerHistory'],
     queryFn: fetchIndexerHistory,
+    retry: false,
   });
 };
