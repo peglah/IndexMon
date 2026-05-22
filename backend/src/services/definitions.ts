@@ -28,7 +28,7 @@ const fetchDefinitions = async () => {
 
 export const initDefinitionChecker = async () => {
   await fetchDefinitions();
-  const jitter = Math.random() * 60000;
+  const jitter = (Math.random() - 0.5) * 60 * 60 * 1000;
   setInterval(fetchDefinitions, REFRESH_INTERVAL + jitter);
 };
 
