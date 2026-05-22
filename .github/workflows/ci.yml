@@ -59,7 +59,7 @@ jobs:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write
       packages: write
     steps:
       - uses: actions/checkout@v6
@@ -88,3 +88,32 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Start container for screenshot
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          touch .env
+          docker compose up -d
+
+      - name: Wait for container to be ready
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          for i in $(seq 1 30); do
+            curl -s -o /dev/null http://localhost && exit 0
+            sleep 2
+          done
+          exit 1
+
+      - name: Take screenshot
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          npx playwright install chromium --with-deps
+          node scripts/screenshot.mjs
+
+      - name: Upload screenshot to release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" --notes "" || true
+          gh release upload "${{ github.ref_name }}" screenshot.png --clobber

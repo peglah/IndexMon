@@ -93,6 +93,7 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
     const response = await axios.get(`${process.env.PROWLARR_BASE_URL || 'http://prowlarr:9696'}/api/v1/indexer`, {
       headers: { 'X-Api-Key': process.env.PROWLARR_API_KEY },
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return response.data.map((indexer: any) => ({
       id: `prowlarr-${indexer.id}`,
       name: indexer.name,
@@ -285,6 +286,7 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
           .where('indexer_id', row.indexer_id)
           .where('last_checked', '>=', lu)
           .whereRaw('(julianday(last_checked) - julianday(?)) * 1440 <= 5', [lu]);
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         protectIds.push(...keep.map((r: any) => r.id));
       }
       if (protectIds.length > 0) {
