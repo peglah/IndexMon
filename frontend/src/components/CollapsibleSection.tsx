@@ -63,7 +63,7 @@ export const CollapsibleSection = ({
           collapsed ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]',
         )}
       >
-        <div className="overflow-hidden">{children}</div>
+        <div className={cn(collapsed && 'overflow-hidden')}>{children}</div>
       </div>
     </div>
   );
