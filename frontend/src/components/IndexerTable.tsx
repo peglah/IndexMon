@@ -53,7 +53,7 @@ const StatusCell = ({
       </span>
     );
   }
-  return <span className="text-red-600 font-semibold">DOWN</span>;
+  return <span className="text-yellow-600 font-semibold">DOWN</span>;
 };
 
 export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
@@ -78,7 +78,7 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
               </TableCell>
               <TableCell>
                 {indexer.autobrrMissing ? (
-                  <span className="text-amber-500 font-semibold">MISSING</span>
+                  <span className="text-gray-400 font-semibold">MISSING</span>
                 ) : indexer.autobrr ? (
                   <StatusCell status={abUp ? 'up' : 'down'} />
                 ) : (
