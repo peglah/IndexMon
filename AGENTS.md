@@ -52,7 +52,7 @@
   - Backend dev uses `tsx watch` for hot reload.
 
 ## Quirks
-- **Prowlarr field**: `enable` (not `enabled`). Header: `X-Api-Key`.
+- **Prowlarr field**: `enable` (not `enabled`). Header: `X-Api-Key`. Also checks `status.disabledTill` — if set to a future date, Prowlarr auto-disabled the indexer due to failures (falls to `'down'`).
 - **Autobrr**: Endpoint `/api/irc` (not `/api/indexers`). Header: `X-API-Token` (not `X-Api-Key`). Status = `channel.monitoring && network.connected`.
 - **Name matching**: Normalized (lowercased, stripped punctuation/`#`/`(api)`/whitespace). Aliases: `mtv`→`morethantv`, `td`→`torrentday`, `tl`→`torrentleech`.
 - **Autobrr absent vs down**: Indexer without Autobrr → green (`—` in table, green tile). Indexer with Autobrr that's disconnected/unmonitored → yellow tile, red `DOWN` in table.

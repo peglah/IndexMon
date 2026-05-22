@@ -91,7 +91,7 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
     return response.data.map((indexer: any) => ({
       id: `prowlarr-${indexer.id}`,
       name: indexer.name,
-      status: indexer.enable ? 'up' : 'down',
+      status: indexer.enable && !(indexer.status?.disabledTill && new Date(indexer.status.disabledTill) > new Date()) ? 'up' : 'down',
       lastChecked: new Date().toISOString(),
     }));
   } catch (error) {
@@ -113,6 +113,7 @@ const fetchAutobrrNetworks = async (): Promise<AutobrrNetwork[]> => {
 };
 
 const alertedDownIds = new Set<string>();
+let firstPoll = true;
 
 export const fetchIndexers = async (): Promise<Indexer[]> => {
   try {
@@ -180,30 +181,42 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
       if (pct !== undefined) indexer.uptimePercentage = pct;
     }
 
-    const messages: string[] = [];
-    for (const indexer of merged) {
-      const prowlarrKey = `prowlarr:${indexer.id}`;
-      if (indexer.status === 'down') {
-        if (!alertedDownIds.has(prowlarrKey)) {
-          messages.push(`Indexer ${indexer.name} is down in Prowlarr!`);
-          alertedDownIds.add(prowlarrKey);
+    if (firstPoll) {
+      for (const indexer of merged) {
+        if (indexer.status === 'down') {
+          alertedDownIds.add(`prowlarr:${indexer.id}`);
         }
-      } else {
-        alertedDownIds.delete(prowlarrKey);
+        if (indexer.autobrr && !isChannelUp(indexer.autobrr)) {
+          alertedDownIds.add(`autobrr:${indexer.id}`);
+        }
       }
+      firstPoll = false;
+    } else {
+      const messages: string[] = [];
+      for (const indexer of merged) {
+        const prowlarrKey = `prowlarr:${indexer.id}`;
+        if (indexer.status === 'down') {
+          if (!alertedDownIds.has(prowlarrKey)) {
+            messages.push(`Indexer ${indexer.name} is down in Prowlarr!`);
+            alertedDownIds.add(prowlarrKey);
+          }
+        } else {
+          alertedDownIds.delete(prowlarrKey);
+        }
 
-      const autobrrKey = `autobrr:${indexer.id}`;
-      if (indexer.autobrr && !isChannelUp(indexer.autobrr)) {
-        if (!alertedDownIds.has(autobrrKey)) {
-          messages.push(`Indexer ${indexer.name}: Autobrr channel is down!`);
-          alertedDownIds.add(autobrrKey);
+        const autobrrKey = `autobrr:${indexer.id}`;
+        if (indexer.autobrr && !isChannelUp(indexer.autobrr)) {
+          if (!alertedDownIds.has(autobrrKey)) {
+            messages.push(`Indexer ${indexer.name}: Autobrr channel is down!`);
+            alertedDownIds.add(autobrrKey);
+          }
+        } else if (indexer.autobrr) {
+          alertedDownIds.delete(autobrrKey);
         }
-      } else if (indexer.autobrr) {
-        alertedDownIds.delete(autobrrKey);
       }
-    }
-    if (messages.length > 0) {
-      sendAlert(messages.join('\n'));
+      if (messages.length > 0) {
+        sendAlert(messages.join('\n'));
+      }
     }
 
     if (Date.now() - lastCleanup > CLEANUP_INTERVAL_MS) {
