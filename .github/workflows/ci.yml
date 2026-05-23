@@ -107,7 +107,7 @@ jobs:
       - name: Take screenshot
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          npm install playwright@1.60.0
+          npm install playwright@1.60.0 sharp
           npx playwright install chromium --with-deps
           node scripts/screenshot.mjs
 
