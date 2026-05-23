@@ -26,6 +26,8 @@ RUN npx tsc -p tsconfig.json
 
 # Stage 3: Combine everything into a single container
 FROM node:20-alpine
+ARG APP_VERSION=dev
+ENV APP_VERSION=$APP_VERSION
 WORKDIR /app
 
 # Install dependencies
