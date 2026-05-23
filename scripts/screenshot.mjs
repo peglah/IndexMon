@@ -117,7 +117,7 @@ const makePNG = (r, g, b) => {
     for (let x = 0; x < width; x++) {
       const src = y * width + x;
       const dst = src * 3;
-      const useDark = y >= (height / width) * x;
+      const useDark = y < (height / width) * x;
       const px = useDark ? darkRaw : lightRaw;
       merged[dst] = px[dst];
       merged[dst + 1] = px[dst + 1];
