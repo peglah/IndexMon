@@ -88,16 +88,43 @@ const buildAutobrrMap = (networks: AutobrrNetwork[]): Map<string, AutobrrStatus>
 
 const isChannelUp = (a: AutobrrStatus): boolean => a.connected && a.monitoring;
 
+const fetchProwlarrHealth = async (healthUrl: string, apiKey: string | undefined): Promise<Set<string>> => {
+  try {
+    const response = await axios.get(healthUrl, { headers: { 'X-Api-Key': apiKey } });
+    if (!Array.isArray(response.data)) return new Set();
+    for (const entry of response.data) {
+      if (entry.source === 'IndexerStatusCheck' && entry.message) {
+        const match = entry.message.match(/Indexers unavailable due to failures:\s*(.*)/);
+        if (match) {
+          const names = match[1].split(',').map((n: string) => normalize(n.trim()));
+          return new Set(names);
+        }
+      }
+    }
+    return new Set();
+  } catch {
+    return new Set();
+  }
+};
+
 const fetchProwlarr = async (): Promise<Indexer[]> => {
   try {
-    const response = await axios.get(`${process.env.PROWLARR_BASE_URL || 'http://prowlarr:9696'}/api/v1/indexer`, {
-      headers: { 'X-Api-Key': process.env.PROWLARR_API_KEY },
-    });
+    const baseUrl = process.env.PROWLARR_BASE_URL || 'http://prowlarr:9696';
+    const apiKey = process.env.PROWLARR_API_KEY;
+    const [indexerRes, healthRes] = await Promise.all([
+      axios.get(`${baseUrl}/api/v1/indexer`, { headers: { 'X-Api-Key': apiKey } }),
+      fetchProwlarrHealth(`${baseUrl}/api/v1/health`, apiKey),
+    ]);
+    const records = Array.isArray(indexerRes.data) ? indexerRes.data : (indexerRes.data as any)?.records ?? [];
+    if (!Array.isArray(records)) {
+      console.error('Unexpected Prowlarr response format:', typeof indexerRes.data);
+      return [];
+    }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return response.data.map((indexer: any) => ({
+    return records.map((indexer: any) => ({
       id: `prowlarr-${indexer.id}`,
       name: indexer.name,
-      status: indexer.enable && !(indexer.status?.disabledTill && new Date(indexer.status.disabledTill) > new Date()) ? 'up' : 'down',
+      status: healthRes.has(normalize(indexer.name)) ? 'down' : 'up',
       lastChecked: new Date().toISOString(),
       siteUrl: indexer.indexerUrls?.[0] as string | undefined,
     }));
