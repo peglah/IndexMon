@@ -14,6 +14,7 @@ export interface Indexer {
   uptimePercentage?: number;
   autobrr?: AutobrrStatus | null;
   autobrrMissing?: boolean;
+  siteUrl?: string;
 }
 
 export interface IndexerHistory {

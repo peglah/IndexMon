@@ -81,7 +81,15 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
                   onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                 />
               </TableCell>
-              <TableCell className="font-medium">{indexer.name.replace(/\s*\(API\)/gi, '')}</TableCell>
+              <TableCell className="font-medium">
+                {indexer.siteUrl ? (
+                  <a href={indexer.siteUrl} target="_blank" rel="noreferrer" className="hover:underline">
+                    {indexer.name.replace(/\s*\(API\)/gi, '')}
+                  </a>
+                ) : (
+                  indexer.name.replace(/\s*\(API\)/gi, '')
+                )}
+              </TableCell>
               <TableCell>
                 <StatusCell status={indexer.status} downtimeMinutes={indexer.downtimeMinutes} />
               </TableCell>
