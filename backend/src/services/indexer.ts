@@ -4,6 +4,7 @@ import path from 'path';
 import { knex } from '../config/database';
 import { sendAlert } from './apprise';
 import { hasDefinition } from './definitions';
+import { getQbitStatus, QbitStatus } from './qbittorrent';
 
 const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
 let lastCleanup = 0;
@@ -42,6 +43,11 @@ interface Indexer {
   autobrr?: AutobrrStatus | null;
   autobrrMissing?: boolean;
   siteUrl?: string;
+  qbittorrent?: QbitStatus | null;
+}
+
+interface ProwlarrResponse {
+  records?: unknown[];
 }
 
 const CHANNEL_ALIASES: Record<string, string> = {
@@ -115,7 +121,7 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
       axios.get(`${baseUrl}/api/v1/indexer`, { headers: { 'X-Api-Key': apiKey } }),
       fetchProwlarrHealth(`${baseUrl}/api/v1/health`, apiKey),
     ]);
-    const records = Array.isArray(indexerRes.data) ? indexerRes.data : (indexerRes.data as any)?.records ?? [];
+    const records = Array.isArray(indexerRes.data) ? indexerRes.data : (indexerRes.data as ProwlarrResponse)?.records ?? [];
     if (!Array.isArray(records)) {
       console.error('Unexpected Prowlarr response format:', typeof indexerRes.data);
       return [];
@@ -209,7 +215,8 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
     const merged: Indexer[] = prowlarrIndexers.map((pi) => {
       const key = normalize(pi.name);
       const ab = autobrrMap.get(key) || null;
-      return { ...pi, autobrr: ab, autobrrMissing: !ab && hasDefinition(pi.name) };
+      const qbit = getQbitStatus(pi.siteUrl);
+      return { ...pi, autobrr: ab, autobrrMissing: !ab && hasDefinition(pi.name), qbittorrent: qbit };
     });
 
     if (merged.length === 0) {

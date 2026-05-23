@@ -65,6 +65,7 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
           <TableHead>Indexer</TableHead>
           <TableHead>Prowlarr</TableHead>
           <TableHead>Autobrr</TableHead>
+          <TableHead>qBittorrent</TableHead>
           <TableHead>Availability</TableHead>
         </TableRow>
       </TableHeader>
@@ -98,6 +99,17 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
                   <span className="text-gray-400 dark:text-gray-500 font-semibold">MISSING</span>
                 ) : indexer.autobrr ? (
                   <StatusCell status={abUp ? 'up' : 'down'} />
+                ) : (
+                  <span className="text-muted-foreground">—</span>
+                )}
+              </TableCell>
+              <TableCell>
+                {indexer.qbittorrent?.hasTorrents ? (
+                  indexer.qbittorrent.working ? (
+                    <span className="text-green-600 dark:text-green-400 font-semibold">WORKING</span>
+                  ) : (
+                    <span className="text-red-600 dark:text-red-400 font-semibold">ERROR</span>
+                  )
                 ) : (
                   <span className="text-muted-foreground">—</span>
                 )}

@@ -15,6 +15,20 @@ export interface Indexer {
   autobrr?: AutobrrStatus | null;
   autobrrMissing?: boolean;
   siteUrl?: string;
+  qbittorrent?: QbitStatus | null;
+}
+
+export interface QbitTorrentStatus {
+  code: number;
+  msg?: string;
+  seeds?: number;
+}
+
+export interface QbitStatus {
+  working: boolean;
+  hasTorrents: boolean;
+  statuses: QbitTorrentStatus[];
+  lastChecked: string;
 }
 
 export interface IndexerHistory {
