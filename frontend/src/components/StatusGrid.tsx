@@ -8,7 +8,7 @@ const tileColor = (status: TileStatus): string => {
   switch (status) {
     case 'red': return 'bg-red-500';
     case 'yellow': return 'bg-yellow-400';
-    case 'grey': return 'bg-gray-400';
+    case 'grey': return 'bg-gray-400 dark:bg-gray-500';
     case 'green': return 'bg-green-500';
   }
 };

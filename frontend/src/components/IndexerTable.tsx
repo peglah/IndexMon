@@ -44,16 +44,16 @@ const StatusCell = ({
   downtimeMinutes?: number;
 }) => {
   if (status === 'up') {
-    return <span className="text-green-600 font-semibold">UP</span>;
+    return <span className="text-green-600 dark:text-green-400 font-semibold">UP</span>;
   }
   if (downtimeMinutes !== undefined) {
     return (
-      <span className="bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-semibold">
+      <span className="bg-red-100 dark:bg-red-900/60 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-semibold">
         {formatDuration(downtimeMinutes)}
       </span>
     );
   }
-  return <span className="text-yellow-600 font-semibold">DOWN</span>;
+  return <span className="text-yellow-600 dark:text-yellow-400 font-semibold">DOWN</span>;
 };
 
 export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
@@ -95,7 +95,7 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
               </TableCell>
               <TableCell>
                 {indexer.autobrrMissing ? (
-                  <span className="text-gray-400 font-semibold">MISSING</span>
+                  <span className="text-gray-400 dark:text-gray-500 font-semibold">MISSING</span>
                 ) : indexer.autobrr ? (
                   <StatusCell status={abUp ? 'up' : 'down'} />
                 ) : (
