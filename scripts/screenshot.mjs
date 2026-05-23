@@ -97,7 +97,7 @@ const makePNG = (r, g, b) => {
   await page.fill('input[type="password"]', 'admin');
   await page.click('button[type="submit"]');
 
-  await page.waitForSelector('text=TorrentLeech', { timeout: 15000 });
+  await page.waitForSelector('text=TorrentLeech >> visible=true', { timeout: 15000 });
   await page.waitForTimeout(500);
 
   const lightBuf = await page.screenshot({ fullPage: true });
