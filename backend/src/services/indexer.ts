@@ -155,6 +155,21 @@ const ICONS_DIR = path.join(
 );
 const ICON_TTL_MS = 24 * 60 * 60 * 1000;
 
+const fetchFaviconUrl = async (siteUrl: string): Promise<string | null> => {
+  try {
+    const base = siteUrl.replace(/\/+$/, '');
+    const resp = await axios.get(base + '/', { timeout: 5000, responseType: 'text', maxBodyLength: 500000 });
+    const html = String(resp.data);
+    const match = html.match(/<link[^>]*\brel=["'](?:shortcut\s+)?icon["'][^>]*\bhref=["']([^"']+)["']/i);
+    if (match) {
+      return new URL(match[1], base + '/').href;
+    }
+  } catch {
+    // fall through
+  }
+  return null;
+};
+
 const cacheIcons = async (indexers: Indexer[]): Promise<void> => {
   fs.mkdirSync(ICONS_DIR, { recursive: true });
   await Promise.all(
@@ -170,13 +185,13 @@ const cacheIcons = async (indexers: Indexer[]): Promise<void> => {
       }
       if (!indexer.siteUrl) return;
       try {
-        const url = `${indexer.siteUrl.replace(/\/+$/, '')}/favicon.ico`;
-        const resp = await axios.get(url, { responseType: 'arraybuffer', timeout: 5000 });
+        const faviconUrl = (await fetchFaviconUrl(indexer.siteUrl)) || `${indexer.siteUrl.replace(/\/+$/, '')}/favicon.ico`;
+        const resp = await axios.get(faviconUrl, { responseType: 'arraybuffer', timeout: 5000 });
         if (resp.data && resp.data.byteLength > 0) {
           fs.writeFileSync(cachePath, resp.data);
         }
       } catch {
-        // favicon unavailable, skip silently
+        // icon unavailable, skip silently
       }
     }),
   );

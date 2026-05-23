@@ -22,11 +22,15 @@ app.use('/api/auth', authRoutes);
 const iconContentType = (filePath: string): string => {
   try {
     const fd = fs.openSync(filePath, 'r');
-    const buf = Buffer.alloc(4);
-    fs.readSync(fd, buf, 0, 4, 0);
+    const buf = Buffer.alloc(100);
+    const bytesRead = fs.readSync(fd, buf, 0, 100, 0);
     fs.closeSync(fd);
     if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'image/png';
     if (buf[0] === 0x00 && buf[1] === 0x00 && buf[2] === 0x01 && buf[3] === 0x00) return 'image/x-icon';
+    if (buf[0] === 0x3c) {
+      const text = buf.toString('utf8', 0, bytesRead).trimStart();
+      if (text.startsWith('<svg') || text.startsWith('<?xml') || text.startsWith('<!DOCTYPE')) return 'image/svg+xml';
+    }
   } catch { /* fall through */ }
   return 'image/png';
 };
