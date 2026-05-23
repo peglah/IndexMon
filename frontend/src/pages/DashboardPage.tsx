@@ -66,11 +66,11 @@ export const DashboardPage = () => {
         </button>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1">
-        <CollapsibleSection title="Current Status">
-          {indexers && <IndexerTable indexers={indexers} />}
-        </CollapsibleSection>
         <CollapsibleSection title="Overview">
           {indexers && <StatusGrid indexers={indexers} />}
+        </CollapsibleSection>
+        <CollapsibleSection title="Current Status">
+          {indexers && <IndexerTable indexers={indexers} />}
         </CollapsibleSection>
       </div>
       {lastChecked && (
