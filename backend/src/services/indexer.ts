@@ -155,6 +155,8 @@ const fetchAutobrrNetworks = async (): Promise<AutobrrNetwork[]> => {
 };
 
 const alertedDownIds = new Set<string>();
+const downSince = new Map<string, number>();
+const ALERT_DELAY_MS = (parseInt(process.env.ALERT_DELAY_MINUTES || '0', 10) || 0) * 60_000;
 let firstPoll = true;
 
 const ICONS_DIR = path.join(
@@ -282,10 +284,14 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
     if (firstPoll) {
       for (const indexer of merged) {
         if (indexer.status === 'down') {
-          alertedDownIds.add(`prowlarr:${indexer.id}`);
+          const pk = `prowlarr:${indexer.id}`;
+          alertedDownIds.add(pk);
+          downSince.set(pk, Date.now());
         }
         if (indexer.autobrr && !isChannelUp(indexer.autobrr)) {
-          alertedDownIds.add(`autobrr:${indexer.id}`);
+          const ak = `autobrr:${indexer.id}`;
+          alertedDownIds.add(ak);
+          downSince.set(ak, Date.now());
         }
       }
       firstPoll = false;
@@ -295,21 +301,33 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
         const prowlarrKey = `prowlarr:${indexer.id}`;
         if (indexer.status === 'down') {
           if (!alertedDownIds.has(prowlarrKey)) {
-            hasNewDown = true;
-            alertedDownIds.add(prowlarrKey);
+            if (!downSince.has(prowlarrKey)) {
+              downSince.set(prowlarrKey, Date.now());
+            }
+            if (Date.now() - (downSince.get(prowlarrKey) || 0) >= ALERT_DELAY_MS) {
+              hasNewDown = true;
+              alertedDownIds.add(prowlarrKey);
+            }
           }
         } else {
           alertedDownIds.delete(prowlarrKey);
+          downSince.delete(prowlarrKey);
         }
 
         const autobrrKey = `autobrr:${indexer.id}`;
         if (indexer.autobrr && !isChannelUp(indexer.autobrr)) {
           if (!alertedDownIds.has(autobrrKey)) {
-            hasNewDown = true;
-            alertedDownIds.add(autobrrKey);
+            if (!downSince.has(autobrrKey)) {
+              downSince.set(autobrrKey, Date.now());
+            }
+            if (Date.now() - (downSince.get(autobrrKey) || 0) >= ALERT_DELAY_MS) {
+              hasNewDown = true;
+              alertedDownIds.add(autobrrKey);
+            }
           }
         } else if (indexer.autobrr) {
           alertedDownIds.delete(autobrrKey);
+          downSince.delete(autobrrKey);
         }
       }
 
