@@ -37,16 +37,24 @@ const createTables = () => {
       indexer_id TEXT NOT NULL,
       name TEXT NOT NULL,
       status TEXT NOT NULL,
-      last_checked TIMESTAMP NOT NULL
+      last_checked TIMESTAMP NOT NULL,
+      source TEXT NOT NULL DEFAULT 'prowlarr'
     );
 
-    CREATE INDEX IF NOT EXISTS idx_indexer_history_lookup ON indexer_history(indexer_id, last_checked);
+    CREATE INDEX IF NOT EXISTS idx_indexer_history_lookup ON indexer_history(indexer_id, source, last_checked);
   `);
 
   console.log("Database initialized successfully.");
 };
 
 createTables();
+
+// Add source column to existing indexer_history tables
+try {
+  db.exec("ALTER TABLE indexer_history ADD COLUMN source TEXT NOT NULL DEFAULT 'prowlarr'");
+} catch {
+  // Column already exists — ignore
+}
 
 // Add a default user
 const addDefaultUser = () => {

@@ -41,6 +41,8 @@ interface Indexer {
   lastChecked: string;
   downtimeMinutes?: number;
   uptimePercentage?: number;
+  autobrrUptimePercentage?: number;
+  qbUptimePercentage?: number;
   autobrr?: AutobrrStatus | null;
   autobrrMissing?: boolean;
   siteUrl?: string;
@@ -234,14 +236,19 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
       return [];
     }
 
-    await knex('indexer_history').insert(
-      merged.map((indexer) => ({
-        indexer_id: indexer.id,
-        name: indexer.name,
-        status: indexer.status,
-        last_checked: indexer.lastChecked,
-      }))
-    );
+    const historyRows = merged.flatMap((indexer) => {
+      const base = { indexer_id: indexer.id, name: indexer.name, last_checked: indexer.lastChecked };
+      const abUp = indexer.autobrr ? isChannelUp(indexer.autobrr) : false;
+      const rows: Array<{ indexer_id: string; name: string; last_checked: string; source: string; status: string }> = [
+        { ...base, source: 'prowlarr', status: indexer.status },
+        { ...base, source: 'autobrr', status: abUp ? 'up' : 'down' },
+      ];
+      if (indexer.qbittorrent) {
+        rows.push({ ...base, source: 'qbittorrent', status: indexer.qbittorrent.working ? 'up' : 'down' });
+      }
+      return rows;
+    });
+    await knex('indexer_history').insert(historyRows);
 
     const downIndexers = merged.filter((i) => i.status === 'down');
     if (downIndexers.length > 0) {
@@ -251,6 +258,7 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
         .max('last_checked as last_up')
         .whereIn('indexer_id', downIds)
         .where('status', 'up')
+        .where('source', 'prowlarr')
         .whereExists(function () {
           this.select('*')
             .from('indexer_history as ih2')
@@ -269,16 +277,30 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
     }
 
     const windowAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const uptimeRows = await knex('indexer_history')
-      .select('indexer_id')
-      .select(knex.raw('ROUND(AVG(CASE WHEN status = ? THEN 100.0 ELSE 0 END), 2) as uptime_pct', ['up']))
-      .whereIn('indexer_id', merged.map((i) => i.id))
-      .where('last_checked', '>=', windowAgo)
-      .groupBy('indexer_id');
-    const uptimeMap = new Map(uptimeRows.map((r) => [r.indexer_id, r.uptime_pct as number]));
+    const computeUptimeForSource = async (source: string): Promise<Map<string, number>> => {
+      const uptimeRows = await knex('indexer_history')
+        .select('indexer_id')
+        .select(knex.raw('ROUND(AVG(CASE WHEN status = ? THEN 100.0 ELSE 0 END), 2) as uptime_pct', ['up']))
+        .whereIn('indexer_id', merged.map((i) => i.id))
+        .where('source', source)
+        .where('last_checked', '>=', windowAgo)
+        .groupBy('indexer_id');
+      return new Map(uptimeRows.map((r) => [r.indexer_id, r.uptime_pct as number]));
+    };
+
+    const [prowlarrUptimeMap, autobrrUptimeMap, qbUptimeMap] = await Promise.all([
+      computeUptimeForSource('prowlarr'),
+      computeUptimeForSource('autobrr'),
+      computeUptimeForSource('qbittorrent'),
+    ]);
+
     for (const indexer of merged) {
-      const pct = uptimeMap.get(indexer.id);
+      const pct = prowlarrUptimeMap.get(indexer.id);
       if (pct !== undefined) indexer.uptimePercentage = pct;
+      const abPct = autobrrUptimeMap.get(indexer.id);
+      if (abPct !== undefined) indexer.autobrrUptimePercentage = abPct;
+      const qbPct = qbUptimeMap.get(indexer.id);
+      if (qbPct !== undefined) indexer.qbUptimePercentage = qbPct;
     }
 
     if (firstPoll) {

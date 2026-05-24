@@ -18,6 +18,17 @@ const formatDuration = (minutes: number): string => {
   return `${Math.floor(minutes / YEAR)}y`;
 };
 
+const UptimeTooltip = ({ uptimePercentage, children }: { uptimePercentage?: number; children: React.ReactNode }) => (
+  <div className="group relative inline-flex">
+    {children}
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 pointer-events-none">
+      <div className="bg-popover text-popover-foreground text-xs font-medium px-2 py-1 rounded shadow-md border border-border whitespace-nowrap">
+        24h: {uptimePercentage?.toFixed(0) ?? 'N/A'}%
+      </div>
+    </div>
+  </div>
+);
+
 const StatusCell = ({
   status,
   downtimeMinutes,
@@ -37,16 +48,7 @@ const StatusCell = ({
     <span className="text-yellow-600 dark:text-yellow-400 font-semibold">DOWN</span>
   );
 
-  return (
-    <div className="group relative inline-flex">
-      {content}
-      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 pointer-events-none">
-        <div className="bg-popover text-popover-foreground text-xs font-medium px-2 py-1 rounded shadow-md border border-border whitespace-nowrap">
-          24h: {uptimePercentage?.toFixed(0) ?? 'N/A'}%
-        </div>
-      </div>
-    </div>
-  );
+  return <UptimeTooltip uptimePercentage={uptimePercentage}>{content}</UptimeTooltip>;
 };
 
 export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
@@ -90,7 +92,7 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
                 {indexer.autobrrMissing ? (
                   <span className="text-gray-400 dark:text-gray-500 font-semibold">MISSING</span>
                 ) : indexer.autobrr ? (
-                  <StatusCell status={abUp ? 'up' : 'down'} />
+                  <StatusCell status={abUp ? 'up' : 'down'} uptimePercentage={indexer.autobrrUptimePercentage} />
                 ) : (
                   <span className="text-muted-foreground">—</span>
                 )}
@@ -98,9 +100,13 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
               <TableCell>
                 {indexer.qbittorrent?.hasTorrents ? (
                   indexer.qbittorrent.working ? (
-                    <span className="text-green-600 dark:text-green-400 font-semibold">WORKING</span>
+                    <UptimeTooltip uptimePercentage={indexer.qbUptimePercentage}>
+                      <span className="text-green-600 dark:text-green-400 font-semibold">WORKING</span>
+                    </UptimeTooltip>
                   ) : (
-                    <span className="text-red-600 dark:text-red-400 font-semibold">ERROR</span>
+                    <UptimeTooltip uptimePercentage={indexer.qbUptimePercentage}>
+                      <span className="text-red-600 dark:text-red-400 font-semibold">ERROR</span>
+                    </UptimeTooltip>
                   )
                 ) : (
                   <span className="text-muted-foreground">—</span>

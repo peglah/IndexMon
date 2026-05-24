@@ -12,6 +12,8 @@ export interface Indexer {
   lastChecked: string;
   downtimeMinutes?: number;
   uptimePercentage?: number;
+  autobrrUptimePercentage?: number;
+  qbUptimePercentage?: number;
   autobrr?: AutobrrStatus | null;
   autobrrMissing?: boolean;
   siteUrl?: string;
