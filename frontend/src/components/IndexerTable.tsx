@@ -11,29 +11,11 @@ const YEAR = 365 * DAY;
 const formatDuration = (minutes: number): string => {
   if (minutes < 1) return '0m';
   if (minutes < HOUR) return `${Math.floor(minutes)}m`;
-  if (minutes < DAY) {
-    const h = Math.floor(minutes / HOUR);
-    const m = Math.floor(minutes % HOUR);
-    return m > 0 ? `${h}h ${m}m` : `${h}h`;
-  }
-  if (minutes < WEEK) {
-    const d = Math.floor(minutes / DAY);
-    const h = Math.floor((minutes % DAY) / HOUR);
-    return h > 0 ? `${d}d ${h}h` : `${d}d`;
-  }
-  if (minutes < MONTH) {
-    const w = Math.floor(minutes / WEEK);
-    const d = Math.floor((minutes % WEEK) / DAY);
-    return d > 0 ? `${w}w ${d}d` : `${w}w`;
-  }
-  if (minutes < YEAR) {
-    const M = Math.floor(minutes / MONTH);
-    const w = Math.floor((minutes % MONTH) / WEEK);
-    return w > 0 ? `${M}M ${w}w` : `${M}M`;
-  }
-  const y = Math.floor(minutes / YEAR);
-  const M = Math.floor((minutes % YEAR) / MONTH);
-  return M > 0 ? `${y}y ${M}M` : `${y}y`;
+  if (minutes < DAY) return `${Math.floor(minutes / HOUR)}h`;
+  if (minutes < WEEK) return `${Math.floor(minutes / DAY)}d`;
+  if (minutes < MONTH) return `${Math.floor(minutes / WEEK)}w`;
+  if (minutes < YEAR) return `${Math.floor(minutes / MONTH)}M`;
+  return `${Math.floor(minutes / YEAR)}y`;
 };
 
 const StatusCell = ({
