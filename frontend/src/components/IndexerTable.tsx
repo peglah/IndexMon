@@ -48,7 +48,7 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
           <TableHead>Prowlarr</TableHead>
           <TableHead>Autobrr</TableHead>
           <TableHead>qBittorrent</TableHead>
-          <TableHead>Availability</TableHead>
+          <TableHead>24h Uptime</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
