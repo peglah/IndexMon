@@ -21,21 +21,32 @@ const formatDuration = (minutes: number): string => {
 const StatusCell = ({
   status,
   downtimeMinutes,
+  uptimePercentage,
 }: {
   status: 'up' | 'down';
   downtimeMinutes?: number;
+  uptimePercentage?: number;
 }) => {
-  if (status === 'up') {
-    return <span className="text-green-600 dark:text-green-400 font-semibold">UP</span>;
-  }
-  if (downtimeMinutes !== undefined) {
-    return (
-      <span className="bg-red-100 dark:bg-red-900/60 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-semibold">
-        {formatDuration(downtimeMinutes)}
-      </span>
-    );
-  }
-  return <span className="text-yellow-600 dark:text-yellow-400 font-semibold">DOWN</span>;
+  const content = status === 'up' ? (
+    <span className="text-green-600 dark:text-green-400 font-semibold">UP</span>
+  ) : downtimeMinutes !== undefined ? (
+    <span className="bg-red-100 dark:bg-red-900/60 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-semibold">
+      {formatDuration(downtimeMinutes)}
+    </span>
+  ) : (
+    <span className="text-yellow-600 dark:text-yellow-400 font-semibold">DOWN</span>
+  );
+
+  return (
+    <div className="group relative inline-flex">
+      {content}
+      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 pointer-events-none">
+        <div className="bg-popover text-popover-foreground text-xs font-medium px-2 py-1 rounded shadow-md border border-border whitespace-nowrap">
+          24h: {uptimePercentage?.toFixed(0) ?? 'N/A'}%
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
@@ -48,7 +59,6 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
           <TableHead>Prowlarr</TableHead>
           <TableHead>Autobrr</TableHead>
           <TableHead>qBittorrent</TableHead>
-          <TableHead>24h Uptime</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -74,7 +84,7 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
                 )}
               </TableCell>
               <TableCell>
-                <StatusCell status={indexer.status} downtimeMinutes={indexer.downtimeMinutes} />
+                <StatusCell status={indexer.status} downtimeMinutes={indexer.downtimeMinutes} uptimePercentage={indexer.uptimePercentage} />
               </TableCell>
               <TableCell>
                 {indexer.autobrrMissing ? (
@@ -96,7 +106,6 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
                   <span className="text-muted-foreground">—</span>
                 )}
               </TableCell>
-              <TableCell>{indexer.uptimePercentage?.toFixed(0) || 'N/A'}%</TableCell>
             </TableRow>
           );
         })}
