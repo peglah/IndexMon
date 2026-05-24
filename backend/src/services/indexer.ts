@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { knex } from '../config/database';
 import { sendAlert } from './apprise';
+import { logger } from '../utils/logger';
 import { hasDefinition } from './definitions';
 import { getQbitStatus, QbitStatus } from './qbittorrent';
 
@@ -109,6 +110,7 @@ const fetchProwlarrHealth = async (healthUrl: string, apiKey: string | undefined
     }
     return new Set();
   } catch {
+    logger.warn('Prowlarr health check failed');
     return new Set();
   }
 };
@@ -123,7 +125,7 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
     ]);
     const records = Array.isArray(indexerRes.data) ? indexerRes.data : (indexerRes.data as ProwlarrResponse)?.records ?? [];
     if (!Array.isArray(records)) {
-      console.error('Unexpected Prowlarr response format:', typeof indexerRes.data);
+      logger.error('Unexpected Prowlarr response format:', typeof indexerRes.data);
       return [];
     }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -135,7 +137,7 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
       siteUrl: indexer.indexerUrls?.[0] as string | undefined,
     }));
   } catch (error) {
-    console.error('Failed to fetch indexers from Prowlarr:', error);
+    logger.error('Failed to fetch indexers from Prowlarr:', error);
     return [];
   }
 };
@@ -147,7 +149,7 @@ const fetchAutobrrNetworks = async (): Promise<AutobrrNetwork[]> => {
     });
     return response.data;
   } catch (error) {
-    console.error('Failed to fetch IRC networks from Autobrr:', error);
+    logger.error('Failed to fetch IRC networks from Autobrr:', error);
     return [];
   }
 };
@@ -171,7 +173,7 @@ const fetchFaviconUrl = async (siteUrl: string): Promise<string | null> => {
       return new URL(match[1], base + '/').href;
     }
   } catch {
-    // fall through
+    logger.debug(`Favicon URL discovery failed for ${siteUrl}`);
   }
   return null;
 };
@@ -197,13 +199,14 @@ const cacheIcons = async (indexers: Indexer[]): Promise<void> => {
           fs.writeFileSync(cachePath, resp.data);
         }
       } catch {
-        // icon unavailable, skip silently
+        logger.debug(`Icon download failed for ${indexer.name}`);
       }
     }),
   );
 };
 
 export const fetchIndexers = async (): Promise<Indexer[]> => {
+  logger.info('Fetching indexers...');
   try {
     const [prowlarrIndexers, networks] = await Promise.all([
       fetchProwlarr(),
@@ -218,6 +221,12 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
       const qbit = getQbitStatus(pi.siteUrl);
       return { ...pi, autobrr: ab, autobrrMissing: !ab && hasDefinition(pi.name), qbittorrent: qbit };
     });
+    logger.info(`Fetched ${prowlarrIndexers.length} indexers from Prowlarr, ${networks.length} IRC networks from Autobrr`);
+    const downCount = merged.filter((i) => i.status === 'down').length;
+    if (downCount > 0) {
+      const downNames = merged.filter((i) => i.status === 'down').map((i) => i.name).join(', ');
+      logger.info(`DOWN indexers: ${downNames}`);
+    }
 
     if (merged.length === 0) {
       return [];
@@ -349,7 +358,7 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
 
     return merged;
   } catch (error) {
-    console.error('Failed to fetch indexers:', error);
+    logger.error('Failed to fetch indexers:', error);
     throw error;
   }
 };

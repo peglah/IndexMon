@@ -58,6 +58,13 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - **Screenshot** (only on `v*` tags): starts container, waits for :80, runs `scripts/screenshot.mjs` (Playwright chromium with route interception for 10 mock indexers — no real services needed). Merges light+dark screenshots diagonally via `sharp`. Uploads to release.
 - `contents: write` permission needed for release upload. Test DB uses `DB_PATH` env var.
 
+## Logging
+- `backend/src/utils/logger.ts`: lightweight wrapper with `LOG_LEVEL` env var (`debug`/`info`/`warn`/`error`, default `info`). Uses `[timestamp] [LEVEL]` prefix via native `console.*`.
+- `debug`: per-tracker fetch results, favicon discovery/download failures.
+- `info`: poll cycle boundaries, Prowlarr/Autobrr counts, DOWN indexer names, Apprise dispatch.
+- `warn`: recoverable errors (qB login, Prowlarr health check, missing APPRISE_API_URL).
+- `error`: unrecoverable failures and Express error handler stack traces.
+
 ## Testing
 - **Backend**: Jest with `ts-jest`. Single test: 401 on unauthenticated `/api/indexers`. Needs `DB_PATH` env pointing to a writeable path (CI uses `./test-data/test.db`). `knex migrate:latest` runs in `beforeAll`.
 - **Frontend**: Vitest with jsdom + `@testing-library/react`. `matchMedia` mocked in `setup-tests.ts`. Dashboard test checks loading state only.

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from '../utils/logger';
 
 interface QbitTorrent {
   hash: string;
@@ -67,6 +68,7 @@ const login = async (): Promise<boolean> => {
     }
     return true;
   } catch {
+    logger.warn('qBittorrent login failed');
     return false;
   }
 };
@@ -130,6 +132,7 @@ const refreshCache = async (): Promise<void> => {
             const trackers = await fetchTrackers(hash);
             return [domain, trackers] as [string, QbitTracker[]];
           } catch {
+            logger.debug(`qB tracker fetch failed for ${domain}`);
             return [domain, null] as [string, null];
           }
         }),
@@ -163,9 +166,9 @@ const refreshCache = async (): Promise<void> => {
     }
 
     cache = newCache;
-    console.log(`[qB] Cached ${cache.size} tracker domains: ${[...cache.keys()].sort().join(', ')}`);
+    logger.info(`qB poll complete — ${cache.size} tracker domains cached`);
   } catch (error) {
-    console.error('qBittorrent poll failed:', error);
+    logger.error('qBittorrent poll failed:', error);
   }
 };
 

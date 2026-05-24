@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from '../utils/logger';
 
 const GITHUB_API = 'https://api.github.com/repos/autobrr/autobrr/contents/internal/indexer/definitions';
 const REFRESH_INTERVAL = 24 * 60 * 60 * 1000;
@@ -20,9 +21,9 @@ const fetchDefinitions = async () => {
       .filter((f) => f.name.endsWith('.yaml'))
       .map((f) => normalize(f.name.replace(/\.yaml$/, '')));
     knownDefinitions = new Set(names);
-    console.log(`Loaded ${names.length} Autobrr indexer definitions`);
+    logger.info(`Loaded ${names.length} Autobrr indexer definitions`);
   } catch (error) {
-    console.error('Failed to fetch Autobrr definitions:', error);
+    logger.error('Failed to fetch Autobrr definitions:', error);
   }
 };
 

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from '../utils/logger';
 
 export const sendAlert = async (message: string) => {
   const urls = process.env.APPRISE_URLS?.split(',').filter(Boolean) || [];
@@ -6,7 +7,7 @@ export const sendAlert = async (message: string) => {
 
   const apiUrl = process.env.APPRISE_API_URL;
   if (!apiUrl) {
-    console.warn('APPRISE_API_URL not set — skipping alert(s)');
+    logger.warn('APPRISE_API_URL not set — skipping alert(s)');
     return;
   }
 
@@ -16,7 +17,8 @@ export const sendAlert = async (message: string) => {
       body: message,
       title: 'Indexer Alert',
     });
+    logger.info(`Apprise alert sent to ${urls.length} URL(s)`);
   } catch (error) {
-    console.error('Failed to send alert:', error);
+    logger.error('Failed to send alert:', error);
   }
 };
