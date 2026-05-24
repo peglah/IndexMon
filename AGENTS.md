@@ -25,7 +25,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 | `GET /api/indexers/icon/:prowlarrId` | No | Serves cached favicon (before auth middleware — `<img>` tags can't send headers). Detects PNG/ICO/SVG via magic bytes and text prefix. |
 
 ## Quirks
-- **Prowlarr 2.x** drops the `status` field from `GET /api/v1/indexer`. Auto-disabled indexers detected via `GET /api/v1/health` → `IndexerStatusCheck` warning message (comma-separated names). Header: `X-Api-Key`.
+- **Prowlarr 2.x** drops the `status` field from `GET /api/v1/indexer`. Auto-disabled (failing) indexers detected via `GET /api/v1/health` → `IndexerStatusCheck` warning message (comma-separated names). Manually-disabled indexers detected via `enable` field on each indexer object. Header: `X-Api-Key`.
 - **Autobrr**: endpoint `/api/irc` (not `/api/indexers`). Header `X-API-Token`. Health = `channel.monitoring && network.connected` only — `channel.enabled` is a user preference, NOT checked.
 - **Name matching**: `normalize()` = lowercase, strip `(API)`, strip punctuation/whitespace/hyphens/`#`. Hardcoded aliases: `mtv`→`morethantv`, `td`→`torrentday`, `tl`→`torrentleech`.
 - **Autobrr absent vs down**: No Autobrr entry → green (`—`, grey tile if `autobrrMissing`). With Autobrr but disconnected → yellow tile, red `DOWN` in table.

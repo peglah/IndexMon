@@ -132,7 +132,7 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
     return records.map((indexer: any) => ({
       id: `prowlarr-${indexer.id}`,
       name: indexer.name,
-      status: healthRes.has(normalize(indexer.name)) ? 'down' : 'up',
+      status: (indexer.enable === false || healthRes.has(normalize(indexer.name))) ? 'down' : 'up',
       lastChecked: new Date().toISOString(),
       siteUrl: indexer.indexerUrls?.[0] as string | undefined,
     }));
