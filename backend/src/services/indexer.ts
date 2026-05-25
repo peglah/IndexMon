@@ -6,6 +6,7 @@ import { sendAlert } from './apprise';
 import { logger } from '../utils/logger';
 import { hasDefinition } from './definitions';
 import { getQbitStatus, getQbitGlobalStatus, QbitStatus } from './qbittorrent';
+import { getTrackerStats, TrackerStats as TrackerStatsType } from './tracker-stats';
 
 const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
 let lastCleanup = 0;
@@ -49,6 +50,7 @@ interface Indexer {
   autobrrMissing?: boolean;
   siteUrl?: string;
   qbittorrent?: QbitStatus | null;
+  stats?: TrackerStatsType;
 }
 
 interface ProwlarrResponse {
@@ -244,7 +246,8 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
       const key = normalize(pi.name);
       const ab = autobrrMap.get(key) || null;
       const qbit = getQbitStatus(pi.siteUrl);
-      return { ...pi, autobrr: ab, autobrrMissing: !ab && hasDefinition(pi.name), qbittorrent: qbit };
+      const stats = getTrackerStats().get(pi.name);
+      return { ...pi, autobrr: ab, autobrrMissing: !ab && hasDefinition(pi.name), qbittorrent: qbit, stats };
     });
     logger.info(`Fetched ${prowlarrIndexers.length} indexers from Prowlarr, ${networks.length} IRC networks from Autobrr`);
     const downCount = merged.filter((i) => i.status === 'down').length;

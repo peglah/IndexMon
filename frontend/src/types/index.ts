@@ -5,6 +5,13 @@ export interface AutobrrStatus {
   lastAnnounce: string | null;
 }
 
+export interface TrackerStats {
+  uploaded: number;
+  downloaded: number;
+  ratio: number | null;
+  buffer: number;
+}
+
 export interface Indexer {
   id: string;
   name: string;
@@ -20,6 +27,7 @@ export interface Indexer {
   autobrrMissing?: boolean;
   siteUrl?: string;
   qbittorrent?: QbitStatus | null;
+  stats?: TrackerStats;
 }
 
 export interface QbitTorrentStatus {

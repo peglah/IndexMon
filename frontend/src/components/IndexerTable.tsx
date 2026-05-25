@@ -18,12 +18,35 @@ const formatDuration = (minutes: number): string => {
   return `${Math.floor(minutes / YEAR)}y`;
 };
 
+const formatBytes = (bytes: number): string => {
+  const units = ['B', 'KB', 'MB', 'GB', 'TB', 'PB'];
+  let unitIdx = 0;
+  let value = Math.abs(bytes);
+  while (value >= 1024 && unitIdx < units.length - 1) {
+    value /= 1024;
+    unitIdx++;
+  }
+  const decimals = value >= 100 ? 0 : value >= 10 ? 1 : 2;
+  return `${value.toFixed(decimals)} ${units[unitIdx]}`;
+};
+
 const UptimeTooltip = ({ uptimePercentage, children }: { uptimePercentage?: number; children: React.ReactNode }) => (
   <div className="group relative inline-flex">
     {children}
     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 pointer-events-none">
       <div className="bg-popover text-popover-foreground text-xs font-medium px-2 py-1 rounded shadow-md border border-border whitespace-nowrap">
         24h: {uptimePercentage?.toFixed(0) ?? 'N/A'}%
+      </div>
+    </div>
+  </div>
+);
+
+const BufferTooltip = ({ stats, children }: { stats: { uploaded: number; downloaded: number; ratio: number | null }; children: React.ReactNode }) => (
+  <div className="group relative inline-flex">
+    {children}
+    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 pointer-events-none">
+      <div className="bg-popover text-popover-foreground text-xs font-medium px-2 py-1 rounded shadow-md border border-border whitespace-nowrap">
+        Uploaded: {formatBytes(stats.uploaded)} &middot; Downloaded: {formatBytes(stats.downloaded)} &middot; Ratio: {stats.ratio !== null ? stats.ratio.toFixed(2) : '∞'}
       </div>
     </div>
   </div>
@@ -82,7 +105,20 @@ const ServiceHeader = ({ label, ok, connectionStatus }: { label: string; ok: boo
   </TableHead>
 );
 
+const BufferCell = ({ stats }: { stats: { uploaded: number; downloaded: number; ratio: number | null; buffer: number } }) => {
+  const sign = stats.buffer >= 0 ? '+' : '';
+  const ratioColor = stats.ratio === null ? 'text-green-500' : stats.ratio < 0.9 ? 'text-red-500' : stats.ratio <= 1.1 ? 'text-yellow-500' : 'text-green-500';
+  return (
+    <BufferTooltip stats={stats}>
+      <span className={`font-semibold ${ratioColor}`}>
+        {sign}{formatBytes(stats.buffer)}
+      </span>
+    </BufferTooltip>
+  );
+};
+
 export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; services?: ServicesStatus }) => {
+  const hasStats = indexers.some((i) => i.stats !== undefined);
   return (
     <Table>
       <TableHeader>
@@ -92,6 +128,7 @@ export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; serv
           <ServiceHeader label="Prowlarr" ok={!!services?.prowlarr.ok} />
           <ServiceHeader label="Autobrr" ok={!!services?.autobrr.ok} />
           <ServiceHeader label="qBittorrent" ok={!!services?.qbittorrent.ok} connectionStatus={services?.qbittorrent.connectionStatus} />
+          {hasStats && <TableHead>Buffer</TableHead>}
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -135,6 +172,15 @@ export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; serv
                   <span className="text-muted-foreground">—</span>
                 )}
               </TableCell>
+              {hasStats && (
+                <TableCell>
+                  {indexer.stats ? (
+                    <BufferCell stats={indexer.stats} />
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+              )}
             </TableRow>
           );
         })}
