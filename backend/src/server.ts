@@ -1,5 +1,7 @@
+import { randomBytes, createHash } from 'crypto';
 import { logger } from './utils/logger';
 import app from './app';
+import { setPasswordHash } from './middleware/auth';
 import { initDefinitionChecker } from './services/definitions';
 import { startQbitPolling } from './services/qbittorrent';
 import { initTrackerStats } from './services/tracker-stats';
@@ -10,6 +12,17 @@ const version = process.env.APP_VERSION || 'dev';
 const startServer = async () => {
   logger.info(`Starting IndexMon v${version}...`);
   try {
+    const envHash = process.env.ADMIN_PASSWORD_HASH;
+    if (envHash) {
+      setPasswordHash(envHash);
+      logger.info('Admin password configured from ADMIN_PASSWORD_HASH');
+    } else {
+      const adminPassword = randomBytes(12).toString('hex');
+      const passwordHash = createHash('sha256').update(adminPassword).digest('hex');
+      setPasswordHash(passwordHash);
+      logger.info(`=== Generated admin password: ${adminPassword} ===`);
+    }
+
     await initDefinitionChecker();
     startQbitPolling(parseInt(process.env.QBITTORRENT_POLL_INTERVAL_S || '300', 10));
     initTrackerStats();

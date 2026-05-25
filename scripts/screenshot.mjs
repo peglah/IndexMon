@@ -95,6 +95,10 @@ const makePNG = (r, g, b) => {
     await route.fulfill({ status: 200, contentType: 'image/png', body: iconCache.get(idx) });
   });
 
+  await page.route('**/api/auth/login', async (route) => {
+    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ token: 'mock-token' }) });
+  });
+
   await page.route('**/api/indexers', async (route) => {
     await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ indexers: MOCK_INDEXERS, services: MOCK_SERVICES }) });
   });

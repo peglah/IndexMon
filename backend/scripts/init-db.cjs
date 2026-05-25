@@ -1,7 +1,6 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 const fs = require('fs');
-const crypto = require('crypto');
 
 // Initialize the SQLite database
 const dataDir = '/app/data';
@@ -56,17 +55,4 @@ try {
   // Column already exists — ignore
 }
 
-// Add a default user
-const addDefaultUser = () => {
-  const envHash = process.env.ADMIN_PASSWORD_HASH;
-  const hashedPassword = envHash || crypto.createHash('sha256').update('admin').digest('hex');
-  const stmt = db.prepare("INSERT OR IGNORE INTO users (username, email, password, role) VALUES (?, ?, ?, ?)");
-  stmt.run('admin', 'admin@indexmon.local', hashedPassword, 'admin');
-  // Always update the password so ADMIN_PASSWORD_HASH env var changes take effect on restart
-  const updateStmt = db.prepare("UPDATE users SET password = ? WHERE username = ?");
-  updateStmt.run(hashedPassword, 'admin');
-  console.log(`Default user 'admin' configured${envHash ? ' from ADMIN_PASSWORD_HASH' : ' with default password \'admin\''}.`);
-};
-
-addDefaultUser();
 db.close();

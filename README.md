@@ -35,7 +35,7 @@ Then open http://localhost and log in with `admin` / `admin`.
 | `PROWLARR_BASE_URL` | No | `http://prowlarr:9696` | Prowlarr URL |
 | `AUTOBRR_API_KEY` | Yes | — | Autobrr API key (Settings → API Keys) |
 | `AUTOBRR_BASE_URL` | No | `http://autobrr:7474` | Autobrr URL |
-| `ADMIN_PASSWORD_HASH` | No | `admin` | Salted SHA-256 hash. Generate via `backend/scripts/hash.sh yourpass` |
+| `ADMIN_PASSWORD_HASH` | No | random on each startup | Salted SHA-256 hash. Generate via `backend/scripts/hash.sh yourpass`. If unset, a random password is generated and printed to logs. |
 | `APPRISE_API_URL` | No | — | HTTP endpoint of your Apprise API (e.g. `http://192.168.41.4:8084`) |
 | `APPRISE_URLS` | No | — | Comma-separated Apprise notification URLs (e.g. `ntfy://host/topic?token=...`) |
 | `ALERT_DELAY_MINUTES` | No | `0` | Minimum downtime (minutes) before an Apprise alert fires |

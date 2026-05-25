@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
-import { knex } from '../config/database';
 import { createHash, randomBytes } from 'crypto';
+
+let storedPasswordHash: string | null = null;
+
+export const setPasswordHash = (hash: string) => {
+  storedPasswordHash = hash;
+};
 
 interface Session {
   userId: number;
@@ -30,16 +35,15 @@ const verifyPassword = (input: string, stored: string): boolean => {
 
 const login = async (req: Request, res: Response) => {
   const { password } = req.body;
-  const user = await knex('users').first();
 
-  if (!user || !verifyPassword(password, user.password)) {
+  if (!storedPasswordHash || !verifyPassword(password, storedPasswordHash)) {
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
   const sessionToken = randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24);
 
-  sessions.set(sessionToken, { userId: user.id, expiresAt });
+  sessions.set(sessionToken, { userId: 1, expiresAt });
 
   res.json({ token: sessionToken });
 };
