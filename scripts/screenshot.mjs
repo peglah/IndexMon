@@ -20,7 +20,7 @@ const MOCK_INDEXERS = [
 const MOCK_SERVICES = {
   prowlarr: { ok: true },
   autobrr: { ok: true },
-  qbittorrent: { ok: false, connectionStatus: 'firewalled', portOpen: false },
+  qbittorrent: { ok: true, connectionStatus: 'firewalled', portOpen: false },
 };
 
 const SIZE = 16;

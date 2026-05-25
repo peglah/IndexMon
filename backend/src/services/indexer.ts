@@ -257,7 +257,7 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     const services: ServiceStatuses = {
       prowlarr: { ok: prowlarrReachable },
       autobrr: { ok: autobrrReachable },
-      qbittorrent: { ok: qbGlobal.connectionStatus === 'connected', connectionStatus: qbGlobal.connectionStatus ?? undefined, portOpen: qbGlobal.portOpen },
+      qbittorrent: { ok: qbGlobal.connectionStatus !== null && qbGlobal.connectionStatus !== 'disconnected', connectionStatus: qbGlobal.connectionStatus ?? undefined, portOpen: qbGlobal.portOpen },
     };
 
     if (merged.length === 0) {
