@@ -106,12 +106,12 @@ const ServiceHeader = ({ label, ok, connectionStatus }: { label: string; ok: boo
 );
 
 const BufferCell = ({ stats }: { stats: { uploaded: number; downloaded: number; ratio: number | null; buffer: number } }) => {
-  const sign = stats.buffer >= 0 ? '+' : '';
+  const sign = stats.buffer > 0 ? '+' : stats.buffer < 0 ? '-' : '';
   const ratioColor = stats.ratio === null ? 'text-green-500' : stats.ratio < 0.9 ? 'text-red-500' : stats.ratio <= 1.1 ? 'text-yellow-500' : 'text-green-500';
   return (
     <BufferTooltip stats={stats}>
       <span className={`font-semibold ${ratioColor}`}>
-        {sign}{formatBytes(stats.buffer)}
+        {sign}{formatBytes(Math.abs(stats.buffer))}
       </span>
     </BufferTooltip>
   );
