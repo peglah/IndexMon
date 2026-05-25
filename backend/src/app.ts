@@ -38,11 +38,14 @@ const iconContentType = (filePath: string): string => {
 };
 
 app.get('/api/indexers/icon/:prowlarrId', (req, res) => {
-  const iconsDir = path.join(
+  const iconsDir = path.resolve(
     path.dirname(process.env.DB_PATH || '/app/data/indexmon.db'),
     'icons',
   );
-  const filePath = path.join(iconsDir, `${req.params.prowlarrId}.png`);
+  const filePath = path.resolve(iconsDir, req.params.prowlarrId + '.png');
+  if (!filePath.startsWith(iconsDir + path.sep)) {
+    return res.status(400).json({ error: 'Invalid indexer ID' });
+  }
   if (!fs.existsSync(filePath)) {
     return res.status(404).end();
   }
