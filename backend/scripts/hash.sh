@@ -10,4 +10,4 @@ fi
 
 SALT=$(openssl rand -hex 16)
 HASH=$(printf '%s%s' "$SALT" "$1" | openssl dgst -sha256 | sed 's/^.* //')
-echo "ADMIN_PASSWORD_HASH=${SALT}\$${HASH}"
+echo "ADMIN_PASSWORD_HASH=${SALT}:${HASH}"

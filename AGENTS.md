@@ -12,7 +12,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 
 ## Auth
 - Custom session. `POST /api/auth/login {"password":"..."}` → `{"token":"..."}`. Stored in `localStorage.token`, auto-attached via `utils/axios.ts` interceptor as `Authorization: Bearer`. 24h expiry.
-- Random 24-char hex password generated on every startup and printed to logs (`=== Generated admin password: ${password} ===`). Override via `ADMIN_PASSWORD_HASH` env var (salted SHA-256 `salt$hash` hex, generate with `backend/scripts/hash.sh`). Password hash kept in-memory, not persisted to DB.
+- Random 24-char hex password generated on every startup and printed to logs (`=== Generated admin password: ${password} ===`). Override via `ADMIN_PASSWORD_HASH` env var (salted SHA-256 `salt:hash` hex, generate with `backend/scripts/hash.sh`). Password hash kept in-memory, not persisted to DB.
 - `express-rate-limit` installed but only applied to `/api/auth/login` (10 req/15min), NOT globally.
 
 ## API

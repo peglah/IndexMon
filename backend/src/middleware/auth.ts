@@ -26,8 +26,8 @@ setInterval(() => {
 const verifyPassword = (input: string, stored: string): boolean => {
   let salt = '';
   let expected = stored;
-  if (stored.includes('$')) {
-    [salt, expected] = stored.split('$');
+  if (stored.includes(':')) {
+    [salt, expected] = stored.split(':');
   }
   const computed = createHash('sha256').update(salt + input).digest('hex');
   return computed === expected;

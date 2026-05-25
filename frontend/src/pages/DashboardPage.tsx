@@ -67,7 +67,7 @@ export const DashboardPage = () => {
           {dark ? <SunIcon /> : <MoonIcon />}
         </button>
       </div>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 flex-1">
+      <div className="space-y-8">
         <CollapsibleSection title="Overview">
           {indexers && <StatusGrid indexers={indexers} />}
         </CollapsibleSection>

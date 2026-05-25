@@ -26,7 +26,7 @@ export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
   );
 
   return (
-    <div className="grid grid-cols-5 gap-2">
+    <div className="max-w-2xl mx-auto grid grid-cols-6 sm:grid-cols-8 md:grid-cols-10 lg:grid-cols-12 gap-2">
       {sorted.map((indexer) => {
         const status = classify(indexer);
         const displayName = stripApi(indexer.name);
