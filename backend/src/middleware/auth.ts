@@ -14,7 +14,7 @@ interface Session {
 
 const sessions = new Map<string, Session>();
 
-setInterval(() => {
+const cleanupInterval = setInterval(() => {
   const now = new Date();
   for (const [token, session] of sessions) {
     if (session.expiresAt < now) {
@@ -22,6 +22,8 @@ setInterval(() => {
     }
   }
 }, 15 * 60 * 1000);
+
+export const stopSessionCleanup = () => clearInterval(cleanupInterval);
 
 const verifyPassword = (input: string, stored: string): boolean => {
   let salt = '';

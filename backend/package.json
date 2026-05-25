@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "test": "jest --forceExit",
+    "test": "jest",
     "lint": "eslint . --ext .ts",
     "typecheck": "tsc --noEmit",
     "migrate": "knex migrate:latest",

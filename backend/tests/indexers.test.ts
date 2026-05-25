@@ -1,6 +1,7 @@
 import request from 'supertest';
 import app from '../src/app';
 import { knex } from '../src/config/database';
+import { stopSessionCleanup } from '../src/middleware/auth';
 
 describe('Indexer API', () => {
   beforeAll(async () => {
@@ -8,6 +9,7 @@ describe('Indexer API', () => {
   });
 
   afterAll(async () => {
+    stopSessionCleanup();
     await knex.destroy();
   });
 
