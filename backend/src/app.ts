@@ -2,7 +2,6 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import helmet from 'helmet';
-import cors from 'cors';
 import indexerRoutes from './routes/indexers';
 import authRoutes from './routes/auth';
 import { authMiddleware } from './middleware/auth';
@@ -14,7 +13,6 @@ app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
-app.use(cors());
 app.use(express.json());
 
 // Routes
