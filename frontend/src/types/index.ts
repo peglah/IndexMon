@@ -11,6 +11,8 @@ export interface Indexer {
   status: 'up' | 'down';
   lastChecked: string;
   downtimeMinutes?: number;
+  autobrrDowntimeMinutes?: number;
+  qbDowntimeMinutes?: number;
   uptimePercentage?: number;
   autobrrUptimePercentage?: number;
   qbUptimePercentage?: number;

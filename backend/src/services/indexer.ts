@@ -40,6 +40,8 @@ interface Indexer {
   status: 'up' | 'down';
   lastChecked: string;
   downtimeMinutes?: number;
+  autobrrDowntimeMinutes?: number;
+  qbDowntimeMinutes?: number;
   uptimePercentage?: number;
   autobrrUptimePercentage?: number;
   qbUptimePercentage?: number;
@@ -250,15 +252,14 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
     });
     await knex('indexer_history').insert(historyRows);
 
-    const downIndexers = merged.filter((i) => i.status === 'down');
-    if (downIndexers.length > 0) {
-      const downIds = downIndexers.map((i) => i.id);
+    const computeDowntimeForSource = async (source: string, downIds: string[]): Promise<Map<string, number>> => {
+      if (downIds.length === 0) return new Map();
       const rows = await knex('indexer_history')
         .select('indexer_id')
         .max('last_checked as last_up')
         .whereIn('indexer_id', downIds)
         .where('status', 'up')
-        .where('source', 'prowlarr')
+        .where('source', source)
         .whereExists(function () {
           this.select('*')
             .from('indexer_history as ih2')
@@ -267,14 +268,19 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
             .whereRaw('(julianday(ih2.last_checked) - julianday(indexer_history.last_checked)) * 1440 <= 5');
         })
         .groupBy('indexer_id');
-      const upTimeMap = new Map(rows.map((r) => [r.indexer_id, new Date(r.last_up as string).getTime()]));
-      for (const indexer of downIndexers) {
-        const lastUpTime = upTimeMap.get(indexer.id);
-        if (lastUpTime) {
-          indexer.downtimeMinutes = Math.floor((Date.now() - lastUpTime) / 60000);
-        }
+      const result = new Map<string, number>();
+      for (const row of rows) {
+        const lastUpTime = new Date(row.last_up as string).getTime();
+        result.set(row.indexer_id as string, Math.floor((Date.now() - lastUpTime) / 60000));
       }
-    }
+      return result;
+    };
+
+    const [prowlarrDowntimeMap, autobrrDowntimeMap, qbDowntimeMap] = await Promise.all([
+      computeDowntimeForSource('prowlarr', merged.filter((i) => i.status === 'down').map((i) => i.id)),
+      computeDowntimeForSource('autobrr', merged.filter((i) => i.autobrr && !isChannelUp(i.autobrr)).map((i) => i.id)),
+      computeDowntimeForSource('qbittorrent', merged.filter((i) => i.qbittorrent && !i.qbittorrent.working).map((i) => i.id)),
+    ]);
 
     const windowAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const computeUptimeForSource = async (source: string): Promise<Map<string, number>> => {
@@ -301,6 +307,13 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
       if (abPct !== undefined) indexer.autobrrUptimePercentage = abPct;
       const qbPct = qbUptimeMap.get(indexer.id);
       if (qbPct !== undefined) indexer.qbUptimePercentage = qbPct;
+
+      const pd = prowlarrDowntimeMap.get(indexer.id);
+      if (pd !== undefined) indexer.downtimeMinutes = pd;
+      const ad = autobrrDowntimeMap.get(indexer.id);
+      if (ad !== undefined) indexer.autobrrDowntimeMinutes = ad;
+      const qd = qbDowntimeMap.get(indexer.id);
+      if (qd !== undefined) indexer.qbDowntimeMinutes = qd;
     }
 
     if (firstPoll) {

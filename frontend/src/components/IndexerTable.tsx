@@ -33,19 +33,23 @@ const StatusCell = ({
   status,
   downtimeMinutes,
   uptimePercentage,
+  upLabel = 'UP',
+  downLabel = 'DOWN',
 }: {
   status: 'up' | 'down';
   downtimeMinutes?: number;
   uptimePercentage?: number;
+  upLabel?: string;
+  downLabel?: string;
 }) => {
   const content = status === 'up' ? (
-    <span className="text-green-600 dark:text-green-400 font-semibold">UP</span>
+    <span className="text-green-600 dark:text-green-400 font-semibold">{upLabel}</span>
   ) : downtimeMinutes !== undefined ? (
     <span className="bg-red-100 dark:bg-red-900/60 text-red-800 dark:text-red-200 px-2 py-1 rounded-full text-xs font-semibold">
       {formatDuration(downtimeMinutes)}
     </span>
   ) : (
-    <span className="text-yellow-600 dark:text-yellow-400 font-semibold">DOWN</span>
+    <span className="text-yellow-600 dark:text-yellow-400 font-semibold">{downLabel}</span>
   );
 
   return <UptimeTooltip uptimePercentage={uptimePercentage}>{content}</UptimeTooltip>;
@@ -92,22 +96,14 @@ export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
                 {indexer.autobrrMissing ? (
                   <span className="text-gray-400 dark:text-gray-500 font-semibold">MISSING</span>
                 ) : indexer.autobrr ? (
-                  <StatusCell status={abUp ? 'up' : 'down'} uptimePercentage={indexer.autobrrUptimePercentage} />
+                  <StatusCell status={abUp ? 'up' : 'down'} downtimeMinutes={indexer.autobrrDowntimeMinutes} uptimePercentage={indexer.autobrrUptimePercentage} />
                 ) : (
                   <span className="text-muted-foreground">—</span>
                 )}
               </TableCell>
               <TableCell>
                 {indexer.qbittorrent?.hasTorrents ? (
-                  indexer.qbittorrent.working ? (
-                    <UptimeTooltip uptimePercentage={indexer.qbUptimePercentage}>
-                      <span className="text-green-600 dark:text-green-400 font-semibold">WORKING</span>
-                    </UptimeTooltip>
-                  ) : (
-                    <UptimeTooltip uptimePercentage={indexer.qbUptimePercentage}>
-                      <span className="text-red-600 dark:text-red-400 font-semibold">ERROR</span>
-                    </UptimeTooltip>
-                  )
+                  <StatusCell status={indexer.qbittorrent.working ? 'up' : 'down'} downtimeMinutes={indexer.qbDowntimeMinutes} uptimePercentage={indexer.qbUptimePercentage} upLabel="WORKING" downLabel="ERROR" />
                 ) : (
                   <span className="text-muted-foreground">—</span>
                 )}
