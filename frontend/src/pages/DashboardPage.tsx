@@ -45,7 +45,7 @@ export const DashboardPage = () => {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  const { data: indexers, isLoading, isError } = useIndexers();
+  const { data, isLoading, isError } = useIndexers();
 
   if (isLoading) {
     return <div className="p-8">Loading...</div>;
@@ -55,6 +55,8 @@ export const DashboardPage = () => {
     return <div className="p-8 text-destructive">Failed to load indexer data.</div>;
   }
 
+  const indexers = data?.indexers;
+  const services = data?.services;
   const lastChecked = indexers?.[0]?.lastChecked;
 
   return (
@@ -70,7 +72,7 @@ export const DashboardPage = () => {
           {indexers && <StatusGrid indexers={indexers} />}
         </CollapsibleSection>
         <CollapsibleSection title="Current Status">
-          {indexers && <IndexerTable indexers={indexers} />}
+          {indexers && <IndexerTable indexers={indexers} services={services} />}
         </CollapsibleSection>
       </div>
       {lastChecked && (

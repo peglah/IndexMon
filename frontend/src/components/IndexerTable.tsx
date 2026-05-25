@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
-import { Indexer } from '../types';
+import { Indexer, ServicesStatus } from '../types';
 
 const MINUTE = 1;
 const HOUR = 60 * MINUTE;
@@ -55,16 +55,43 @@ const StatusCell = ({
   return <UptimeTooltip uptimePercentage={uptimePercentage}>{content}</UptimeTooltip>;
 };
 
-export const IndexerTable = ({ indexers }: { indexers: Indexer[] }) => {
+const CheckIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><polyline points="20 6 9 17 4 12"/></svg>
+);
+
+const XIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+);
+
+const ShieldIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+);
+
+const serviceIcon = (ok: boolean, connectionStatus?: string) => {
+  if (!ok) return <XIcon className="text-red-500" />;
+  if (connectionStatus === 'firewalled') return <ShieldIcon className="text-yellow-500" />;
+  return <CheckIcon className="text-green-500" />;
+};
+
+const ServiceHeader = ({ label, ok, connectionStatus }: { label: string; ok: boolean; connectionStatus?: string }) => (
+  <TableHead>
+    <span className="inline-flex items-center gap-1.5">
+      {label}
+      {serviceIcon(ok, connectionStatus)}
+    </span>
+  </TableHead>
+);
+
+export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; services?: ServicesStatus }) => {
   return (
     <Table>
       <TableHeader>
         <TableRow>
           <TableHead className="w-8"></TableHead>
           <TableHead>Indexer</TableHead>
-          <TableHead>Prowlarr</TableHead>
-          <TableHead>Autobrr</TableHead>
-          <TableHead>qBittorrent</TableHead>
+          <ServiceHeader label="Prowlarr" ok={!!services?.prowlarr.ok} />
+          <ServiceHeader label="Autobrr" ok={!!services?.autobrr.ok} />
+          <ServiceHeader label="qBittorrent" ok={!!services?.qbittorrent.ok} connectionStatus={services?.qbittorrent.connectionStatus} />
         </TableRow>
       </TableHeader>
       <TableBody>

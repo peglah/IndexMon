@@ -43,6 +43,9 @@ let cache = new Map<string, QbitStatus>();
 let intervalId: ReturnType<typeof setInterval> | null = null;
 let cookie = '';
 
+let connectionStatus: string | null = null;
+let portOpen: boolean | null = null;
+
 const getBaseUrl = () => process.env.QBITTORRENT_BASE_URL || 'http://qbittorrent:8080';
 
 const login = async (): Promise<boolean> => {
@@ -103,12 +106,42 @@ const extractDomain = (url: string): string | null => {
   }
 };
 
+const fetchGlobalStatus = async (): Promise<void> => {
+  try {
+    const resp = await axios.get(`${getBaseUrl()}/api/v2/transfer/info`, {
+      headers: { Cookie: cookie },
+      timeout: 10000,
+    });
+    connectionStatus = resp.data.connection_status;
+  } catch {
+    connectionStatus = 'disconnected';
+  }
+
+  try {
+    const portResp = await axios.get(`${getBaseUrl()}/api/v2/app/portTest`, {
+      headers: { Cookie: cookie },
+      timeout: 10000,
+    });
+    portOpen = portResp.data === true;
+  } catch {
+    portOpen = null;
+  }
+};
+
 const refreshCache = async (): Promise<void> => {
   try {
-    if (!(await ensureAuth())) return;
+    if (!(await ensureAuth())) {
+      connectionStatus = 'disconnected';
+      portOpen = null;
+      return;
+    }
 
     const torrents = await fetchTorrents();
-    if (!Array.isArray(torrents)) return;
+    if (!Array.isArray(torrents)) {
+      connectionStatus = 'disconnected';
+      portOpen = null;
+      return;
+    }
 
     const domainToHash = new Map<string, string>();
     for (const t of torrents) {
@@ -167,8 +200,11 @@ const refreshCache = async (): Promise<void> => {
 
     cache = newCache;
     logger.info(`qB poll complete — ${cache.size} tracker domains cached`);
+    await fetchGlobalStatus();
   } catch (error) {
     logger.error('qBittorrent poll failed:', error);
+    connectionStatus = 'disconnected';
+    portOpen = null;
   }
 };
 
@@ -221,3 +257,8 @@ export const getQbitStatus = (siteUrl: string | undefined): QbitStatus | null =>
 
   return null;
 };
+
+export const getQbitGlobalStatus = (): { connectionStatus: string | null; portOpen: boolean | null } => ({
+  connectionStatus,
+  portOpen,
+});

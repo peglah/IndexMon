@@ -5,7 +5,7 @@ import { knex } from '../config/database';
 import { sendAlert } from './apprise';
 import { logger } from '../utils/logger';
 import { hasDefinition } from './definitions';
-import { getQbitStatus, QbitStatus } from './qbittorrent';
+import { getQbitStatus, getQbitGlobalStatus, QbitStatus } from './qbittorrent';
 
 const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
 let lastCleanup = 0;
@@ -54,6 +54,21 @@ interface Indexer {
 interface ProwlarrResponse {
   records?: unknown[];
 }
+
+export interface ServiceStatus {
+  ok: boolean;
+  connectionStatus?: string;
+  portOpen?: boolean | null;
+}
+
+export interface ServiceStatuses {
+  prowlarr: ServiceStatus;
+  autobrr: ServiceStatus;
+  qbittorrent: ServiceStatus;
+}
+
+let prowlarrReachable = true;
+let autobrrReachable = true;
 
 const CHANNEL_ALIASES: Record<string, string> = {
   mtv: 'morethantv',
@@ -142,6 +157,7 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
     }));
   } catch (error) {
     logger.error('Failed to fetch indexers from Prowlarr:', error);
+    prowlarrReachable = false;
     return [];
   }
 };
@@ -154,6 +170,7 @@ const fetchAutobrrNetworks = async (): Promise<AutobrrNetwork[]> => {
     return response.data;
   } catch (error) {
     logger.error('Failed to fetch IRC networks from Autobrr:', error);
+    autobrrReachable = false;
     return [];
   }
 };
@@ -211,8 +228,10 @@ const cacheIcons = async (indexers: Indexer[]): Promise<void> => {
   );
 };
 
-export const fetchIndexers = async (): Promise<Indexer[]> => {
+export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: ServiceStatuses }> => {
   logger.info('Fetching indexers...');
+  prowlarrReachable = true;
+  autobrrReachable = true;
   try {
     const [prowlarrIndexers, networks] = await Promise.all([
       fetchProwlarr(),
@@ -234,8 +253,15 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
       logger.info(`DOWN indexers: ${downNames}`);
     }
 
+    const qbGlobal = getQbitGlobalStatus();
+    const services: ServiceStatuses = {
+      prowlarr: { ok: prowlarrReachable },
+      autobrr: { ok: autobrrReachable },
+      qbittorrent: { ok: qbGlobal.connectionStatus === 'connected', connectionStatus: qbGlobal.connectionStatus ?? undefined, portOpen: qbGlobal.portOpen },
+    };
+
     if (merged.length === 0) {
-      return [];
+      return { indexers: [], services };
     }
 
     const historyRows = merged.flatMap((indexer) => {
@@ -409,7 +435,7 @@ export const fetchIndexers = async (): Promise<Indexer[]> => {
 
     cacheIcons(merged);
 
-    return merged;
+    return { indexers: merged, services };
   } catch (error) {
     logger.error('Failed to fetch indexers:', error);
     throw error;

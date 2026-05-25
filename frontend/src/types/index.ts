@@ -41,3 +41,15 @@ export interface IndexerHistory {
   status: 'up' | 'down';
   timestamp: string;
 }
+
+export interface ServiceStatus {
+  ok: boolean;
+  connectionStatus?: string;
+  portOpen?: boolean | null;
+}
+
+export interface ServicesStatus {
+  prowlarr: ServiceStatus;
+  autobrr: ServiceStatus;
+  qbittorrent: ServiceStatus;
+}
