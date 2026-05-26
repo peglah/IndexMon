@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import axios from '../utils/axios';
-import { Indexer, IndexerHistory, ServicesStatus } from '../types';
+import { Indexer, ServicesStatus } from '../types';
 
 const POLLING_INTERVAL_MS = 15_000;
 
@@ -14,11 +14,6 @@ const fetchIndexers = async (): Promise<IndexerResponse> => {
   return response.data;
 };
 
-const fetchIndexerHistory = async (): Promise<IndexerHistory[]> => {
-  const response = await axios.get('/api/indexers/history');
-  return response.data;
-};
-
 export const useIndexers = () => {
   return useQuery({
     queryKey: ['indexers'],
@@ -26,13 +21,5 @@ export const useIndexers = () => {
     refetchInterval: POLLING_INTERVAL_MS,
     retry: 2,
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 10000),
-  });
-};
-
-export const useIndexerHistory = () => {
-  return useQuery({
-    queryKey: ['indexerHistory'],
-    queryFn: fetchIndexerHistory,
-    retry: false,
-  });
+});
 };

@@ -43,13 +43,6 @@ export interface QbitStatus {
   lastChecked: string;
 }
 
-export interface IndexerHistory {
-  indexerId: string;
-  name: string;
-  status: 'up' | 'down';
-  timestamp: string;
-}
-
 export interface ServiceStatus {
   ok: boolean;
   connectionStatus?: string;

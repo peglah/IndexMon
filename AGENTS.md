@@ -47,7 +47,6 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - **Version**: from `process.env.APP_VERSION` (Docker build arg), NOT `package.json`. Shows `dev` locally.
 - **DB**: SQLite. Runtime path from `DB_PATH` env (default `/app/data/indexmon.db`). Both knex runtime + `init-db.cjs` use `better-sqlite3` (single driver). `knexfile.ts` uses `data/db.sqlite` for migration CLI only (different path). To reset, delete the DB file — `init-db.cjs` recreates it on next startup with all tables and indexes.
 - **Env vars**: all via `.env` injected by `docker-compose.yml`. No `VITE_` vars — polling interval hardcoded 15s, Vite proxy target hardcoded `http://localhost:3000`. Port 3000 also exposed on host.
-- **`polling.ts`** exists but is dead code (not imported).
 - **CollapsibleSection**: `overflow-hidden` only when collapsed — otherwise tooltips on StatusGrid tiles get clipped.
 - **Dark mode**: `class` strategy. Inline `<script>` in `index.html` sets `dark` before React renders. Dashboard toggle persists to `localStorage.theme`; `matchMedia` listener keeps in sync. Login page has no toggle.
 
