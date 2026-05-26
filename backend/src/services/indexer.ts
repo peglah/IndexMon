@@ -118,7 +118,7 @@ const isChannelUp = (a: AutobrrStatus): boolean => a.connected && a.monitoring;
 
 const fetchProwlarrHealth = async (healthUrl: string, apiKey: string | undefined): Promise<Set<string>> => {
   try {
-    const response = await axios.get(healthUrl, { headers: { 'X-Api-Key': apiKey } });
+    const response = await axios.get(healthUrl, { headers: { 'X-Api-Key': apiKey }, timeout: 10000 });
     if (!Array.isArray(response.data)) return new Set();
     for (const entry of response.data) {
       if (entry.source === 'IndexerStatusCheck' && entry.message) {
@@ -141,7 +141,7 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
     const baseUrl = process.env.PROWLARR_BASE_URL || 'http://prowlarr:9696';
     const apiKey = process.env.PROWLARR_API_KEY;
     const [indexerRes, healthRes] = await Promise.all([
-      axios.get(`${baseUrl}/api/v1/indexer`, { headers: { 'X-Api-Key': apiKey } }),
+      axios.get(`${baseUrl}/api/v1/indexer`, { headers: { 'X-Api-Key': apiKey }, timeout: 10000 }),
       fetchProwlarrHealth(`${baseUrl}/api/v1/health`, apiKey),
     ]);
     const records = Array.isArray(indexerRes.data) ? indexerRes.data : (indexerRes.data as ProwlarrResponse)?.records ?? [];
@@ -168,6 +168,7 @@ const fetchAutobrrNetworks = async (): Promise<AutobrrNetwork[]> => {
   try {
     const response = await axios.get(`${process.env.AUTOBRR_BASE_URL || 'http://autobrr:7474'}/api/irc`, {
       headers: { 'X-API-Token': process.env.AUTOBRR_API_KEY },
+      timeout: 10000,
     });
     return response.data;
   } catch (error) {
