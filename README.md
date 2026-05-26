@@ -48,6 +48,10 @@ Then open http://localhost and log in with `admin` / `admin`.
 | `QBITTORRENT_POLL_INTERVAL_S` | No | `300` | Tracker status poll interval in seconds |
 qBittorrent is optional. If `QBITTORRENT_BASE_URL` is unset or unreachable, the tracker status column shows `—` and is ignored for health calculations.
 
+## Metrics
+
+IndexMon exposes Prometheus-compatible metrics at `GET /metrics` (unauthenticated). Includes Node.js process stats (CPU, memory, event loop lag) plus custom metrics for poll duration, upstream reachability, and history row counts.
+
 ## Built with OpenCode
 
 This project was created using [OpenCode](https://opencode.ai), an AI-powered coding assistant that helps build software through natural language collaboration.

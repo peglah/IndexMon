@@ -6,6 +6,7 @@ import { sendAlert } from './apprise';
 import { logger } from '../utils/logger';
 import { hasDefinition } from './definitions';
 import { normalize } from '../utils/normalize';
+import { pollDuration, pollTotal, upstreamReachable, historyRows as historyRowsGauge } from '../utils/metrics';
 import { getQbitStatus, getQbitGlobalStatus, QbitStatus } from './qbittorrent';
 import { getTrackerStats, TrackerStats as TrackerStatsType } from './tracker-stats';
 
@@ -246,6 +247,7 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
   logger.info('Fetching indexers...');
   prowlarrReachable = true;
   autobrrReachable = true;
+  const endTimer = pollDuration.startTimer();
   try {
     const [prowlarrIndexers, networks] = await Promise.all([
       fetchProwlarr(),
@@ -279,7 +281,7 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
       return { indexers: [], services };
     }
 
-    const historyRows = merged.flatMap((indexer) => {
+    const dbRows = merged.flatMap((indexer) => {
       const base = { indexer_id: indexer.id, name: indexer.name, last_checked: indexer.lastChecked };
       const abUp = indexer.autobrr ? isChannelUp(indexer.autobrr) : false;
       const rows: Array<{ indexer_id: string; name: string; last_checked: string; source: string; status: string }> = [
@@ -291,7 +293,7 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
       }
       return rows;
     });
-    await knex('indexer_history').insert(historyRows);
+    await knex('indexer_history').insert(dbRows);
 
     const computeDowntimeForSource = async (source: string, downIds: string[]): Promise<Map<string, number>> => {
       if (downIds.length === 0) return new Map();
@@ -450,9 +452,21 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
 
     cacheIcons(merged);
 
+    pollTotal.inc({ result: 'success' });
+    endTimer();
+    upstreamReachable.set({ service: 'prowlarr' }, services.prowlarr.ok ? 1 : 0);
+    upstreamReachable.set({ service: 'autobrr' }, services.autobrr.ok ? 1 : 0);
+    upstreamReachable.set({ service: 'qbittorrent' }, services.qbittorrent.ok ? 1 : 0);
+    try {
+      const [{ count }] = await knex('indexer_history').count('* as count');
+      historyRowsGauge.set(Number(count));
+    } catch { /* non-critical */ }
+
     return { indexers: merged, services };
   } catch (error) {
     logger.error('Failed to fetch indexers:', error);
+    pollTotal.inc({ result: 'failure' });
+    endTimer();
     throw error;
   }
 };

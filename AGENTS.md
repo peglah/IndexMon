@@ -22,7 +22,17 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 | `POST /api/auth/logout` | Yes | Deletes session row |
 | `GET /api/indexers` | Yes | Fetches Prowlarr + Autobrr inline, writes history, computes downtime + 24h uptime %, fires Apprise alerts, merges qB data |
 | `GET /api/indexers/history` | Yes | Maps `indexer_id`→`indexerId`, `last_checked`→`timestamp` |
-| `GET /api/indexers/icon/:prowlarrId` | No | Serves cached favicon (before auth middleware — `<img>` tags can't send headers). Detects PNG/ICO/SVG via magic bytes and text prefix. |
+ | `GET /api/indexers/icon/:prowlarrId` | No | Serves cached favicon (before auth middleware — `<img>` tags can't send headers). Detects PNG/ICO/SVG via magic bytes and text prefix. |
+| `GET /health` | No | Returns `{ ok: true }` for Docker HEALTHCHECK |
+| `GET /metrics` | No | Prometheus metrics (OpenMetrics format) |
+
+## Metrics
+- Exposed at `GET /metrics` (unauthenticated). Uses `prom-client` with `collectDefaultMetrics()` for Node.js process stats.
+- Custom metrics:
+  - `indexmon_poll_duration_seconds` — Histogram of full poll cycle duration (buckets: 1, 2, 5, 10, 20, 30s)
+  - `indexmon_poll_total{result="success|failure"}` — Counter of poll cycles by result
+  - `indexmon_upstream_reachable{service="prowlarr|autobrr|qbittorrent"}` — Gauge, 1 if reachable
+  - `indexmon_history_rows` — Gauge of rows in `indexer_history` table
 
 ## Quirks
 - **Prowlarr 2.x** drops the `status` field from `GET /api/v1/indexer`. Auto-disabled (failing) indexers detected via `GET /api/v1/health` → `IndexerStatusCheck` warning message (comma-separated names). Manually-disabled indexers detected via `enable` field on each indexer object. Header: `X-Api-Key`.
@@ -48,6 +58,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - `backend/src/services/qbittorrent.ts` — qB client, cookie auth, domain cache, background polling
 - `backend/src/services/definitions.ts` — GitHub API Autobrr definition fetcher
 - `backend/src/services/apprise.ts` — alert dispatcher
+- `backend/src/utils/metrics.ts` — Prometheus metric definitions and `/metrics` handler
 - `frontend/src/pages/DashboardPage.tsx` — layout with dark toggle, 2-column grid (Overview left, Current Status right)
 - `frontend/src/components/StatusGrid.tsx` — color-coded tiles with hover tooltips
 - `frontend/src/components/IndexerTable.tsx` — table with icon, clickable name links, Prowlarr/Autobrr/qB columns
@@ -66,5 +77,5 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - `error`: unrecoverable failures and Express error handler stack traces.
 
 ## Testing
-- **Backend**: Jest with `ts-jest`. Single test: 401 on unauthenticated `/api/indexers`. Needs `DB_PATH` env pointing to a writeable path (CI uses `./test-data/test.db`). `knex migrate:latest` runs in `beforeAll`.
-- **Frontend**: Vitest with jsdom + `@testing-library/react`. `matchMedia` mocked in `setup-tests.ts`. Dashboard test checks loading state only.
+- **Backend**: Jest with `ts-jest`. Tests: auth (login + validation), normalize utility, indexer API. Needs `DB_PATH` env pointing to a writeable path (CI uses `./test-data/test.db`). `knex migrate:latest` runs in `beforeAll`.
+- **Frontend**: Vitest with jsdom + `@testing-library/react`. `matchMedia` mocked in `setup-tests.ts`. Tests: login form, DashboardPage (loading, error, data states).

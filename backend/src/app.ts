@@ -6,6 +6,7 @@ import indexerRoutes from './routes/indexers';
 import authRoutes from './routes/auth';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler } from './middleware/error';
+import { metricsHandler } from './utils/metrics';
 
 const app = express();
 
@@ -20,6 +21,9 @@ app.use('/api/auth', authRoutes);
 
 // Health check
 app.get('/health', (_, res) => res.json({ ok: true }));
+
+// Prometheus metrics
+app.get('/metrics', metricsHandler);
 
 // Unprotected icon route (img tags in browser don't send auth headers)
 const iconContentType = (filePath: string): string => {
