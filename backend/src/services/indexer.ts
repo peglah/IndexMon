@@ -293,7 +293,19 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
       }
       return rows;
     });
-    await knex('indexer_history').insert(dbRows);
+
+    const allIds = [...new Set(dbRows.map(r => r.indexer_id))];
+    const lastRows = await knex('indexer_history')
+      .select('indexer_id', 'source', 'status')
+      .whereIn('indexer_id', allIds)
+      .orderBy('last_checked', 'desc');
+    const lastStatusMap = new Map<string, string>();
+    for (const r of lastRows) {
+      const key = `${r.indexer_id}:${r.source}`;
+      if (!lastStatusMap.has(key)) lastStatusMap.set(key, r.status);
+    }
+    const toInsert = dbRows.filter(r => lastStatusMap.get(`${r.indexer_id}:${r.source}`) !== r.status);
+    if (toInsert.length > 0) await knex('indexer_history').insert(toInsert);
 
     const computeDowntimeForSource = async (source: string, downIds: string[]): Promise<Map<string, number>> => {
       if (downIds.length === 0) return new Map();
@@ -303,13 +315,6 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
         .whereIn('indexer_id', downIds)
         .where('status', 'up')
         .where('source', source)
-        .whereExists(function () {
-          this.select('*')
-            .from('indexer_history as ih2')
-            .whereRaw('ih2.indexer_id = indexer_history.indexer_id')
-            .whereRaw('ih2.last_checked > indexer_history.last_checked')
-            .whereRaw('(julianday(ih2.last_checked) - julianday(indexer_history.last_checked)) * 1440 <= 5');
-        })
         .groupBy('indexer_id');
       const result = new Map<string, number>();
       for (const row of rows) {
@@ -327,14 +332,56 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
 
     const windowAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     const computeUptimeForSource = async (source: string): Promise<Map<string, number>> => {
-      const uptimeRows = await knex('indexer_history')
-        .select('indexer_id')
-        .select(knex.raw('ROUND(AVG(CASE WHEN status = ? THEN 100.0 ELSE 0 END), 2) as uptime_pct', ['up']))
-        .whereIn('indexer_id', merged.map((i) => i.id))
+      const ids = merged.map((i) => i.id);
+      const allTransitions = await knex('indexer_history')
+        .select('indexer_id', 'status', 'last_checked')
+        .whereIn('indexer_id', ids)
         .where('source', source)
         .where('last_checked', '>=', windowAgo)
-        .groupBy('indexer_id');
-      return new Map(uptimeRows.map((r) => [r.indexer_id, r.uptime_pct as number]));
+        .orderBy(['indexer_id', 'last_checked']);
+
+      const boundaryRows = await knex('indexer_history')
+        .select('indexer_id', 'status')
+        .whereIn('indexer_id', ids)
+        .where('source', source)
+        .where('last_checked', '<', windowAgo)
+        .orderBy('indexer_id', 'asc')
+        .orderBy('last_checked', 'desc');
+      const boundaryMap = new Map<string, string>();
+      const seen = new Set<string>();
+      for (const r of boundaryRows) {
+        if (!seen.has(r.indexer_id)) {
+          seen.add(r.indexer_id);
+          boundaryMap.set(r.indexer_id, r.status);
+        }
+      }
+
+      const groups = new Map<string, Array<{ status: string; time: number }>>();
+      for (const r of allTransitions) {
+        if (!groups.has(r.indexer_id)) groups.set(r.indexer_id, []);
+        groups.get(r.indexer_id)!.push({ status: r.status, time: new Date(r.last_checked as string).getTime() });
+      }
+
+      const now = Date.now();
+      const windowStartTime = new Date(windowAgo).getTime();
+      const windowMs = now - windowStartTime;
+      const result = new Map<string, number>();
+      for (const id of ids) {
+        const transitions = groups.get(id) || [];
+        let upMs = 0;
+        let cursorTime = windowStartTime;
+        let cursorStatus = boundaryMap.get(id) || 'up';
+        for (const t of transitions) {
+          const segmentMs = t.time - cursorTime;
+          if (segmentMs > 0 && cursorStatus === 'up') upMs += segmentMs;
+          cursorTime = t.time;
+          cursorStatus = t.status;
+        }
+        const lastSegment = now - cursorTime;
+        if (lastSegment > 0 && cursorStatus === 'up') upMs += lastSegment;
+        result.set(id, Math.round((upMs / windowMs) * 10000) / 100);
+      }
+      return result;
     };
 
     const [prowlarrUptimeMap, autobrrUptimeMap, qbUptimeMap] = await Promise.all([
@@ -427,27 +474,7 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     if (Date.now() - lastCleanup > CLEANUP_INTERVAL_MS) {
       lastCleanup = Date.now();
       const threshold = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000).toISOString();
-      const lastUps = await knex('indexer_history')
-        .select('indexer_id')
-        .max('last_checked as last_up')
-        .where('status', 'up')
-        .groupBy('indexer_id');
-      const protectIds: number[] = [];
-      for (const row of lastUps) {
-        const lu = row.last_up as string;
-        const keep = await knex('indexer_history')
-          .select('id')
-          .where('indexer_id', row.indexer_id)
-          .where('last_checked', '>=', lu)
-          .whereRaw('(julianday(last_checked) - julianday(?)) * 1440 <= 5', [lu]);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        protectIds.push(...keep.map((r: any) => r.id));
-      }
-      if (protectIds.length > 0) {
-        await knex('indexer_history').where('last_checked', '<', threshold).whereNotIn('id', protectIds).delete();
-      } else {
-        await knex('indexer_history').where('last_checked', '<', threshold).delete();
-      }
+      await knex('indexer_history').where('last_checked', '<', threshold).delete();
     }
 
     cacheIcons(merged);

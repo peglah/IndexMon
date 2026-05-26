@@ -43,9 +43,9 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - **Favicons**: discovers `<link rel="icon">` from each indexer's homepage (`siteUrl` from Prowlarr `indexerUrls[0]`), falls back to `/favicon.ico`. Cached in `/app/data/icons/`. 24h TTL ±30min jitter; force-downloaded on container restart (`firstPoll`).
 - **Autobrr definitions**: fetched from GitHub API at startup and every 24h. Used to detect `autobrrMissing` (indexer in Prowlarr but absent in Autobrr).
 - **Apprise alerts**: POST to `{APPRISE_API_URL}/notify`. `APPRISE_URLS` comma-separated. Skipped if `APPRISE_API_URL` unset. In-memory dedup via `alertedDownIds` Set (resets on restart). On any new down transition, lists ALL currently-down indexers. `ALERT_DELAY_MINUTES` (default `0` = immediate) delays alert until the indexer has been continuously down for that duration.
-- **History**: inserted on every `GET /api/indexers`. Downtime from most recent `up` entry. Availability = `AVG(CASE WHEN status='up' THEN 100.0 ELSE 0 END)` over 24h. Cleanup after 14 days.
+- **History**: transition-only inserts (only on up↔down state change). Downtime from most recent `up` entry. Availability = time-weighted percentage over 24h. Cleanup after 14 days.
 - **Version**: from `process.env.APP_VERSION` (Docker build arg), NOT `package.json`. Shows `dev` locally.
-- **DB**: SQLite. Runtime path from `DB_PATH` env (default `/app/data/indexmon.db`). Both knex runtime + `init-db.cjs` use `better-sqlite3` (single driver). `knexfile.ts` uses `data/db.sqlite` for migration CLI only (different path).
+- **DB**: SQLite. Runtime path from `DB_PATH` env (default `/app/data/indexmon.db`). Both knex runtime + `init-db.cjs` use `better-sqlite3` (single driver). `knexfile.ts` uses `data/db.sqlite` for migration CLI only (different path). To reset, delete the DB file — `init-db.cjs` recreates it on next startup with all tables and indexes.
 - **Env vars**: all via `.env` injected by `docker-compose.yml`. No `VITE_` vars — polling interval hardcoded 15s, Vite proxy target hardcoded `http://localhost:3000`. Port 3000 also exposed on host.
 - **`polling.ts`** exists but is dead code (not imported).
 - **CollapsibleSection**: `overflow-hidden` only when collapsed — otherwise tooltips on StatusGrid tiles get clipped.

@@ -61,7 +61,7 @@ RUN chmod -R 755 /etc/nginx
 EXPOSE 80 3000
 
 # Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=15s CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=15s CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/health || exit 1
 
 # Start both Nginx and the backend (initialize DB first)
 CMD ["sh", "-c", "node ./scripts/init-db.cjs && nginx && node dist/server.js"]
