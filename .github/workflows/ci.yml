@@ -109,7 +109,7 @@ jobs:
       - name: Take screenshot
         if: startsWith(github.ref, 'refs/tags/v')
         run: |
-          npm install playwright@1.60.0 sharp
+          npm install playwright@1.60.0
           npx playwright install chromium --with-deps
           node scripts/screenshot.mjs
 
@@ -119,4 +119,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${{ github.ref_name }}" --generate-notes || true
-          gh release upload "${{ github.ref_name }}" screenshot.png --clobber
+          gh release upload "${{ github.ref_name }}" screenshot-light.png screenshot-dark.png --clobber

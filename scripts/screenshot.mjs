@@ -1,5 +1,4 @@
 import { chromium } from 'playwright';
-import sharp from 'sharp';
 import zlib from 'zlib';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost';
@@ -118,26 +117,9 @@ const makePNG = (r, g, b) => {
   const darkBuf = await page.screenshot({ fullPage: true });
   await browser.close();
 
-  const lightRaw = await sharp(lightBuf).raw().toBuffer();
-  const darkRaw = await sharp(darkBuf).raw().toBuffer();
-  const { width, height } = await sharp(lightBuf).metadata();
-
-  const merged = Buffer.alloc(width * height * 3);
-  for (let y = 0; y < height; y++) {
-    for (let x = 0; x < width; x++) {
-      const src = y * width + x;
-      const dst = src * 3;
-      const useDark = y >= (height / width) * (width - x);
-      const px = useDark ? darkRaw : lightRaw;
-      merged[dst] = px[dst];
-      merged[dst + 1] = px[dst + 1];
-      merged[dst + 2] = px[dst + 2];
-    }
-  }
-
-  await sharp(merged, { raw: { width, height, channels: 3 } })
-    .png()
-    .toFile('screenshot.png');
+  const fs = await import('fs');
+  fs.writeFileSync('screenshot-light.png', lightBuf);
+  fs.writeFileSync('screenshot-dark.png', darkBuf);
 })().catch((err) => {
   console.error('Screenshot failed:', err);
   process.exit(1);
