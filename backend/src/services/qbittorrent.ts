@@ -89,6 +89,20 @@ const fetchTorrents = async (): Promise<QbitTorrent[]> => {
   return resp.data;
 };
 
+const fetchTorrentsWithReauth = async (): Promise<QbitTorrent[]> => {
+  try {
+    return await fetchTorrents();
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 403) {
+      cookie = '';
+      if (await login()) {
+        return await fetchTorrents();
+      }
+    }
+    throw error;
+  }
+};
+
 const fetchTrackers = async (hash: string): Promise<QbitTracker[]> => {
   const resp = await axios.get(`${getBaseUrl()}/api/v2/torrents/trackers`, {
     params: { hash },
@@ -136,7 +150,7 @@ const refreshCache = async (): Promise<void> => {
       return;
     }
 
-    const torrents = await fetchTorrents();
+    const torrents = await fetchTorrentsWithReauth();
     if (!Array.isArray(torrents)) {
       connectionStatus = 'disconnected';
       portOpen = null;
