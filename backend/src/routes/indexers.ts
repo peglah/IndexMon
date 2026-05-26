@@ -17,7 +17,9 @@ router.get('/', async (req, res) => {
 // Get historical downtime data
 router.get('/history', async (req, res) => {
   try {
-    const history = await knex('indexer_history').select('*');
+    const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 1000, 1), 5000);
+    const offset = Math.max(parseInt(req.query.offset as string) || 0, 0);
+    const history = await knex('indexer_history').select('*').limit(limit).offset(offset);
     res.json(history.map((entry) => ({
       indexerId: entry.indexer_id,
       name: entry.name,
