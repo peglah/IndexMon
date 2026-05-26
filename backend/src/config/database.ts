@@ -3,7 +3,7 @@ import knex from 'knex';
 const dbPath = process.env.DB_PATH || '/app/data/indexmon.db';
 
 const db = knex({
-  client: 'sqlite3',
+  client: 'better-sqlite3',
   connection: {
     filename: dbPath,
   },

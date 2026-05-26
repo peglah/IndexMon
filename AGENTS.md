@@ -35,7 +35,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - **Apprise alerts**: POST to `{APPRISE_API_URL}/notify`. `APPRISE_URLS` comma-separated. Skipped if `APPRISE_API_URL` unset. In-memory dedup via `alertedDownIds` Set (resets on restart). On any new down transition, lists ALL currently-down indexers. `ALERT_DELAY_MINUTES` (default `0` = immediate) delays alert until the indexer has been continuously down for that duration.
 - **History**: inserted on every `GET /api/indexers`. Downtime from most recent `up` entry. Availability = `AVG(CASE WHEN status='up' THEN 100.0 ELSE 0 END)` over 24h. Cleanup after 14 days.
 - **Version**: from `process.env.APP_VERSION` (Docker build arg), NOT `package.json`. Shows `dev` locally.
-- **DB**: SQLite. Runtime path from `DB_PATH` env (default `/app/data/indexmon.db`). Two drivers: `sqlite3` (knex runtime) + `better-sqlite3` (init-db.cjs schema setup). `knexfile.ts` uses `data/db.sqlite` for migration CLI only (different path).
+- **DB**: SQLite. Runtime path from `DB_PATH` env (default `/app/data/indexmon.db`). Both knex runtime + `init-db.cjs` use `better-sqlite3` (single driver). `knexfile.ts` uses `data/db.sqlite` for migration CLI only (different path).
 - **Env vars**: all via `.env` injected by `docker-compose.yml`. No `VITE_` vars — polling interval hardcoded 15s, Vite proxy target hardcoded `http://localhost:3000`. Port 3000 also exposed on host.
 - **`polling.ts`** exists but is dead code (not imported).
 - **CollapsibleSection**: `overflow-hidden` only when collapsed — otherwise tooltips on StatusGrid tiles get clipped.
