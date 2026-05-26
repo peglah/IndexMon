@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { knex } from '../config/database';
@@ -10,6 +10,21 @@ import { getTrackerStats, TrackerStats as TrackerStatsType } from './tracker-sta
 
 const CLEANUP_INTERVAL_MS = 24 * 60 * 60 * 1000;
 let lastCleanup = 0;
+
+async function fetchWithRetry<T>(url: string, config: AxiosRequestConfig, retries = 1): Promise<AxiosResponse<T>> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await axios.get(url, config);
+    } catch (error) {
+      lastError = error;
+      if (attempt < retries) {
+        await new Promise(r => setTimeout(r, Math.min(1000 * 2 ** attempt, 10000)));
+      }
+    }
+  }
+  throw lastError;
+}
 
 interface AutobrrChannel {
   id: number;
@@ -118,7 +133,8 @@ const isChannelUp = (a: AutobrrStatus): boolean => a.connected && a.monitoring;
 
 const fetchProwlarrHealth = async (healthUrl: string, apiKey: string | undefined): Promise<Set<string>> => {
   try {
-    const response = await axios.get(healthUrl, { headers: { 'X-Api-Key': apiKey }, timeout: 10000 });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await fetchWithRetry<any>(healthUrl, { headers: { 'X-Api-Key': apiKey }, timeout: 10000 });
     if (!Array.isArray(response.data)) return new Set();
     for (const entry of response.data) {
       if (entry.source === 'IndexerStatusCheck' && entry.message) {
@@ -141,7 +157,8 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
     const baseUrl = process.env.PROWLARR_BASE_URL || 'http://prowlarr:9696';
     const apiKey = process.env.PROWLARR_API_KEY;
     const [indexerRes, healthRes] = await Promise.all([
-      axios.get(`${baseUrl}/api/v1/indexer`, { headers: { 'X-Api-Key': apiKey }, timeout: 10000 }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      fetchWithRetry<any>(`${baseUrl}/api/v1/indexer`, { headers: { 'X-Api-Key': apiKey }, timeout: 10000 }),
       fetchProwlarrHealth(`${baseUrl}/api/v1/health`, apiKey),
     ]);
     const records = Array.isArray(indexerRes.data) ? indexerRes.data : (indexerRes.data as ProwlarrResponse)?.records ?? [];
@@ -166,7 +183,8 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
 
 const fetchAutobrrNetworks = async (): Promise<AutobrrNetwork[]> => {
   try {
-    const response = await axios.get(`${process.env.AUTOBRR_BASE_URL || 'http://autobrr:7474'}/api/irc`, {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const response = await fetchWithRetry<any>(`${process.env.AUTOBRR_BASE_URL || 'http://autobrr:7474'}/api/irc`, {
       headers: { 'X-API-Token': process.env.AUTOBRR_API_KEY },
       timeout: 10000,
     });
