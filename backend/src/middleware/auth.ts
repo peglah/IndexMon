@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { createHash, randomBytes } from 'crypto';
 import { z } from 'zod';
+import { logger } from '../utils/logger';
 
 const loginSchema = z.object({ password: z.string().min(1) });
 
@@ -46,6 +47,7 @@ const login = async (req: Request, res: Response) => {
   const { password } = parsed.data;
 
   if (!storedPasswordHash || !verifyPassword(password, storedPasswordHash)) {
+    logger.warn('Login failed', { ip: req.ip });
     return res.status(401).json({ error: 'Invalid credentials' });
   }
 
@@ -70,11 +72,13 @@ const logout = async (req: Request, res: Response) => {
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
+    logger.warn('Invalid/expired token');
     return res.status(401).json({ error: 'No token provided' });
   }
 
   const session = sessions.get(token);
   if (!session || session.expiresAt < new Date()) {
+    logger.warn('Invalid/expired token');
     sessions.delete(token);
     return res.status(401).json({ error: 'Invalid or expired session' });
   }
