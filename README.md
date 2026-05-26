@@ -1,6 +1,6 @@
 # IndexMon
 
-A Dockerized dashboard for monitoring indexer health by polling Prowlarr and Autobrr.
+A Dockerized dashboard for monitoring indexer health by polling Prowlarr, Autobrr, and qBittorrent tracker status.
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/peglah/indexmon/releases/latest/download/screenshot-dark.png">
@@ -28,7 +28,7 @@ docker run -d --name indexmon -p 80:80 \
   ghcr.io/peglah/indexmon:latest
 ```
 
-Then open http://localhost and log in with `admin` / `admin`.
+Then open http://localhost. If you set `ADMIN_PASSWORD_HASH` in `.env`, use that password. Otherwise, grab the one-time password from `docker logs indexmon` — search for "Generated admin password".
 
 ## Environment Variables
 
@@ -46,15 +46,13 @@ Then open http://localhost and log in with `admin` / `admin`.
 | `QBITTORRENT_USERNAME` | No | `admin` | qBittorrent login username |
 | `QBITTORRENT_PASSWORD` | No | `admin` | qBittorrent login password |
 | `QBITTORRENT_POLL_INTERVAL_S` | No | `300` | Tracker status poll interval in seconds |
+| `LOG_LEVEL` | No | `info` | Log level — `debug`, `info`, `warn`, or `error` |
+| `TRACKER_STATS_TTL_M` | No | `1440` | Per-indexer buffer/ratio refresh interval in minutes. `0` to disable. |
 qBittorrent is optional. If `QBITTORRENT_BASE_URL` is unset or unreachable, the tracker status column shows `—` and is ignored for health calculations.
 
 ## Metrics
 
-IndexMon exposes Prometheus-compatible metrics at `GET /metrics` (unauthenticated). Includes Node.js process stats (CPU, memory, event loop lag) plus custom metrics for poll duration, upstream reachability, and history row counts.
-
-## Built with OpenCode
-
-This project was created using [OpenCode](https://opencode.ai), an AI-powered coding assistant that helps build software through natural language collaboration.
+IndexMon exposes Prometheus-compatible metrics at `GET /metrics` (unauthenticated, OpenMetrics format). Includes Node.js process stats (CPU, memory, event loop lag) plus custom metrics for poll duration, upstream reachability, and history row counts.
 
 ## Development
 
