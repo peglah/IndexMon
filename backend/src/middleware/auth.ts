@@ -1,5 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import { createHash, randomBytes } from 'crypto';
+import { z } from 'zod';
+
+const loginSchema = z.object({ password: z.string().min(1) });
 
 let storedPasswordHash: string | null = null;
 
@@ -36,7 +39,11 @@ const verifyPassword = (input: string, stored: string): boolean => {
 };
 
 const login = async (req: Request, res: Response) => {
-  const { password } = req.body;
+  const parsed = loginSchema.safeParse(req.body);
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid request body' });
+  }
+  const { password } = parsed.data;
 
   if (!storedPasswordHash || !verifyPassword(password, storedPasswordHash)) {
     return res.status(401).json({ error: 'Invalid credentials' });
