@@ -18,6 +18,9 @@ app.use(express.json());
 // Routes
 app.use('/api/auth', authRoutes);
 
+// Health check
+app.get('/health', (_, res) => res.json({ ok: true }));
+
 // Unprotected icon route (img tags in browser don't send auth headers)
 const iconContentType = (filePath: string): string => {
   try {
