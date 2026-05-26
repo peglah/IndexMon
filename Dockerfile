@@ -3,7 +3,7 @@
 # Stage 1: Build the frontend
 FROM node:20-alpine AS frontend-builder
 WORKDIR /app
-COPY frontend/package.json ./
+COPY frontend/package.json frontend/package-lock.json ./
 COPY frontend/tsconfig.json ./
 COPY frontend/tsconfig.node.json ./
 COPY frontend/tailwind.config.js ./
@@ -11,14 +11,16 @@ COPY frontend/postcss.config.js ./
 COPY frontend/vite.config.ts ./
 COPY frontend/index.html ./
 COPY frontend/src ./src
-RUN npm install --legacy-peer-deps
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --legacy-peer-deps
 RUN npm run build
 
 # Stage 2: Build the backend
 FROM node:20-alpine AS backend-builder
 WORKDIR /app
-COPY backend/package.json ./
-RUN npm install
+COPY backend/package.json backend/package-lock.json ./
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci
 COPY backend/src ./src
 COPY backend/scripts ./scripts
 COPY backend/tsconfig.json ./
@@ -39,10 +41,12 @@ COPY --from=frontend-builder /app/dist /usr/share/nginx/html
 # Copy backend build from stage 2
 COPY --from=backend-builder /app/dist ./dist
 COPY --from=backend-builder /app/package.json ./
+COPY --from=backend-builder /app/package-lock.json ./
 COPY --from=backend-builder /app/scripts ./scripts
 
 # Install backend dependencies
-RUN npm install --production
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev
 
 # Ensure data directory exists with correct permissions
 RUN mkdir -p /app/data && \
