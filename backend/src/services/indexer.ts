@@ -5,6 +5,7 @@ import { knex } from '../config/database';
 import { sendAlert } from './apprise';
 import { logger } from '../utils/logger';
 import { hasDefinition } from './definitions';
+import { normalize } from '../utils/normalize';
 import { getQbitStatus, getQbitGlobalStatus, QbitStatus } from './qbittorrent';
 import { getTrackerStats, TrackerStats as TrackerStatsType } from './tracker-stats';
 
@@ -92,14 +93,6 @@ const CHANNEL_ALIASES: Record<string, string> = {
   td: 'torrentday',
   tl: 'torrentleech',
 };
-
-const normalize = (name: string): string =>
-  name
-    .toLowerCase()
-    .replace(/\s*\(api\)\s*/g, '')
-    .replace(/[\s_-]+/g, '')
-    .replace(/^#/, '')
-    .trim();
 
 const extractAutobrrIndexerName = (channel: AutobrrChannel, network: AutobrrNetwork): string => {
   const chName = channel.name.toLowerCase().replace('#', '');
