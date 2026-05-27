@@ -1,6 +1,8 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Indexer, ServicesStatus } from '../types';
 
+const stripApi = (name: string): string => name.replace(/\s*\(API\)/gi, '');
+
 const MINUTE = 1;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
@@ -119,8 +121,64 @@ const BufferCell = ({ stats }: { stats: { uploaded: number; downloaded: number; 
 
 export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; services?: ServicesStatus }) => {
   const hasStats = indexers.some((i) => i.stats !== undefined);
+
   return (
-    <Table>
+    <>
+      <div className="block md:hidden space-y-2">
+        {indexers.map((indexer) => {
+          const abUp = !!(indexer.autobrr?.connected && indexer.autobrr?.monitoring);
+          return (
+            <div key={indexer.id} className="bg-card border border-border rounded-lg p-3 space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <div className="flex items-center gap-2 min-w-0 flex-1">
+                  <img
+                    src={`/api/indexers/icon/${indexer.id.replace('prowlarr-', '')}`}
+                    alt=""
+                    className="w-5 h-5 shrink-0"
+                    onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  />
+                  {indexer.siteUrl ? (
+                    <a href={indexer.siteUrl} target="_blank" rel="noreferrer" className="font-medium text-sm truncate hover:underline">
+                      {stripApi(indexer.name)}
+                    </a>
+                  ) : (
+                    <span className="font-medium text-sm truncate">{stripApi(indexer.name)}</span>
+                  )}
+                </div>
+                <StatusCell status={indexer.status} downtimeMinutes={indexer.downtimeMinutes} uptimePercentage={indexer.uptimePercentage} />
+              </div>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-muted-foreground">Autobrr:</span>
+                  {indexer.autobrrMissing ? (
+                    <span className="text-gray-400 dark:text-gray-500 font-semibold">MISSING</span>
+                  ) : indexer.autobrr ? (
+                    <StatusCell status={abUp ? 'up' : 'down'} downtimeMinutes={indexer.autobrrDowntimeMinutes} uptimePercentage={indexer.autobrrUptimePercentage} />
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </span>
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-muted-foreground">qB:</span>
+                  {indexer.qbittorrent?.hasTorrents ? (
+                    <StatusCell status={indexer.qbittorrent.working ? 'up' : 'down'} downtimeMinutes={indexer.qbDowntimeMinutes} uptimePercentage={indexer.qbUptimePercentage} upLabel="WORKING" downLabel="ERROR" />
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </span>
+                {hasStats && indexer.stats && (
+                  <span className="inline-flex items-center gap-1">
+                    <span className="text-muted-foreground">Buffer:</span>
+                    <BufferCell stats={indexer.stats} />
+                  </span>
+                )}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      <div className="hidden md:block">
+        <Table>
       <TableHeader>
         <TableRow>
           <TableHead className="w-8"></TableHead>
@@ -186,5 +244,7 @@ export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; serv
         })}
       </TableBody>
     </Table>
+      </div>
+    </>
   );
 };

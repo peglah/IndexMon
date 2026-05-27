@@ -79,8 +79,8 @@ describe('DashboardPage', () => {
       isError: false,
     } as never);
     renderDashboard();
-    expect(screen.getAllByText('TorrentLeech')).toHaveLength(2);
-    expect(screen.getAllByText('HD-Space')).toHaveLength(2);
+    expect(screen.getAllByText('TorrentLeech')).toHaveLength(3);
+    expect(screen.getAllByText('HD-Space')).toHaveLength(3);
     expect(screen.getByText('Indexer Status Dashboard')).toBeInTheDocument();
   });
 

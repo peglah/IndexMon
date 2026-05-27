@@ -18,29 +18,29 @@ const defaultServices = {
 describe('IndexerTable', () => {
   it('renders indexer names', () => {
     render(<IndexerTable indexers={[{ ...baseIndexer }]} services={defaultServices} />);
-    expect(screen.getByText('Test Indexer')).toBeInTheDocument();
+    expect(screen.getAllByText('Test Indexer')).toHaveLength(2);
   });
 
   it('renders all service headers', () => {
     render(<IndexerTable indexers={[{ ...baseIndexer }]} services={defaultServices} />);
     expect(screen.getByText('Prowlarr')).toBeInTheDocument();
-    expect(screen.getByText('Autobrr')).toBeInTheDocument();
+    expect(screen.getAllByText(/Autobrr/)).toHaveLength(2);
     expect(screen.getByText('qBittorrent')).toBeInTheDocument();
   });
 
   it('shows UP for prowlarr status when indexer is up', () => {
     render(<IndexerTable indexers={[{ ...baseIndexer }]} services={defaultServices} />);
-    expect(screen.getByText('UP')).toBeInTheDocument();
+    expect(screen.getAllByText('UP')).toHaveLength(2);
   });
 
   it('shows down duration for prowlarr status when indexer is down with downtime', () => {
     render(<IndexerTable indexers={[{ ...baseIndexer, status: 'down', downtimeMinutes: 75 }]} services={defaultServices} />);
-    expect(screen.getByText('1h')).toBeInTheDocument();
+    expect(screen.getAllByText('1h')).toHaveLength(2);
   });
 
   it('shows yellow DOWN label when indexer is down without downtime', () => {
     render(<IndexerTable indexers={[{ ...baseIndexer, status: 'down' }]} services={defaultServices} />);
-    expect(screen.getByText('DOWN')).toBeInTheDocument();
+    expect(screen.getAllByText('DOWN')).toHaveLength(2);
   });
 
   it('renders dash for Autobrr when no autobrr data', () => {
@@ -51,7 +51,7 @@ describe('IndexerTable', () => {
 
   it('renders MISSING for Autobrr when autobrrMissing is true', () => {
     render(<IndexerTable indexers={[{ ...baseIndexer, autobrrMissing: true }]} services={defaultServices} />);
-    expect(screen.getByText('MISSING')).toBeInTheDocument();
+    expect(screen.getAllByText('MISSING')).toHaveLength(2);
   });
 
   it('shows Autobrr UP when channel is connected and monitoring', () => {
@@ -59,7 +59,7 @@ describe('IndexerTable', () => {
       ...baseIndexer,
       autobrr: { enabled: true, connected: true, monitoring: true, lastAnnounce: '2026-05-27T00:00:00Z' },
     }]} services={defaultServices} />);
-    expect(screen.getAllByText('UP')).toHaveLength(2);
+    expect(screen.getAllByText('UP')).toHaveLength(4);
   });
 
   it('shows Autobrr down duration when channel is disconnected', () => {
@@ -68,7 +68,7 @@ describe('IndexerTable', () => {
       autobrr: { enabled: true, connected: false, monitoring: false, lastAnnounce: null },
       autobrrDowntimeMinutes: 30,
     }]} services={defaultServices} />);
-    expect(screen.getByText('30m')).toBeInTheDocument();
+    expect(screen.getAllByText('30m')).toHaveLength(2);
   });
 
   it('renders dash for qBittorrent when indexer has no torrents', () => {
@@ -85,7 +85,7 @@ describe('IndexerTable', () => {
       ...baseIndexer,
       qbittorrent: { working: true, hasTorrents: true, statuses: [], lastChecked: '2026-05-27T00:00:00Z' },
     }]} services={defaultServices} />);
-    expect(screen.getByText('WORKING')).toBeInTheDocument();
+    expect(screen.getAllByText('WORKING')).toHaveLength(2);
   });
 
   it('shows ERROR for qBittorrent when not working but has torrents', () => {
@@ -94,14 +94,14 @@ describe('IndexerTable', () => {
       qbittorrent: { working: false, hasTorrents: true, statuses: [{ code: 2 }], lastChecked: '2026-05-27T00:00:00Z' },
       qbDowntimeMinutes: 5,
     }]} services={defaultServices} />);
-    expect(screen.getByText('5m')).toBeInTheDocument();
+    expect(screen.getAllByText('5m')).toHaveLength(2);
   });
 
   it('renders status UP tooltip with 24h percentage on hover', () => {
     render(<IndexerTable indexers={[{
       ...baseIndexer, uptimePercentage: 99.5,
     }]} services={defaultServices} />);
-    expect(screen.getByText('UP')).toBeInTheDocument();
+    expect(screen.getAllByText('UP')).toHaveLength(2);
   });
 
   it('hides buffer column when no indexers have stats', () => {
@@ -114,7 +114,7 @@ describe('IndexerTable', () => {
       ...baseIndexer,
       stats: { uploaded: 1073741824, downloaded: 536870912, ratio: 2.0, buffer: 536870912 },
     }]} services={defaultServices} />);
-    expect(screen.getByText('Buffer')).toBeInTheDocument();
+    expect(screen.getAllByText(/Buffer/)).toHaveLength(2);
   });
 
   it('renders buffer value for indexer with stats', () => {
@@ -122,7 +122,7 @@ describe('IndexerTable', () => {
       ...baseIndexer,
       stats: { uploaded: 2147483648, downloaded: 1073741824, ratio: 2.0, buffer: 1073741824 },
     }]} services={defaultServices} />);
-    expect(screen.getByText((content) => content.includes('+') && content.includes('GB'))).toBeInTheDocument();
+    expect(screen.getAllByText((content) => content.includes('+') && content.includes('GB')).length).toBeGreaterThanOrEqual(1);
   });
 
   it('shows service unavailable icons', () => {
@@ -132,13 +132,13 @@ describe('IndexerTable', () => {
       qbittorrent: { ok: false },
     }} />);
     expect(screen.getByText('Prowlarr')).toBeInTheDocument();
-    expect(screen.getByText('Autobrr')).toBeInTheDocument();
+    expect(screen.getAllByText(/Autobrr/)).toHaveLength(2);
     expect(screen.getByText('qBittorrent')).toBeInTheDocument();
   });
 
   it('links indexer name when siteUrl is provided', () => {
     render(<IndexerTable indexers={[{ ...baseIndexer, siteUrl: 'https://example.com' }]} services={defaultServices} />);
-    const link = screen.getByText('Test Indexer').closest('a');
+    const link = screen.getAllByText('Test Indexer')[0].closest('a');
     expect(link).toHaveAttribute('href', 'https://example.com');
     expect(link).toHaveAttribute('target', '_blank');
   });

@@ -62,7 +62,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 ## CI/CD (`.github/workflows/ci.yml`)
 - `lint-test` job: backend (install→lint→typecheck→test) then frontend (install→lint→test). Runs on all pushes/PRs to main.
 - `build-and-publish` (needs lint-test, main pushes + `v*` tags): buildx, push to `ghcr.io/<owner>/<repo>`. `main` → `develop` tag, `v*` → semver + `latest`. `APP_VERSION` from `steps.meta.outputs.version`.
-- **Screenshot** (only on `v*` tags): starts container, runs `scripts/screenshot.mjs` (Playwright chromium, 10 mock indexers via route interception, no real services needed). Uploads light+dark screenshots to release.
+- **Screenshot** (only on `v*` tags): starts container, runs `scripts/screenshot.mjs` (Playwright chromium, 10 mock indexers via route interception, no real services needed). Desktop screenshots are raw full-page captures at 1280×900. Mobile screenshots (412×915) are wrapped in an Android phone frame via `frameMobileShot()` — a pure HTML/CSS overlay using inline styles (rounded corners, bezel, inset shadow, centered on contrasting background). No extra npm deps beyond Playwright. Uploads light+dark screenshots (desktop + mobile framed) to release.
 - `contents: write` permission needed for release upload.
 
 ## Testing

@@ -3,6 +3,9 @@ import zlib from 'zlib';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost';
 
+const SCREEN_WIDTH = 412;
+const SCREEN_HEIGHT = 915;
+
 const MOCK_INDEXERS = [
   { id: 'prowlarr-1', name: 'TorrentLeech', status: 'up', lastChecked: new Date().toISOString(), downtimeMinutes: null, uptimePercentage: 100, autobrr: { enabled: true, connected: true, monitoring: true, lastAnnounce: new Date(Date.now() - 5 * 60000).toISOString() }, qbittorrent: { working: true, hasTorrents: true, statuses: [{ code: 2, msg: 'Working' }], lastChecked: new Date().toISOString() }, autobrrUptimePercentage: 100, qbUptimePercentage: 100, stats: { uploaded: 5000000000000, downloaded: 1500000000000, ratio: 3.33, buffer: 3500000000000 } },
   { id: 'prowlarr-2', name: 'MoreThanTV', status: 'up', lastChecked: new Date().toISOString(), downtimeMinutes: null, uptimePercentage: 100, autobrr: { enabled: true, connected: true, monitoring: true, lastAnnounce: new Date(Date.now() - 10 * 60000).toISOString() }, qbittorrent: { working: true, hasTorrents: true, statuses: [{ code: 2, msg: 'Working' }], lastChecked: new Date().toISOString() }, autobrrUptimePercentage: 100, qbUptimePercentage: 100, stats: { uploaded: 800000000000, downloaded: 920000000000, ratio: 0.87, buffer: -120000000000 } },
@@ -79,28 +82,29 @@ const makePNG = (r, g, b) => {
   return Buffer.concat([sig, pngChunk('IHDR', ihdr), pngChunk('IDAT', idat), pngChunk('IEND', Buffer.alloc(0))]);
 };
 
-(async () => {
-  const iconCache = new Map();
-
-  const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
-  const page = await context.newPage();
-
-  await page.route('**/api/indexers/icon/*', async (route) => {
+const setupRoutes = (page, iconCache) => {
+  const iconRoute = async (route) => {
     const match = route.request().url().match(/icon\/(\d+)$/);
     const id = match ? parseInt(match[1], 10) : 1;
     const idx = Math.min(Math.max(id - 1, 0), COLORS.length - 1);
     if (!iconCache.has(idx)) iconCache.set(idx, makePNG(...COLORS[idx]));
     await route.fulfill({ status: 200, contentType: 'image/png', body: iconCache.get(idx) });
-  });
+  };
 
-  await page.route('**/api/auth/login', async (route) => {
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ token: 'mock-token' }) });
-  });
+  return Promise.all([
+    page.route('**/api/indexers/icon/*', iconRoute),
+    page.route('**/api/auth/login', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ token: 'mock-token' }) });
+    }),
+    page.route('**/api/indexers', async (route) => {
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ indexers: MOCK_INDEXERS, services: MOCK_SERVICES }) });
+    }),
+  ]);
+};
 
-  await page.route('**/api/indexers', async (route) => {
-    await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ indexers: MOCK_INDEXERS, services: MOCK_SERVICES }) });
-  });
+const capture = async (context, iconCache) => {
+  const page = await context.newPage();
+  await setupRoutes(page, iconCache);
 
   await page.goto(`${BASE_URL}/login`);
   await page.fill('input[type="password"]', 'admin');
@@ -109,17 +113,67 @@ const makePNG = (r, g, b) => {
   await page.waitForSelector('text=TorrentLeech >> visible=true', { timeout: 15000 });
   await page.waitForTimeout(500);
 
-  const lightBuf = await page.screenshot({ fullPage: true });
+  const light = await page.screenshot({ fullPage: true });
 
   await page.click('button[aria-label="Toggle theme"]');
   await page.waitForTimeout(500);
 
-  const darkBuf = await page.screenshot({ fullPage: true });
+  const dark = await page.screenshot({ fullPage: true });
+
+  return { light, dark };
+};
+
+const frameMobileShot = async (browser, imageBuf, isDark) => {
+  const b64 = imageBuf.toString('base64');
+  const bg = isDark ? '#1a1a2e' : '#e8e8ec';
+  const bezel = isDark ? '#222' : '#999';
+  const shadow = isDark
+    ? '0 20px 60px rgba(0,0,0,0.5)'
+    : '0 20px 60px rgba(0,0,0,0.15)';
+
+  const BORDER_RADIUS = 44;
+  const BEZEL = 6;
+  const INNER_RADIUS = BORDER_RADIUS - BEZEL;
+
+  const html = `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:32px;background:${bg};display:flex;justify-content:center;align-items:center">
+  <div style="position:relative;border-radius:${BORDER_RADIUS}px;padding:${BEZEL}px;background:${bezel};box-shadow:${shadow}">
+    <img src="data:image/png;base64,${b64}" style="display:block;border-radius:${INNER_RADIUS}px;width:${SCREEN_WIDTH}px;height:${SCREEN_HEIGHT}px">
+  </div>
+</body>
+</html>`;
+
+  const page = await browser.newPage();
+  await page.setContent(html);
+  await page.waitForTimeout(200);
+  const result = await page.screenshot({ fullPage: true });
+  await page.close();
+  return result;
+};
+
+(async () => {
+  const iconCache = new Map();
+  const browser = await chromium.launch({ headless: true });
+
+  const desktopCtx = await browser.newContext({ viewport: { width: 1280, height: 900 } });
+  const desktop = await capture(desktopCtx, iconCache);
+  await desktopCtx.close();
+
+  const mobileCtx = await browser.newContext({ viewport: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } });
+  const mobile = await capture(mobileCtx, iconCache);
+  await mobileCtx.close();
+
+  const mobileLight = await frameMobileShot(browser, mobile.light, false);
+  const mobileDark = await frameMobileShot(browser, mobile.dark, true);
+
   await browser.close();
 
   const fs = await import('fs');
-  fs.writeFileSync('screenshot-light.png', lightBuf);
-  fs.writeFileSync('screenshot-dark.png', darkBuf);
+  fs.writeFileSync('screenshot-light.png', desktop.light);
+  fs.writeFileSync('screenshot-dark.png', desktop.dark);
+  fs.writeFileSync('screenshot-light-mobile.png', mobileLight);
+  fs.writeFileSync('screenshot-dark-mobile.png', mobileDark);
 })().catch((err) => {
   console.error('Screenshot failed:', err);
   process.exit(1);
