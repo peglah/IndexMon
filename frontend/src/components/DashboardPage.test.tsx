@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DashboardPage } from '../pages/DashboardPage';
@@ -91,5 +91,29 @@ describe('DashboardPage', () => {
     renderDashboard();
     expect(screen.getByText(/Last checked:/)).toBeInTheDocument();
     expect(screen.getByText((content) => content.includes('Last checked:') && content.includes('2026'))).toBeInTheDocument();
+  });
+
+  it('toggles dark mode on button click', () => {
+    localStorage.clear();
+    document.documentElement.classList.remove('dark');
+    vi.mocked(useIndexers).mockReturnValue({
+      data: { indexers: mockIndexers, services: mockServices },
+      isLoading: false,
+      isError: false,
+    } as never);
+    renderDashboard();
+
+    const btn = screen.getByRole('button', { name: 'Toggle theme' });
+    expect(btn).toBeInTheDocument();
+
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+
+    fireEvent.click(btn);
+    expect(document.documentElement.classList.contains('dark')).toBe(true);
+    expect(localStorage.getItem('theme')).toBe('dark');
+
+    fireEvent.click(btn);
+    expect(document.documentElement.classList.contains('dark')).toBe(false);
+    expect(localStorage.getItem('theme')).toBe('light');
   });
 });
