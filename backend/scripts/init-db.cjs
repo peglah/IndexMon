@@ -15,22 +15,6 @@ const db = new Database(dbPath);
 // Create tables
 const createTables = () => {
   db.exec(`
-    CREATE TABLE IF NOT EXISTS users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT NOT NULL UNIQUE,
-      email TEXT NOT NULL DEFAULT '',
-      password TEXT NOT NULL,
-      role TEXT NOT NULL DEFAULT 'user'
-    );
-
-    CREATE TABLE IF NOT EXISTS sessions (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      session_token TEXT NOT NULL UNIQUE,
-      user_id INTEGER NOT NULL,
-      expires_at TIMESTAMP NOT NULL,
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    );
-
     CREATE TABLE IF NOT EXISTS alert_state (
       key TEXT PRIMARY KEY,
       down_since INTEGER NOT NULL,
@@ -53,12 +37,5 @@ const createTables = () => {
 };
 
 createTables();
-
-// Add source column to existing indexer_history tables
-try {
-  db.exec("ALTER TABLE indexer_history ADD COLUMN source TEXT NOT NULL DEFAULT 'prowlarr'");
-} catch {
-  // Column already exists — ignore
-}
 
 db.close();
