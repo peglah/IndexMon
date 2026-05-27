@@ -27,17 +27,24 @@ const startServer = async () => {
     await initDefinitionChecker();
     startQbitPolling(parseInt(process.env.QBITTORRENT_POLL_INTERVAL_S || '300', 10));
     initTrackerStats();
-    app.listen(PORT, '0.0.0.0', () => {
+
+    const server = app.listen(PORT, '0.0.0.0', () => {
       logger.info(`IndexMon v${version} running on http://0.0.0.0:${PORT}`);
     });
 
     process.on('SIGTERM', () => {
       logger.info('Shutting down...');
-      stopQbitPolling();
-      stopTrackerStats();
-      stopSessionCleanup();
-      knex.destroy();
-      process.exit(0);
+      server.close(() => {
+        stopQbitPolling();
+        stopTrackerStats();
+        stopSessionCleanup();
+        knex.destroy();
+        process.exit(0);
+      });
+      setTimeout(() => {
+        logger.warn('Forced shutdown after timeout');
+        process.exit(1);
+      }, 10_000).unref();
     });
   } catch (error) {
     logger.error('Failed to start server:', error);
