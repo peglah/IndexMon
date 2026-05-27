@@ -9,7 +9,7 @@ A Dockerized dashboard for monitoring indexer health by polling Prowlarr, Autobr
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="https://github.com/peglah/indexmon/releases/latest/download/screenshot-dark-mobile.png">
-  <img alt="IndexMon Dashboard (mobile)" src="https://github.com/peglah/indexmon/releases/latest/download/screenshot-light-mobile.png" width="375">
+  <img alt="IndexMon Dashboard (mobile)" src="https://github.com/peglah/indexmon/releases/latest/download/screenshot-light-mobile.png">
 </picture>
 
 ## Quick Start
