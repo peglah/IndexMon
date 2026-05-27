@@ -392,13 +392,17 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
         .whereIn('indexer_id', allIds)
         .whereIn('source', ['prowlarr', 'autobrr', 'qbittorrent'])
         .where('last_checked', '>=', windowAgo)
-        .orderBy(['indexer_id', 'source', 'last_checked']),
+        .orderBy('indexer_id', 'asc')
+        .orderBy('source', 'asc')
+        .orderBy('last_checked', 'asc'),
       knex('indexer_history')
         .select('indexer_id', 'source', 'status')
         .whereIn('indexer_id', allIds)
         .whereIn('source', ['prowlarr', 'autobrr', 'qbittorrent'])
         .where('last_checked', '<', windowAgo)
-        .orderBy(['indexer_id', 'source', 'last_checked', 'desc']),
+        .orderBy('indexer_id', 'asc')
+        .orderBy('source', 'asc')
+        .orderBy('last_checked', 'desc'),
     ]);
 
     const computeUptimeForSource = (source: string): Map<string, number> => {
