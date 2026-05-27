@@ -40,6 +40,25 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - **`init-db.cjs`** creates `indexer_history` and `alert_state` tables at container startup (same schemas as knex migrations). Auth is in-memory Map, not DB-backed.
 - **Version**: from `process.env.APP_VERSION` (Docker build arg), NOT `package.json`. Shows `dev` locally.
 - **Env vars**: all via `.env` injected by `docker-compose.yml`. No `VITE_` vars — frontend polling interval hardcoded 15s, Vite proxy target hardcoded `http://localhost:3000`. `TRACKER_STATS_TTL_M` (default `1440`, `0` to disable) controls per-indexer stats refresh.
+
+## Tracker API Limitations
+- **UNIT3D-based trackers** (FearNoPeer, SkipTheCommercials, etc.): 
+  - Standard `/api/user` endpoint **excludes** warning status and last login fields
+  - Alternative endpoints (`/api/user/warnings`, `/users/{username}`, `/staff/warnings`) either:
+    - Return "route not found"
+    - Require different authentication
+    - Only support POST methods
+  - **Root cause**: Many trackers intentionally customize UNIT3D to remove sensitive fields from public API responses
+  - **Workaround**: Manual website checks required for warning/login status on these trackers
+
+- **Gazelle-based trackers** (TorrentLeech, AlphaRatio, etc.): 
+  - Typically expose more user data via `/ajax.php?action=user`
+  - **Authentication challenges**: 
+    - Require **cookie-based auth** (not simple API keys)
+    - Need to handle **CSRF tokens**, **session management**, and potentially **reCAPTCHA**
+    - Current implementation only supports API key auth (Bearer/token/query param)
+  - **Prowlarr integration note**: Prowlarr handles username/password auth for these trackers, but our tracker-stats service doesn't reuse Prowlarr's sessions
+  - **Workaround**: Would need to implement full login flow or proxy requests through Prowlarr
 - **Dark mode**: `class` strategy. Inline `<script>` in `index.html` sets `dark` before React renders. Dashboard toggle persists to `localStorage.theme`; `matchMedia` listener stays in sync. Login page has no toggle.
 - **CollapsibleSection**: `overflow-hidden` only when collapsed — otherwise tooltips on StatusGrid tiles get clipped.
 - **10s timeouts** on all 3 upstream `axios.get` calls (Prowlarr health, Prowlarr indexers, Autobrr IRC). 1 retry with 1s→2s backoff.
