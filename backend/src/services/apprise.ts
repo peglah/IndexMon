@@ -22,7 +22,7 @@ export const sendAlert = async (message: string) => {
       urls: urls.join(','),
       body: message,
       title: 'Indexer Alert',
-    });
+    }, { timeout: 10000 });
     logger.info(`Apprise alert sent to ${urls.length} URL(s)`);
   } catch (error) {
     logger.error('Failed to send alert:', error);
