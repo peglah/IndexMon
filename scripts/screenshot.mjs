@@ -102,7 +102,7 @@ const setupRoutes = (page, iconCache) => {
   ]);
 };
 
-const capture = async (context, iconCache) => {
+const capture = async (context, iconCache, fullPage = true) => {
   const page = await context.newPage();
   await setupRoutes(page, iconCache);
 
@@ -113,23 +113,19 @@ const capture = async (context, iconCache) => {
   await page.waitForSelector('text=TorrentLeech >> visible=true', { timeout: 15000 });
   await page.waitForTimeout(500);
 
-  const light = await page.screenshot({ fullPage: true });
+  const light = await page.screenshot({ fullPage });
 
   await page.click('button[aria-label="Toggle theme"]');
   await page.waitForTimeout(500);
 
-  const dark = await page.screenshot({ fullPage: true });
+  const dark = await page.screenshot({ fullPage });
 
   return { light, dark };
 };
 
-const frameMobileShot = async (browser, imageBuf, isDark) => {
+const frameMobileShot = async (browser, imageBuf) => {
   const b64 = imageBuf.toString('base64');
-  const bg = isDark ? '#1a1a2e' : '#e8e8ec';
-  const bezel = isDark ? '#222' : '#999';
-  const shadow = isDark
-    ? '0 20px 60px rgba(0,0,0,0.5)'
-    : '0 20px 60px rgba(0,0,0,0.15)';
+  const bezel = '#222';
 
   const BORDER_RADIUS = 44;
   const BEZEL = 6;
@@ -137,9 +133,9 @@ const frameMobileShot = async (browser, imageBuf, isDark) => {
 
   const html = `<!DOCTYPE html>
 <html>
-<body style="margin:0;padding:32px;background:${bg};display:flex;justify-content:center;align-items:center">
-  <div style="position:relative;border-radius:${BORDER_RADIUS}px;padding:${BEZEL}px;background:${bezel};box-shadow:${shadow}">
-    <img src="data:image/png;base64,${b64}" style="display:block;border-radius:${INNER_RADIUS}px;width:${SCREEN_WIDTH}px;height:${SCREEN_HEIGHT}px">
+<body style="margin:0;padding:6px;background:transparent;display:flex;justify-content:center;align-items:center">
+  <div style="position:relative;border-radius:${BORDER_RADIUS}px;padding:${BEZEL}px;background:${bezel};display:inline-flex">
+    <img src="data:image/png;base64,${b64}" style="display:block;border-radius:${INNER_RADIUS}px;width:${SCREEN_WIDTH}px">
   </div>
 </body>
 </html>`;
@@ -147,7 +143,7 @@ const frameMobileShot = async (browser, imageBuf, isDark) => {
   const page = await browser.newPage();
   await page.setContent(html);
   await page.waitForTimeout(200);
-  const result = await page.screenshot({ fullPage: true });
+  const result = await page.screenshot({ fullPage: true, omitBackground: true });
   await page.close();
   return result;
 };
@@ -161,11 +157,11 @@ const frameMobileShot = async (browser, imageBuf, isDark) => {
   await desktopCtx.close();
 
   const mobileCtx = await browser.newContext({ viewport: { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } });
-  const mobile = await capture(mobileCtx, iconCache);
+  const mobile = await capture(mobileCtx, iconCache, false);
   await mobileCtx.close();
 
-  const mobileLight = await frameMobileShot(browser, mobile.light, false);
-  const mobileDark = await frameMobileShot(browser, mobile.dark, true);
+  const mobileLight = await frameMobileShot(browser, mobile.light);
+  const mobileDark = await frameMobileShot(browser, mobile.dark);
 
   await browser.close();
 
