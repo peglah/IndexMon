@@ -32,6 +32,7 @@ const startServer = async () => {
     const server = app.listen(PORT, '0.0.0.0', () => {
       logger.info(`IndexMon v${version} running on http://0.0.0.0:${PORT}`);
     });
+    server.timeout = 5_000;
 
     process.on('SIGTERM', async () => {
       logger.info('Shutting down...');
