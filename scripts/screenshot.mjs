@@ -128,13 +128,12 @@ const frameMobileShot = async (browser, imageBuf) => {
   const bezel = '#222';
 
   const BORDER_RADIUS = 44;
-  const BEZEL = 6;
-  const INNER_RADIUS = BORDER_RADIUS - BEZEL;
+  const INNER_RADIUS = BORDER_RADIUS - 6;
 
   const html = `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:6px;background:transparent;display:flex;justify-content:center;align-items:center">
-  <div style="position:relative;border-radius:${BORDER_RADIUS}px;padding:${BEZEL}px;background:${bezel};display:inline-flex">
+    <div style="position:relative;border-radius:${BORDER_RADIUS}px;padding:6px 6px 20px 6px;background:${bezel};display:inline-flex">
     <img src="data:image/png;base64,${b64}" style="display:block;border-radius:${INNER_RADIUS}px;width:${SCREEN_WIDTH}px">
   </div>
 </body>
