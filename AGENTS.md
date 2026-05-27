@@ -22,6 +22,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 | `GET /api/indexers` | Yes | Fetches Prowlarr + Autobrr inline, writes history, computes downtime + 24h uptime % (time-weighted), fires Apprise alerts, merges qB data |
 | `GET /api/indexers/history` | Yes | `?limit=1000&offset=0` (clamped 1–5000). Maps `indexer_id`→`indexerId`, `last_checked`→`timestamp` |
 | `GET /api/indexers/icon/:prowlarrId` | No | Before auth middleware — `<img>` tags can't send headers. Detects PNG/ICO/SVG via magic bytes |
+| `POST /api/apprise/test` | Yes | Tests Apprise notification config with a test message |
 | `GET /health` | No | Returns `{ ok: true }` for Docker HEALTHCHECK |
 | `GET /metrics` | No | Prometheus metrics (OpenMetrics format) |
 
@@ -36,12 +37,13 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - **Apprise alerts**: POST to `{APPRISE_API_URL}/notify`. `APPRISE_URLS` comma-separated. Skipped if `APPRISE_API_URL` unset. In-memory dedup via `alertedDownIds` Set (resets on restart). `ALERT_DELAY_MINUTES` (default `0`) delays alert until indexer has been continuously down for that duration.
 - **History**: transition-only inserts (only on up↔down state change). Downtime from most recent `up` entry. 24h uptime = time-weighted percentage from transition edges. Cleanup after 14 days.
 - **DB**: SQLite. Runtime path from `DB_PATH` env (default `/app/data/indexmon.db`). Both knex runtime + `init-db.cjs` use `better-sqlite3`. `knexfile.ts` uses `data/db.sqlite` for migration CLI only. To reset, delete the DB file — `init-db.cjs` recreates tables on next startup.
-- **`init-db.cjs`** creates `users` and `sessions` tables but these are **never used** at runtime — auth uses in-memory Map.
+- **`init-db.cjs`** creates `indexer_history` and `alert_state` tables at container startup (same schemas as knex migrations). Auth is in-memory Map, not DB-backed.
 - **Version**: from `process.env.APP_VERSION` (Docker build arg), NOT `package.json`. Shows `dev` locally.
-- **Env vars**: all via `.env` injected by `docker-compose.yml`. No `VITE_` vars — frontend polling interval hardcoded 15s, Vite proxy target hardcoded `http://localhost:3000`.
+- **Env vars**: all via `.env` injected by `docker-compose.yml`. No `VITE_` vars — frontend polling interval hardcoded 15s, Vite proxy target hardcoded `http://localhost:3000`. `TRACKER_STATS_TTL_M` (default `1440`, `0` to disable) controls per-indexer stats refresh.
 - **Dark mode**: `class` strategy. Inline `<script>` in `index.html` sets `dark` before React renders. Dashboard toggle persists to `localStorage.theme`; `matchMedia` listener stays in sync. Login page has no toggle.
 - **CollapsibleSection**: `overflow-hidden` only when collapsed — otherwise tooltips on StatusGrid tiles get clipped.
-- **1000ms timeouts** on all 3 upstream `axios.get` calls (Prowlarr health, Prowlarr indexers, Autobrr IRC). 1 retry with 1s→2s backoff.
+- **10s timeouts** on all 3 upstream `axios.get` calls (Prowlarr health, Prowlarr indexers, Autobrr IRC). 1 retry with 1s→2s backoff.
+- **Circuit breaker**: 3 consecutive Prowlarr/Autobrr failures → 60s cooldown before retrying.
 
 ## Project Structure (key files)
 - `backend/src/server.ts` — entrypoint: sets password (env or random), starts definition checker + qB polling + tracker stats, graceful shutdown (SIGTERM stops all intervals + knex.destroy)
@@ -50,6 +52,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - `backend/src/services/qbittorrent.ts` — qB client: cookie auth with 403 re-auth, domain cache, background polling
 - `backend/src/services/definitions.ts` — GitHub API Autobrr definition fetcher (startup + every 24h)
 - `backend/src/services/apprise.ts` — alert dispatcher with in-memory dedup
+- `backend/src/routes/apprise.ts` — `POST /api/apprise/test` test-notification endpoint behind auth
 - `backend/src/services/tracker-stats.ts` — per-indexer stats (Gazelle/UNIT3D API), calls on startup
 - `backend/src/middleware/auth.ts` — in-memory session Map, Zod login validation, warn-logging on failure
 - `backend/src/config/database.ts` — knex config with WAL mode + 5000ms busy timeout
@@ -66,5 +69,5 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - `contents: write` permission needed for release upload.
 
 ## Testing
-- **Backend**: Jest + `ts-jest`. 3 test files: auth (login + validation), normalize, indexer API. Needs `DB_PATH` env pointing to a writeable path (CI uses `./test-data/test.db`). `knex.migrate.latest()` runs in `beforeAll`.
-- **Frontend**: Vitest + jsdom + `@testing-library/react`. `matchMedia` mocked in `setup-tests.ts`. Tests: LoginPage, DashboardPage (loading, error, data states).
+- **Backend**: Jest + `ts-jest`. 5 test files: auth, apprise, normalize, indexers (route-level), fetchIndexers (service-level). DB defaults to `:memory:` via `jest.config.js`; CI overrides with `DB_PATH=./test-data/test.db`. `knex.migrate.latest()` runs in `beforeAll`.
+- **Frontend**: Vitest + jsdom + `@testing-library/react`. `matchMedia` mocked in `setup-tests.ts`. Tests: LoginPage, DashboardPage, IndexerTable.
