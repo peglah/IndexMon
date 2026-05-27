@@ -5,6 +5,8 @@ import { DashboardPage } from '../pages/DashboardPage';
 import { useIndexers } from '../hooks/useIndexers';
 
 vi.mock('../hooks/useIndexers');
+vi.mock('../utils/axios', () => ({ default: { post: vi.fn() } }));
+import api from '../utils/axios';
 
 const mockIndexers = [
   {
@@ -115,5 +117,45 @@ describe('DashboardPage', () => {
     fireEvent.click(btn);
     expect(document.documentElement.classList.contains('dark')).toBe(false);
     expect(localStorage.getItem('theme')).toBe('light');
+  });
+
+  it('renders test notification button', () => {
+    vi.mocked(useIndexers).mockReturnValue({
+      data: { indexers: mockIndexers, services: mockServices },
+      isLoading: false,
+      isError: false,
+    } as never);
+    renderDashboard();
+    expect(screen.getByRole('button', { name: 'Test notifications' })).toBeInTheDocument();
+  });
+
+  it('shows error message when test notification fails', async () => {
+    vi.mocked(useIndexers).mockReturnValue({
+      data: { indexers: mockIndexers, services: mockServices },
+      isLoading: false,
+      isError: false,
+    } as never);
+    vi.mocked(api.post).mockRejectedValue({ response: { data: { error: 'APPRISE_API_URL not configured' } } });
+    renderDashboard();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Test notifications' }));
+    const msg = await screen.findByText('APPRISE_API_URL not configured');
+    expect(msg).toBeInTheDocument();
+    expect(msg.className).toContain('text-destructive');
+  });
+
+  it('shows success message when test notification succeeds', async () => {
+    vi.mocked(useIndexers).mockReturnValue({
+      data: { indexers: mockIndexers, services: mockServices },
+      isLoading: false,
+      isError: false,
+    } as never);
+    vi.mocked(api.post).mockResolvedValue({});
+    renderDashboard();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Test notifications' }));
+    const msg = await screen.findByText('Test notification sent!');
+    expect(msg).toBeInTheDocument();
+    expect(msg.className).toContain('text-green-500');
   });
 });

@@ -4,6 +4,7 @@ import path from 'path';
 import helmet from 'helmet';
 import indexerRoutes from './routes/indexers';
 import authRoutes from './routes/auth';
+import appriseRoutes from './routes/apprise';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler } from './middleware/error';
 import { requestIdMiddleware } from './middleware/requestId';
@@ -62,6 +63,7 @@ app.get('/api/indexers/icon/:prowlarrId', (req, res) => {
   res.type(iconContentType(filePath)).sendFile(filePath);
 });
 
+app.use('/api/apprise', authMiddleware, appriseRoutes);
 app.use('/api/indexers', authMiddleware, indexerRoutes);
 
 // Error handling

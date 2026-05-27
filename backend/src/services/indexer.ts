@@ -364,9 +364,9 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     const downIdsQb = merged.filter((i) => i.qbittorrent && !i.qbittorrent.working).map((i) => i.id);
     const allDownIds = [...new Set([...downIdsProwlarr, ...downIdsAutobrr, ...downIdsQb])];
 
-    let prowlarrDowntimeMap = new Map<string, number>();
-    let autobrrDowntimeMap = new Map<string, number>();
-    let qbDowntimeMap = new Map<string, number>();
+    const prowlarrDowntimeMap = new Map<string, number>();
+    const autobrrDowntimeMap = new Map<string, number>();
+    const qbDowntimeMap = new Map<string, number>();
     if (allDownIds.length > 0) {
       const downtimeRows = await knex('indexer_history')
         .select('indexer_id', 'source')

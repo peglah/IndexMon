@@ -2,8 +2,9 @@ import { CollapsibleSection } from '../components/CollapsibleSection';
 import { IndexerTable } from '../components/IndexerTable';
 import { StatusGrid } from '../components/StatusGrid';
 import { useIndexers } from '../hooks/useIndexers';
+import api from '../utils/axios';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const formatISO = (iso: string): string => {
   const d = new Date(iso);
@@ -17,6 +18,10 @@ const SunIcon = () => (
 
 const MoonIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+);
+
+const BellIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
 );
 
 export const DashboardPage = () => {
@@ -46,6 +51,24 @@ export const DashboardPage = () => {
   }, []);
 
   const { data, isLoading, isError, error } = useIndexers();
+  const [testStatus, setTestStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const testTimer = useRef<ReturnType<typeof setTimeout>>();
+
+  const sendTestNotification = useCallback(async () => {
+    clearTimeout(testTimer.current);
+    setTestStatus(null);
+    try {
+      await api.post('/api/apprise/test');
+      setTestStatus({ type: 'success', text: 'Test notification sent!' });
+    } catch (err) {
+      const msg =
+        (err as { response?: { data?: { error?: string } } })?.response?.data?.error ||
+        (err as Error)?.message ||
+        'Failed to send test notification';
+      setTestStatus({ type: 'error', text: msg });
+    }
+    testTimer.current = setTimeout(() => setTestStatus(null), 4000);
+  }, []);
 
   if (isLoading) {
     return <div className="p-8">Loading...</div>;
@@ -69,10 +92,20 @@ export const DashboardPage = () => {
     <div className="p-8 space-y-8 flex flex-col min-h-screen">
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Indexer Status Dashboard</h1>
-        <button onClick={toggle} className="p-2 rounded-md hover:bg-muted transition-colors" aria-label="Toggle theme">
-          {dark ? <SunIcon /> : <MoonIcon />}
-        </button>
+        <div className="flex items-center gap-2">
+          <button onClick={sendTestNotification} className="p-2 rounded-md hover:bg-muted transition-colors" aria-label="Test notifications" title="Send a test Apprise notification">
+            <BellIcon />
+          </button>
+          <button onClick={toggle} className="p-2 rounded-md hover:bg-muted transition-colors" aria-label="Toggle theme">
+            {dark ? <SunIcon /> : <MoonIcon />}
+          </button>
+        </div>
       </div>
+      {testStatus && (
+        <div className={`text-sm text-center ${testStatus.type === 'success' ? 'text-green-500' : 'text-destructive'}`}>
+          {testStatus.text}
+        </div>
+      )}
       <div className="space-y-8">
         <CollapsibleSection title="Overview">
           {indexers && <StatusGrid indexers={indexers} />}
