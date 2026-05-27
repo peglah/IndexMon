@@ -22,8 +22,8 @@ router.get('/', async (req, res) => {
 router.get('/history', async (req, res) => {
   const log = res.locals.logger || logger;
   try {
-    const limit = Math.min(Math.max(parseInt(req.query.limit as string) || 1000, 1), 5000);
-    const offset = Math.max(parseInt(req.query.offset as string) || 0, 0);
+    const limit = Math.min(Math.max(parseInt(req.query.limit as string, 10) || 1000, 1), 5000);
+    const offset = Math.max(parseInt(req.query.offset as string, 10) || 0, 0);
     const history = await knex('indexer_history').select('*').limit(limit).offset(offset);
     res.json(history.map((entry) => ({
       indexerId: entry.indexer_id,
