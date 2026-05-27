@@ -5,7 +5,7 @@ import { normalize } from '../utils/normalize';
 const GITHUB_API = 'https://api.github.com/repos/autobrr/autobrr/contents/internal/indexer/definitions';
 const REFRESH_INTERVAL = 24 * 60 * 60 * 1000;
 
-let knownDefinitions: Set<string> | null = null;
+let knownDefinitions = new Set<string>();
 
 const fetchDefinitions = async () => {
   try {
@@ -26,7 +26,4 @@ export const initDefinitionChecker = async () => {
   setInterval(fetchDefinitions, REFRESH_INTERVAL + jitter);
 };
 
-export const hasDefinition = (name: string): boolean => {
-  if (!knownDefinitions) return false;
-  return knownDefinitions.has(normalize(name));
-};
+export const hasDefinition = (name: string): boolean => knownDefinitions.has(normalize(name));
