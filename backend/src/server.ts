@@ -2,6 +2,7 @@ import { randomBytes, createHash } from 'crypto';
 import { logger } from './utils/logger';
 import app from './app';
 import { setPasswordHash, stopSessionCleanup } from './middleware/auth';
+import { drainIconCaches } from './services/indexer';
 import { initDefinitionChecker } from './services/definitions';
 import { startQbitPolling, stopQbitPolling } from './services/qbittorrent';
 import { initTrackerStats, stopTrackerStats } from './services/tracker-stats';
@@ -32,8 +33,9 @@ const startServer = async () => {
       logger.info(`IndexMon v${version} running on http://0.0.0.0:${PORT}`);
     });
 
-    process.on('SIGTERM', () => {
+    process.on('SIGTERM', async () => {
       logger.info('Shutting down...');
+      await drainIconCaches();
       server.close(() => {
         stopQbitPolling();
         stopTrackerStats();

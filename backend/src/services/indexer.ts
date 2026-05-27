@@ -267,6 +267,8 @@ const fetchFaviconUrl = async (siteUrl: string): Promise<string | null> => {
   return null;
 };
 
+const pendingIconCaches = new Set<Promise<void>>();
+
 const cacheIcons = async (indexers: Indexer[]): Promise<void> => {
   fs.mkdirSync(ICONS_DIR, { recursive: true });
   await Promise.all(
@@ -292,6 +294,13 @@ const cacheIcons = async (indexers: Indexer[]): Promise<void> => {
       }
     }),
   );
+};
+
+export const drainIconCaches = async (): Promise<void> => {
+  if (pendingIconCaches.size === 0) return;
+  logger.info(`Waiting for ${pendingIconCaches.size} pending icon cache(s)...`);
+  await Promise.allSettled([...pendingIconCaches]);
+  pendingIconCaches.clear();
 };
 
 export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: ServiceStatuses }> => {
@@ -561,7 +570,9 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
       await knex('indexer_history').where('last_checked', '<', threshold).delete();
     }
 
-    cacheIcons(merged);
+    const cachePromise = cacheIcons(merged);
+    pendingIconCaches.add(cachePromise);
+    cachePromise.finally(() => pendingIconCaches.delete(cachePromise));
 
     pollTotal.inc({ result: 'success' });
     endTimer();
