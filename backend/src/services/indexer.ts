@@ -89,6 +89,29 @@ export interface ServiceStatuses {
 let prowlarrReachable = true;
 let autobrrReachable = true;
 
+interface BreakerState {
+  failures: number;
+  lastFailure: number;
+}
+
+const BREAKER_THRESHOLD = 3;
+const BREAKER_COOLDOWN_MS = 60_000;
+const breakers: Record<string, BreakerState> = {
+  prowlarr: { failures: 0, lastFailure: 0 },
+  autobrr: { failures: 0, lastFailure: 0 },
+};
+
+const breakerIsOpen = (name: string): boolean => {
+  const b = breakers[name];
+  return b.failures >= BREAKER_THRESHOLD && Date.now() - b.lastFailure < BREAKER_COOLDOWN_MS;
+};
+
+const breakerOnSuccess = (name: string) => { breakers[name].failures = 0; };
+const breakerOnFailure = (name: string) => {
+  breakers[name].failures++;
+  breakers[name].lastFailure = Date.now();
+};
+
 const CHANNEL_ALIASES: Record<string, string> = {
   mtv: 'morethantv',
   td: 'torrentday',
@@ -147,6 +170,11 @@ const fetchProwlarrHealth = async (healthUrl: string, apiKey: string | undefined
 };
 
 const fetchProwlarr = async (): Promise<Indexer[]> => {
+  if (breakerIsOpen('prowlarr')) {
+    logger.debug('Circuit breaker open for Prowlarr, skipping');
+    prowlarrReachable = false;
+    return [];
+  }
   try {
     const baseUrl = process.env.PROWLARR_BASE_URL || 'http://prowlarr:9696';
     const apiKey = process.env.PROWLARR_API_KEY;
@@ -160,6 +188,7 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
       logger.error('Unexpected Prowlarr response format:', typeof indexerRes.data);
       return [];
     }
+    breakerOnSuccess('prowlarr');
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return records.map((indexer: any) => ({
       id: `prowlarr-${indexer.id}`,
@@ -171,21 +200,29 @@ const fetchProwlarr = async (): Promise<Indexer[]> => {
   } catch (error) {
     logger.error('Failed to fetch indexers from Prowlarr:', error);
     prowlarrReachable = false;
+    breakerOnFailure('prowlarr');
     return [];
   }
 };
 
 const fetchAutobrrNetworks = async (): Promise<AutobrrNetwork[]> => {
+  if (breakerIsOpen('autobrr')) {
+    logger.debug('Circuit breaker open for Autobrr, skipping');
+    autobrrReachable = false;
+    return [];
+  }
   try {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const response = await fetchWithRetry<any>(`${process.env.AUTOBRR_BASE_URL || 'http://autobrr:7474'}/api/irc`, {
       headers: { 'X-API-Token': process.env.AUTOBRR_API_KEY },
       timeout: 10000,
     });
+    breakerOnSuccess('autobrr');
     return response.data;
   } catch (error) {
     logger.error('Failed to fetch IRC networks from Autobrr:', error);
     autobrrReachable = false;
+    breakerOnFailure('autobrr');
     return [];
   }
 };
