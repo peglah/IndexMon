@@ -45,14 +45,20 @@ export const DashboardPage = () => {
     return () => mq.removeEventListener('change', handler);
   }, []);
 
-  const { data, isLoading, isError } = useIndexers();
+  const { data, isLoading, isError, error } = useIndexers();
 
   if (isLoading) {
     return <div className="p-8">Loading...</div>;
   }
 
   if (isError) {
-    return <div className="p-8 text-destructive">Failed to load indexer data.</div>;
+    const detail = (error as { response?: { data?: { detail?: string } } })?.response?.data?.detail || (error as Error)?.message || '';
+    return (
+      <div className="p-8 text-destructive">
+        Failed to load indexer data.
+        {detail && <span className="block text-sm mt-1 opacity-70">{detail}</span>}
+      </div>
+    );
   }
 
   const indexers = data?.indexers;

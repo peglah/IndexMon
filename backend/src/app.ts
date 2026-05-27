@@ -6,6 +6,8 @@ import indexerRoutes from './routes/indexers';
 import authRoutes from './routes/auth';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler } from './middleware/error';
+import { requestIdMiddleware } from './middleware/requestId';
+import { logger } from './utils/logger';
 import { metricsHandler } from './utils/metrics';
 
 const app = express();
@@ -15,6 +17,7 @@ app.set('trust proxy', 1);
 // Security middleware
 app.use(helmet());
 app.use(express.json());
+app.use(requestIdMiddleware);
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -38,7 +41,9 @@ const iconContentType = (filePath: string): string => {
       const text = buf.toString('utf8', 0, bytesRead).trimStart();
       if (text.startsWith('<svg') || text.startsWith('<?xml') || text.startsWith('<!DOCTYPE')) return 'image/svg+xml';
     }
-  } catch { /* fall through */ }
+  } catch {
+    logger.debug(`Icon content type detection failed for ${filePath}`);
+  }
   return 'image/png';
 };
 

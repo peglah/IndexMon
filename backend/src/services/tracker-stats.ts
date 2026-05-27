@@ -87,7 +87,7 @@ const fetchGazelleStats = async (siteUrl: string, apiKey: string): Promise<Track
         buffer: uploaded - downloaded,
       };
     } catch {
-      // try next auth method
+      logger.debug(`Gazelle stats fetch failed for ${siteUrl}, trying next auth method`);
     }
   }
   return null;
@@ -129,7 +129,7 @@ const fetchUnit3dStats = async (siteUrl: string, apiKey: string): Promise<Tracke
       const result = parseStats(raw as Record<string, unknown>);
       if (result) return result;
     } catch {
-      // try next auth method
+      logger.debug(`UNIT3D stats fetch failed for ${siteUrl}, trying next auth method`);
     }
   }
   return null;

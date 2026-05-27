@@ -227,7 +227,7 @@ const cacheIcons = async (indexers: Indexer[]): Promise<void> => {
         const jitterMs = (Math.random() - 0.5) * 60 * 60 * 1000;
         if (!firstPoll && Date.now() - stat.mtimeMs < ICON_TTL_MS + jitterMs) return;
       } catch {
-        // missing, will download
+        logger.debug(`Icon cache stat failed for ${indexer.name}, will download`);
       }
       if (!indexer.siteUrl) return;
       try {
@@ -487,7 +487,9 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     try {
       const [{ count }] = await knex('indexer_history').count('* as count');
       historyRowsGauge.set(Number(count));
-    } catch { /* non-critical */ }
+    } catch {
+      logger.debug('Failed to count history rows');
+    }
 
     return { indexers: merged, services };
   } catch (error) {

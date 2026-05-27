@@ -5,17 +5,20 @@ const currentLevel: number = LEVELS[(process.env.LOG_LEVEL as Level) ?? 'info'] 
 
 const timestamp = (): string => new Date().toISOString();
 
-export const logger = {
+const makeLogger = (prefix = '') => ({
   debug: (...args: unknown[]) => {
-    if (currentLevel <= LEVELS.debug) console.log(`[${timestamp()}] [DEBUG]`, ...args);
+    if (currentLevel <= LEVELS.debug) console.log(`[${timestamp()}]${prefix} [DEBUG]`, ...args);
   },
   info: (...args: unknown[]) => {
-    if (currentLevel <= LEVELS.info) console.log(`[${timestamp()}] [INFO]`, ...args);
+    if (currentLevel <= LEVELS.info) console.log(`[${timestamp()}]${prefix} [INFO]`, ...args);
   },
   warn: (...args: unknown[]) => {
-    if (currentLevel <= LEVELS.warn) console.warn(`[${timestamp()}] [WARN]`, ...args);
+    if (currentLevel <= LEVELS.warn) console.warn(`[${timestamp()}]${prefix} [WARN]`, ...args);
   },
   error: (...args: unknown[]) => {
-    if (currentLevel <= LEVELS.error) console.error(`[${timestamp()}] [ERROR]`, ...args);
+    if (currentLevel <= LEVELS.error) console.error(`[${timestamp()}]${prefix} [ERROR]`, ...args);
   },
-};
+  child: (requestId: string) => makeLogger(` [${requestId}]`),
+});
+
+export const logger = makeLogger();

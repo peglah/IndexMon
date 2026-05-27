@@ -116,6 +116,7 @@ const extractDomain = (url: string): string | null => {
   try {
     return new URL(url).hostname.toLowerCase();
   } catch {
+    logger.debug(`qB: failed to extract domain from URL: ${url}`);
     return null;
   }
 };
@@ -128,6 +129,7 @@ const fetchGlobalStatus = async (): Promise<void> => {
     });
     connectionStatus = resp.data.connection_status;
   } catch {
+    logger.warn('qB: failed to fetch connection status');
     connectionStatus = 'disconnected';
   }
 
@@ -138,6 +140,7 @@ const fetchGlobalStatus = async (): Promise<void> => {
     });
     portOpen = portResp.data === true;
   } catch {
+    logger.warn('qB: port test failed');
     portOpen = null;
   }
 };
@@ -248,6 +251,7 @@ export const getQbitStatus = (siteUrl: string | undefined): QbitStatus | null =>
       }
     }
   } catch {
+    logger.debug(`qB: failed to parse siteUrl: ${siteUrl}`);
     return null;
   }
 
@@ -266,7 +270,7 @@ export const getQbitStatus = (siteUrl: string | undefined): QbitStatus | null =>
       }
     }
   } catch {
-    // bad URL
+    logger.debug(`qB: override lookup failed for siteUrl: ${siteUrl}`);
   }
 
   return null;
