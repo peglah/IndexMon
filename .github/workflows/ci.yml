@@ -99,6 +99,9 @@ jobs:
 
       - name: Start container for screenshot
         if: startsWith(github.ref, 'refs/tags/v')
+        # Empty .env is fine: container generates a random admin password
+        # on startup, and Playwright intercepts all API routes via
+        # page.route() so no real backend services are needed.
         run: |
           touch .env
           docker compose up -d
