@@ -31,6 +31,12 @@ const createTables = () => {
       FOREIGN KEY (user_id) REFERENCES users(id)
     );
 
+    CREATE TABLE IF NOT EXISTS alert_state (
+      key TEXT PRIMARY KEY,
+      down_since INTEGER NOT NULL,
+      alerted INTEGER NOT NULL DEFAULT 0
+    );
+
     CREATE TABLE IF NOT EXISTS indexer_history (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       indexer_id TEXT NOT NULL,

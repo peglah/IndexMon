@@ -195,6 +195,20 @@ const downSince = new Map<string, number>();
 const ALERT_DELAY_MS = (parseInt(process.env.ALERT_DELAY_MINUTES || '0', 10) || 0) * 60_000;
 let firstPoll = true;
 
+const persistAlertState = async (key: string, downSinceTs: number, alerted: boolean) => {
+  try {
+    await knex('alert_state').insert({ key, down_since: downSinceTs, alerted: alerted ? 1 : 0 })
+      .onConflict('key')
+      .merge();
+  } catch { /* non-critical */ }
+};
+
+const deleteAlertState = async (key: string) => {
+  try {
+    await knex('alert_state').where({ key }).delete();
+  } catch { /* non-critical */ }
+};
+
 const ICONS_DIR = path.join(
   path.dirname(process.env.DB_PATH || '/app/data/indexmon.db'),
   'icons',
@@ -407,16 +421,30 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     }
 
     if (firstPoll) {
+      // Load persisted alert state so restarts don't re-alert
+      try {
+        const rows = await knex('alert_state').select('*');
+        for (const row of rows) {
+          alertedDownIds.add(row.key);
+          downSince.set(row.key, row.down_since);
+        }
+      } catch { /* no persisted state */ }
+
+      // Pre-seed currently-down indexers not already tracked in persisted state
       for (const indexer of merged) {
         if (indexer.status === 'down') {
           const pk = `prowlarr:${indexer.id}`;
-          alertedDownIds.add(pk);
-          downSince.set(pk, Date.now());
+          if (!downSince.has(pk)) {
+            alertedDownIds.add(pk);
+            downSince.set(pk, Date.now());
+          }
         }
         if (indexer.autobrr && !isChannelUp(indexer.autobrr)) {
           const ak = `autobrr:${indexer.id}`;
-          alertedDownIds.add(ak);
-          downSince.set(ak, Date.now());
+          if (!downSince.has(ak)) {
+            alertedDownIds.add(ak);
+            downSince.set(ak, Date.now());
+          }
         }
       }
       firstPoll = false;
@@ -428,15 +456,20 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
           if (!alertedDownIds.has(prowlarrKey)) {
             if (!downSince.has(prowlarrKey)) {
               downSince.set(prowlarrKey, Date.now());
+              await persistAlertState(prowlarrKey, Date.now(), false);
             }
             if (Date.now() - (downSince.get(prowlarrKey) || 0) >= ALERT_DELAY_MS) {
               hasNewDown = true;
               alertedDownIds.add(prowlarrKey);
+              await persistAlertState(prowlarrKey, downSince.get(prowlarrKey)!, true);
             }
           }
         } else {
-          alertedDownIds.delete(prowlarrKey);
-          downSince.delete(prowlarrKey);
+          if (alertedDownIds.has(prowlarrKey) || downSince.has(prowlarrKey)) {
+            alertedDownIds.delete(prowlarrKey);
+            downSince.delete(prowlarrKey);
+            await deleteAlertState(prowlarrKey);
+          }
         }
 
         const autobrrKey = `autobrr:${indexer.id}`;
@@ -444,15 +477,20 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
           if (!alertedDownIds.has(autobrrKey)) {
             if (!downSince.has(autobrrKey)) {
               downSince.set(autobrrKey, Date.now());
+              await persistAlertState(autobrrKey, Date.now(), false);
             }
             if (Date.now() - (downSince.get(autobrrKey) || 0) >= ALERT_DELAY_MS) {
               hasNewDown = true;
               alertedDownIds.add(autobrrKey);
+              await persistAlertState(autobrrKey, downSince.get(autobrrKey)!, true);
             }
           }
         } else if (indexer.autobrr) {
-          alertedDownIds.delete(autobrrKey);
-          downSince.delete(autobrrKey);
+          if (alertedDownIds.has(autobrrKey) || downSince.has(autobrrKey)) {
+            alertedDownIds.delete(autobrrKey);
+            downSince.delete(autobrrKey);
+            await deleteAlertState(autobrrKey);
+          }
         }
       }
 
