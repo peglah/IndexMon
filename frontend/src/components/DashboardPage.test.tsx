@@ -11,18 +11,18 @@ const mockIndexers = [
     id: 'prowlarr-1',
     name: 'TorrentLeech',
     status: 'up' as const,
-    lastChecked: '2025-01-01T00:00:00Z',
+    lastChecked: '2026-05-27T00:00:00Z',
     siteUrl: 'https://torrentleech.org',
-    autobrr: { enabled: true, connected: true, monitoring: true, lastAnnounce: '2025-01-01T00:00:00Z' },
+    autobrr: { enabled: true, connected: true, monitoring: true, lastAnnounce: '2026-05-27T00:00:00Z' },
     autobrrMissing: false,
   },
   {
     id: 'prowlarr-2',
     name: 'HD-Space (API)',
     status: 'up' as const,
-    lastChecked: '2025-01-01T00:00:00Z',
+    lastChecked: '2026-05-27T00:00:00Z',
     siteUrl: 'https://hd-space.org',
-    autobrr: { enabled: true, connected: true, monitoring: true, lastAnnounce: '2025-01-01T00:00:00Z' },
+    autobrr: { enabled: true, connected: true, monitoring: true, lastAnnounce: '2026-05-27T00:00:00Z' },
     autobrrMissing: false,
   },
 ];
@@ -54,10 +54,20 @@ describe('DashboardPage', () => {
     expect(screen.getByText('Loading...')).toBeInTheDocument();
   });
 
-  it('renders error state', () => {
-    vi.mocked(useIndexers).mockReturnValue({ data: undefined, isLoading: false, isError: true } as never);
+  it('renders generic error state', () => {
+    vi.mocked(useIndexers).mockReturnValue({ data: undefined, isLoading: false, isError: true, error: new Error('Network failure') } as never);
     renderDashboard();
     expect(screen.getByText('Failed to load indexer data.')).toBeInTheDocument();
+  });
+
+  it('renders error detail from API response', () => {
+    const apiError = {
+      response: { data: { detail: 'Prowlarr is unreachable' } },
+      message: 'Request failed',
+    } as never;
+    vi.mocked(useIndexers).mockReturnValue({ data: undefined, isLoading: false, isError: true, error: apiError } as never);
+    renderDashboard();
+    expect(screen.getByText('Prowlarr is unreachable')).toBeInTheDocument();
   });
 
   it('renders indexer table and status grid with mock data', () => {
@@ -70,5 +80,16 @@ describe('DashboardPage', () => {
     expect(screen.getAllByText('TorrentLeech')).toHaveLength(2);
     expect(screen.getAllByText('HD-Space')).toHaveLength(2);
     expect(screen.getByText('Indexer Status Dashboard')).toBeInTheDocument();
+  });
+
+  it('renders last checked timestamp', () => {
+    vi.mocked(useIndexers).mockReturnValue({
+      data: { indexers: mockIndexers, services: mockServices },
+      isLoading: false,
+      isError: false,
+    } as never);
+    renderDashboard();
+    expect(screen.getByText(/Last checked:/)).toBeInTheDocument();
+    expect(screen.getByText((content) => content.includes('Last checked:') && content.includes('2026'))).toBeInTheDocument();
   });
 });
