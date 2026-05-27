@@ -111,7 +111,7 @@ const capture = async (context, iconCache, fullPage = true) => {
   await page.click('button[type="submit"]');
 
   await page.waitForSelector('text=TorrentLeech >> visible=true', { timeout: 15000 });
-  await page.waitForTimeout(500);
+  await page.waitForTimeout(1500);
 
   const light = await page.screenshot({ fullPage });
 
