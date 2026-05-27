@@ -6,6 +6,7 @@ export interface TrackerStats {
   downloaded: number;
   ratio: number;
   buffer: number;
+  warning?: boolean;
 }
 
 const statsCache = new Map<string, TrackerStats>();
@@ -80,11 +81,13 @@ const fetchGazelleStats = async (siteUrl: string, apiKey: string): Promise<Track
       const uploaded = Number(stats.uploaded);
       const downloaded = Number(stats.downloaded);
       if (isNaN(uploaded) || isNaN(downloaded)) continue;
+      const warned = data.response.isWarning === 1 || data.response.isWarning === true || data.response.warned === 1 || data.response.warned === true;
       return {
         uploaded,
         downloaded,
         ratio: downloaded > 0 ? uploaded / downloaded : uploaded > 0 ? Infinity : 1,
         buffer: uploaded - downloaded,
+        warning: warned || undefined,
       };
     } catch {
       logger.debug(`Gazelle stats fetch failed for ${siteUrl}, trying next auth method`);
@@ -106,11 +109,13 @@ const parseStats = (raw: Record<string, unknown>): TrackerStats | null => {
   const uploaded = typeof raw.uploaded === 'string' ? parseBytes(raw.uploaded) : Number(raw.uploaded);
   const downloaded = typeof raw.downloaded === 'string' ? parseBytes(raw.downloaded) : Number(raw.downloaded);
   if (isNaN(uploaded) || isNaN(downloaded)) return null;
+  const warned = raw.warned === 1 || raw.warned === true;
   return {
     uploaded,
     downloaded,
     ratio: downloaded > 0 ? uploaded / downloaded : uploaded > 0 ? Infinity : 1,
     buffer: uploaded - downloaded,
+    warning: warned || undefined,
   };
 };
 

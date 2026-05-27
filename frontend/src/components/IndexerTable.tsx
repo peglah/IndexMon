@@ -43,12 +43,13 @@ const UptimeTooltip = ({ uptimePercentage, children }: { uptimePercentage?: numb
   </div>
 );
 
-const BufferTooltip = ({ stats, children }: { stats: { uploaded: number; downloaded: number; ratio: number | null }; children: React.ReactNode }) => (
+const BufferTooltip = ({ stats, children }: { stats: { uploaded: number; downloaded: number; ratio: number | null; warning?: boolean }; children: React.ReactNode }) => (
   <div className="group relative inline-flex">
     {children}
     <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10 pointer-events-none">
       <div className="bg-popover text-popover-foreground text-xs font-medium px-2 py-1 rounded shadow-md border border-border whitespace-nowrap">
         Uploaded: {formatBytes(stats.uploaded)} &middot; Downloaded: {formatBytes(stats.downloaded)} &middot; Ratio: {stats.ratio !== null ? stats.ratio.toFixed(2) : '∞'}
+        {stats.warning && <span className="ml-1 text-yellow-500 font-bold">Warning</span>}
       </div>
     </div>
   </div>
@@ -92,6 +93,10 @@ const ShieldIcon = ({ className }: { className?: string }) => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
 );
 
+const WarningIcon = ({ className }: { className?: string }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+);
+
 const serviceIcon = (ok: boolean, connectionStatus?: string) => {
   if (!ok) return <XIcon className="text-red-500" />;
   if (connectionStatus === 'firewalled') return <ShieldIcon className="text-yellow-500" />;
@@ -107,12 +112,13 @@ const ServiceHeader = ({ label, ok, connectionStatus }: { label: string; ok: boo
   </TableHead>
 );
 
-const BufferCell = ({ stats }: { stats: { uploaded: number; downloaded: number; ratio: number | null; buffer: number } }) => {
+const BufferCell = ({ stats }: { stats: { uploaded: number; downloaded: number; ratio: number | null; buffer: number; warning?: boolean } }) => {
   const sign = stats.buffer > 0 ? '+' : stats.buffer < 0 ? '-' : '';
   const ratioColor = stats.ratio === null ? 'text-green-500' : stats.ratio < 0.8 ? 'text-red-500' : stats.ratio <= 1.2 ? 'text-yellow-500' : 'text-green-500';
   return (
     <BufferTooltip stats={stats}>
-      <span className={`font-semibold ${ratioColor}`}>
+      <span className={`inline-flex items-center gap-1 font-semibold ${ratioColor}`}>
+        {stats.warning && <WarningIcon className="text-yellow-500 shrink-0" />}
         {sign}{formatBytes(Math.abs(stats.buffer))}
       </span>
     </BufferTooltip>
