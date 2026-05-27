@@ -358,57 +358,64 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     const toInsert = dbRows.filter(r => lastStatusMap.get(`${r.indexer_id}:${r.source}`) !== r.status);
     if (toInsert.length > 0) await knex('indexer_history').insert(toInsert);
 
-    const computeDowntimeForSource = async (source: string, downIds: string[]): Promise<Map<string, number>> => {
-      if (downIds.length === 0) return new Map();
-      const rows = await knex('indexer_history')
-        .select('indexer_id')
-        .max('last_checked as last_up')
-        .whereIn('indexer_id', downIds)
-        .where('status', 'up')
-        .where('source', source)
-        .groupBy('indexer_id');
-      const result = new Map<string, number>();
-      for (const row of rows) {
-        const lastUpTime = new Date(row.last_up as string).getTime();
-        result.set(row.indexer_id as string, Math.floor((Date.now() - lastUpTime) / 60000));
-      }
-      return result;
-    };
+    // Single query for all sources' downtime (was 3 separate queries)
+    const downIdsProwlarr = merged.filter((i) => i.status === 'down').map((i) => i.id);
+    const downIdsAutobrr = merged.filter((i) => i.autobrr && !isChannelUp(i.autobrr)).map((i) => i.id);
+    const downIdsQb = merged.filter((i) => i.qbittorrent && !i.qbittorrent.working).map((i) => i.id);
+    const allDownIds = [...new Set([...downIdsProwlarr, ...downIdsAutobrr, ...downIdsQb])];
 
-    const [prowlarrDowntimeMap, autobrrDowntimeMap, qbDowntimeMap] = await Promise.all([
-      computeDowntimeForSource('prowlarr', merged.filter((i) => i.status === 'down').map((i) => i.id)),
-      computeDowntimeForSource('autobrr', merged.filter((i) => i.autobrr && !isChannelUp(i.autobrr)).map((i) => i.id)),
-      computeDowntimeForSource('qbittorrent', merged.filter((i) => i.qbittorrent && !i.qbittorrent.working).map((i) => i.id)),
+    let prowlarrDowntimeMap = new Map<string, number>();
+    let autobrrDowntimeMap = new Map<string, number>();
+    let qbDowntimeMap = new Map<string, number>();
+    if (allDownIds.length > 0) {
+      const downtimeRows = await knex('indexer_history')
+        .select('indexer_id', 'source')
+        .max('last_checked as last_up')
+        .whereIn('indexer_id', allDownIds)
+        .where('status', 'up')
+        .whereIn('source', ['prowlarr', 'autobrr', 'qbittorrent'])
+        .groupBy('indexer_id', 'source');
+      const now = Date.now();
+      for (const row of downtimeRows) {
+        const minutes = Math.floor((now - new Date(row.last_up as string).getTime()) / 60000);
+        if (row.source === 'prowlarr') prowlarrDowntimeMap.set(row.indexer_id as string, minutes);
+        else if (row.source === 'autobrr') autobrrDowntimeMap.set(row.indexer_id as string, minutes);
+        else if (row.source === 'qbittorrent') qbDowntimeMap.set(row.indexer_id as string, minutes);
+      }
+    }
+
+    // Single pass for all sources' uptime (2 queries instead of 6)
+    const windowAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const [allTransitions, allBoundaries] = await Promise.all([
+      knex('indexer_history')
+        .select('indexer_id', 'source', 'status', 'last_checked')
+        .whereIn('indexer_id', allIds)
+        .whereIn('source', ['prowlarr', 'autobrr', 'qbittorrent'])
+        .where('last_checked', '>=', windowAgo)
+        .orderBy(['indexer_id', 'source', 'last_checked']),
+      knex('indexer_history')
+        .select('indexer_id', 'source', 'status')
+        .whereIn('indexer_id', allIds)
+        .whereIn('source', ['prowlarr', 'autobrr', 'qbittorrent'])
+        .where('last_checked', '<', windowAgo)
+        .orderBy(['indexer_id', 'source', 'last_checked', 'desc']),
     ]);
 
-    const windowAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    const computeUptimeForSource = async (source: string): Promise<Map<string, number>> => {
-      const ids = merged.map((i) => i.id);
-      const allTransitions = await knex('indexer_history')
-        .select('indexer_id', 'status', 'last_checked')
-        .whereIn('indexer_id', ids)
-        .where('source', source)
-        .where('last_checked', '>=', windowAgo)
-        .orderBy(['indexer_id', 'last_checked']);
-
-      const boundaryRows = await knex('indexer_history')
-        .select('indexer_id', 'status')
-        .whereIn('indexer_id', ids)
-        .where('source', source)
-        .where('last_checked', '<', windowAgo)
-        .orderBy('indexer_id', 'asc')
-        .orderBy('last_checked', 'desc');
+    const computeUptimeForSource = (source: string): Map<string, number> => {
       const boundaryMap = new Map<string, string>();
       const seen = new Set<string>();
-      for (const r of boundaryRows) {
-        if (!seen.has(r.indexer_id)) {
-          seen.add(r.indexer_id);
+      for (const r of allBoundaries) {
+        if (r.source !== source) continue;
+        const key = `${r.indexer_id}`;
+        if (!seen.has(key)) {
+          seen.add(key);
           boundaryMap.set(r.indexer_id, r.status);
         }
       }
 
       const groups = new Map<string, Array<{ status: string; time: number }>>();
       for (const r of allTransitions) {
+        if (r.source !== source) continue;
         if (!groups.has(r.indexer_id)) groups.set(r.indexer_id, []);
         groups.get(r.indexer_id)!.push({ status: r.status, time: new Date(r.last_checked as string).getTime() });
       }
@@ -417,12 +424,12 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
       const windowStartTime = new Date(windowAgo).getTime();
       const windowMs = now - windowStartTime;
       const result = new Map<string, number>();
-      for (const id of ids) {
-        const transitions = groups.get(id) || [];
+      for (const id of allIds) {
+        const tlist = groups.get(id) || [];
         let upMs = 0;
         let cursorTime = windowStartTime;
         let cursorStatus = boundaryMap.get(id) || 'up';
-        for (const t of transitions) {
+        for (const t of tlist) {
           const segmentMs = t.time - cursorTime;
           if (segmentMs > 0 && cursorStatus === 'up') upMs += segmentMs;
           cursorTime = t.time;
@@ -435,11 +442,9 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
       return result;
     };
 
-    const [prowlarrUptimeMap, autobrrUptimeMap, qbUptimeMap] = await Promise.all([
-      computeUptimeForSource('prowlarr'),
-      computeUptimeForSource('autobrr'),
-      computeUptimeForSource('qbittorrent'),
-    ]);
+    const prowlarrUptimeMap = computeUptimeForSource('prowlarr');
+    const autobrrUptimeMap = computeUptimeForSource('autobrr');
+    const qbUptimeMap = computeUptimeForSource('qbittorrent');
 
     for (const indexer of merged) {
       const pct = prowlarrUptimeMap.get(indexer.id);
