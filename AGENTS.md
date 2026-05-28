@@ -50,15 +50,6 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
     - Only support POST methods
   - **Root cause**: Many trackers intentionally customize UNIT3D to remove sensitive fields from public API responses
   - **Workaround**: Manual website checks required for warning/login status on these trackers
-
-- **Gazelle-based trackers** (TorrentLeech, AlphaRatio, etc.): 
-  - Typically expose more user data via `/ajax.php?action=user`
-  - **Authentication challenges**: 
-    - Require **cookie-based auth** (not simple API keys)
-    - Need to handle **CSRF tokens**, **session management**, and potentially **reCAPTCHA**
-    - Current implementation only supports API key auth (Bearer/token/query param)
-  - **Prowlarr integration note**: Prowlarr handles username/password auth for these trackers, but our tracker-stats service doesn't reuse Prowlarr's sessions
-  - **Workaround**: Would need to implement full login flow or proxy requests through Prowlarr
 - **Dark mode**: `class` strategy. Inline `<script>` in `index.html` sets `dark` before React renders. Dashboard toggle persists to `localStorage.theme`; `matchMedia` listener stays in sync. Login page has no toggle.
 - **CollapsibleSection**: `overflow-hidden` only when collapsed — otherwise tooltips on StatusGrid tiles get clipped.
 - **10s timeouts** on all 3 upstream `axios.get` calls (Prowlarr health, Prowlarr indexers, Autobrr IRC). 1 retry with 1s→2s backoff.
@@ -72,7 +63,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - `backend/src/services/definitions.ts` — GitHub API Autobrr definition fetcher (startup + every 24h)
 - `backend/src/services/apprise.ts` — alert dispatcher with in-memory dedup
 - `backend/src/routes/apprise.ts` — `POST /api/apprise/test` test-notification endpoint behind auth
-- `backend/src/services/tracker-stats.ts` — per-indexer stats (Gazelle/UNIT3D API), calls on startup
+- `backend/src/services/tracker-stats.ts` — per-indexer stats (UNIT3D API), calls on startup
 - `backend/src/middleware/auth.ts` — in-memory session Map, Zod login validation, warn-logging on failure
 - `backend/src/config/database.ts` — knex config with WAL mode + 5000ms busy timeout
 - `backend/src/utils/metrics.ts` — Prometheus metric definitions + `/metrics` handler

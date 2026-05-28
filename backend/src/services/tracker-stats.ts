@@ -6,11 +6,10 @@ export interface TrackerStats {
   downloaded: number;
   ratio: number;
   buffer: number;
-  warning?: boolean;
 }
 
 const statsCache = new Map<string, TrackerStats>();
-const platformCache = new Map<string, 'gazelle' | 'unit3d' | 'none'>();
+const platformCache = new Map<string, 'unit3d' | 'none'>();
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
 const getBaseUrl = () => process.env.PROWLARR_BASE_URL || 'http://prowlarr:9696';
@@ -62,39 +61,7 @@ const extractApiKey = (fields: ProwlarrField[], indexerName: string): string | n
   return null;
 };
 
-const fetchGazelleStats = async (siteUrl: string, apiKey: string): Promise<TrackerStats | null> => {
-  const base = siteUrl.replace(/\/+$/, '');
-  const authAttempts = [
-    { headers: { Authorization: `Bearer ${apiKey}` } },
-    { headers: { Authorization: `token ${apiKey}` } },
-    { params: { auth: apiKey } },
-  ];
-  for (let i = 0; i < authAttempts.length; i++) {
-    try {
-      const resp = await axios.get(`${base}/ajax.php?action=user`, {
-        ...authAttempts[i],
-        timeout: 10000,
-      });
-      const data = resp.data;
-      if (data?.status !== 'success' || !data?.response?.stats) continue;
-      const stats = data.response.stats;
-      const uploaded = Number(stats.uploaded);
-      const downloaded = Number(stats.downloaded);
-      if (isNaN(uploaded) || isNaN(downloaded)) continue;
-      const warned = data.response.isWarning === 1 || data.response.isWarning === true || data.response.warned === 1 || data.response.warned === true;
-      return {
-        uploaded,
-        downloaded,
-        ratio: downloaded > 0 ? uploaded / downloaded : uploaded > 0 ? Infinity : 1,
-        buffer: uploaded - downloaded,
-        warning: warned || undefined,
-      };
-    } catch {
-      logger.debug(`Gazelle stats fetch failed for ${siteUrl}, trying next auth method`);
-    }
-  }
-  return null;
-};
+
 
 const parseBytes = (value: string): number => {
   const match = value.trim().match(/^([\d.]+)\s*(B|KiB|MiB|GiB|TiB|PiB)?$/i);
@@ -109,13 +76,11 @@ const parseStats = (raw: Record<string, unknown>): TrackerStats | null => {
   const uploaded = typeof raw.uploaded === 'string' ? parseBytes(raw.uploaded) : Number(raw.uploaded);
   const downloaded = typeof raw.downloaded === 'string' ? parseBytes(raw.downloaded) : Number(raw.downloaded);
   if (isNaN(uploaded) || isNaN(downloaded)) return null;
-  const warned = raw.warned === 1 || raw.warned === true;
   return {
     uploaded,
     downloaded,
     ratio: downloaded > 0 ? uploaded / downloaded : uploaded > 0 ? Infinity : 1,
     buffer: uploaded - downloaded,
-    warning: warned || undefined,
   };
 };
 
@@ -193,35 +158,25 @@ const fetchAllStats = async (): Promise<void> => {
             return null;
           }
 
-          logger.info(`Tracker stats: ${indexer.name} — found apiKey, trying Gazelle at ${siteUrl}`);
-          let stats = await fetchGazelleStats(siteUrl, fieldApiKey);
-          if (stats) {
-            platformCache.set(indexer.name, 'gazelle');
-            logger.info(`Tracker stats: ${indexer.name} → Gazelle, buffer=${stats.buffer}`);
-            return { name: indexer.name, stats };
-          }
-
-          logger.info(`Tracker stats: ${indexer.name} — Gazelle failed, trying UNIT3D`);
-          stats = await fetchUnit3dStats(siteUrl, fieldApiKey);
+          logger.info(`Tracker stats: ${indexer.name} — found apiKey, trying UNIT3D at ${siteUrl}`);
+          const stats = await fetchUnit3dStats(siteUrl, fieldApiKey);
           if (stats) {
             platformCache.set(indexer.name, 'unit3d');
             logger.info(`Tracker stats: ${indexer.name} → UNIT3D, buffer=${stats.buffer}`);
             return { name: indexer.name, stats };
           }
 
-          logger.info(`Tracker stats: ${indexer.name} — both Gazelle and UNIT3D failed`);
+          logger.info(`Tracker stats: ${indexer.name} — UNIT3D failed`);
           platformCache.set(indexer.name, 'none');
           return null;
         }
 
         // Cached platform: use the known adapter
-        const stats = cachedPlatform === 'gazelle'
-          ? await fetchGazelleStats(siteUrl, fieldApiKey)
-          : await fetchUnit3dStats(siteUrl, fieldApiKey);
+        const statsCached = await fetchUnit3dStats(siteUrl, fieldApiKey);
 
-        if (stats) {
-          logger.debug(`Tracker stats: ${indexer.name} ${cachedPlatform}, buffer=${stats.buffer}`);
-          return { name: indexer.name, stats };
+        if (statsCached) {
+          logger.debug(`Tracker stats: ${indexer.name} ${cachedPlatform}, buffer=${statsCached.buffer}`);
+          return { name: indexer.name, stats: statsCached };
         }
 
         logger.debug(`Tracker stats: ${indexer.name} ${cachedPlatform} fetch failed, clearing cache`);
