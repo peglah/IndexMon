@@ -189,12 +189,12 @@ describe('fetchIndexers', () => {
   });
 
   describe('downtime and uptime computation', () => {
-    it('computes downtime minutes from most recent up row', async () => {
+    it('computes downtime minutes from most recent down row', async () => {
       const id = 'prowlarr-1';
       const past = new Date(Date.now() - 30 * 60 * 1000).toISOString();
       await knex('indexer_history').insert([
-        { indexer_id: id, name: 'Test Indexer', source: 'prowlarr', status: 'up', last_checked: past },
-        { indexer_id: id, name: 'Test Indexer', source: 'autobrr', status: 'up', last_checked: past },
+        { indexer_id: id, name: 'Test Indexer', source: 'prowlarr', status: 'down', last_checked: past },
+        { indexer_id: id, name: 'Test Indexer', source: 'autobrr', status: 'down', last_checked: past },
       ]);
 
       mockedAxios.get.mockImplementation(async (url: string) => {

@@ -381,7 +381,7 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
         .select('indexer_id', 'source')
         .max('last_checked as last_up')
         .whereIn('indexer_id', allDownIds)
-        .where('status', 'up')
+        .where('status', 'down')
         .whereIn('source', ['prowlarr', 'autobrr', 'qbittorrent'])
         .groupBy('indexer_id', 'source');
       const now = Date.now();
