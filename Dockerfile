@@ -1,7 +1,7 @@
 # Multi-stage build for IndexMon (Backend + Frontend + Nginx + SQLite)
 
 # Stage 1: Build the frontend
-FROM node:20-alpine AS frontend-builder
+FROM node:22-alpine AS frontend-builder
 WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 COPY frontend/tsconfig.json ./
@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/root/.npm \
 RUN npm run build
 
 # Stage 2: Build the backend
-FROM node:20-alpine AS backend-builder
+FROM node:22-alpine AS backend-builder
 WORKDIR /app
 COPY backend/package.json backend/package-lock.json ./
 RUN --mount=type=cache,target=/root/.npm \
@@ -27,7 +27,7 @@ COPY backend/tsconfig.json ./
 RUN npx tsc -p tsconfig.json
 
 # Stage 3: Combine everything into a single container
-FROM node:20-alpine
+FROM node:22-alpine
 ARG APP_VERSION=dev
 ENV APP_VERSION=$APP_VERSION
 WORKDIR /app
