@@ -55,4 +55,5 @@ export interface ServicesStatus {
   prowlarr: ServiceStatus;
   autobrr: ServiceStatus;
   qbittorrent: ServiceStatus;
+  appriseConfigured: boolean;
 }

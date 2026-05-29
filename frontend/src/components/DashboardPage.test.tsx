@@ -38,6 +38,7 @@ const mockServices = {
   prowlarr: { ok: true },
   autobrr: { ok: true },
   qbittorrent: { ok: true, connectionStatus: 'connected' },
+  appriseConfigured: true,
 };
 
 const renderDashboard = () => {
@@ -166,5 +167,15 @@ describe('DashboardPage', () => {
     const msg = await screen.findByText('Test notification sent!');
     expect(msg).toBeInTheDocument();
     expect(msg.className).toContain('text-green-500');
+  });
+
+  it('hides test notification button when apprise is not configured', () => {
+    vi.mocked(useIndexers).mockReturnValue({
+      data: { indexers: mockIndexers, services: { ...mockServices, appriseConfigured: false } },
+      isLoading: false,
+      isError: false,
+    } as never);
+    renderDashboard();
+    expect(screen.queryByRole('button', { name: 'Test notifications' })).not.toBeInTheDocument();
   });
 });

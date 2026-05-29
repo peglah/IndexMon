@@ -46,13 +46,14 @@ Then open http://localhost. If you set `ADMIN_PASSWORD_HASH` in `.env`, use that
 | `ADMIN_PASSWORD_HASH` | No | random on each startup | Salted SHA-256 hash. Generate via `backend/scripts/hash.sh yourpass`. If unset, a random password is generated and printed to logs. |
 | `APPRISE_API_URL` | No | — | HTTP endpoint of your Apprise API (e.g. `http://192.168.41.4:8084`) |
 | `APPRISE_URLS` | No | — | Comma-separated Apprise notification URLs (e.g. `ntfy://host/topic?token=...`) |
-| `ALERT_DELAY_MINUTES` | No | `0` | Minimum downtime (minutes) before an Apprise alert fires |
+| `ALERT_DELAY_M` | No | `0` | Minimum downtime (minutes) before an Apprise alert fires |
 | `QBITTORRENT_BASE_URL` | No | `http://qbittorrent:8080` | qBittorrent Web UI URL (optional — omit to disable tracker checks) |
 | `QBITTORRENT_USERNAME` | No | — | qBittorrent login username |
 | `QBITTORRENT_PASSWORD` | No | — | qBittorrent login password |
 | `QBITTORRENT_POLL_INTERVAL_S` | No | `300` | Tracker status poll interval in seconds |
 | `LOG_LEVEL` | No | `info` | Log level — `debug`, `info`, `warn`, or `error` |
 | `TRACKER_STATS_TTL_M` | No | `1440` | Per-indexer buffer/ratio refresh interval in minutes. `0` to disable. |
+
 qBittorrent is optional. If `QBITTORRENT_USERNAME` is unset, the qBittorrent column is hidden entirely. If set but unreachable, the column header shows a red X and per-indexer cells show `—`.
 
 Autobrr is optional. If `AUTOBRR_API_KEY` is unset, the Autobrr column is hidden entirely. If set but unreachable, the column header shows a red X and per-indexer cells show `—`.

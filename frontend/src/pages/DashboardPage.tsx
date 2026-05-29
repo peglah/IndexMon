@@ -106,9 +106,11 @@ export const DashboardPage = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Indexer Status Dashboard</h1>
         <div className="flex items-center gap-2">
-          <button onClick={sendTestNotification} className="p-2 rounded-md hover:bg-muted transition-colors" aria-label="Test notifications" title="Send a test Apprise notification">
-            <BellIcon />
-          </button>
+          {services?.appriseConfigured && (
+            <button onClick={sendTestNotification} className="p-2 rounded-md hover:bg-muted transition-colors" aria-label="Test notifications" title="Send a test Apprise notification">
+              <BellIcon />
+            </button>
+          )}
           <button onClick={toggle} className="p-2 rounded-md hover:bg-muted transition-colors" aria-label="Toggle theme">
             {dark ? <SunIcon /> : <MoonIcon />}
           </button>

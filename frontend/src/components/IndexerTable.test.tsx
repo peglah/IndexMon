@@ -13,6 +13,7 @@ const defaultServices = {
   prowlarr: { ok: true },
   autobrr: { ok: true, configured: true },
   qbittorrent: { ok: true, configured: true, connectionStatus: 'connected' },
+  appriseConfigured: true,
 };
 
 describe('IndexerTable', () => {
@@ -130,6 +131,7 @@ describe('IndexerTable', () => {
       prowlarr: { ok: false },
       autobrr: { ok: false, configured: true },
       qbittorrent: { ok: false, configured: true },
+      appriseConfigured: true,
     }} />);
     expect(screen.getByText('Prowlarr')).toBeInTheDocument();
     expect(screen.getAllByText(/Autobrr/)).toHaveLength(2);
@@ -141,6 +143,7 @@ describe('IndexerTable', () => {
       prowlarr: { ok: true },
       autobrr: { ok: false, configured: false },
       qbittorrent: { ok: true, configured: true, connectionStatus: 'connected' },
+      appriseConfigured: true,
     }} />);
     expect(screen.queryByText(/Autobrr/)).not.toBeInTheDocument();
   });
@@ -150,6 +153,7 @@ describe('IndexerTable', () => {
       prowlarr: { ok: true },
       autobrr: { ok: true, configured: true },
       qbittorrent: { ok: false, configured: false },
+      appriseConfigured: true,
     }} />);
     expect(screen.queryByText('qBittorrent')).not.toBeInTheDocument();
   });

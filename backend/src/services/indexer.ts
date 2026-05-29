@@ -85,6 +85,7 @@ export interface ServiceStatuses {
   prowlarr: ServiceStatus;
   autobrr: ServiceStatus;
   qbittorrent: ServiceStatus;
+  appriseConfigured: boolean;
 }
 
 let prowlarrReachable = true;
@@ -230,7 +231,7 @@ const fetchAutobrrNetworks = async (): Promise<AutobrrNetwork[]> => {
 
 const alertedDownIds = new Set<string>();
 const downSince = new Map<string, number>();
-const ALERT_DELAY_MS = (parseInt(process.env.ALERT_DELAY_MINUTES || '0', 10) || 0) * 60_000;
+const ALERT_DELAY_MS = (parseInt(process.env.ALERT_DELAY_M || '0', 10) || 0) * 60_000;
 let firstPoll = true;
 
 const persistAlertState = async (key: string, downSinceTs: number, alerted: boolean) => {
@@ -332,10 +333,12 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     }
 
     const qbGlobal = getQbitGlobalStatus();
+    const appriseConfigured = !!(process.env.APPRISE_API_URL && process.env.APPRISE_URLS);
     const services: ServiceStatuses = {
       prowlarr: { ok: prowlarrReachable },
       autobrr: { ok: autobrrReachable, configured: !!process.env.AUTOBRR_API_KEY },
       qbittorrent: { ok: qbGlobal.connectionStatus !== null && qbGlobal.connectionStatus !== 'disconnected', configured: !!process.env.QBITTORRENT_USERNAME, connectionStatus: qbGlobal.connectionStatus ?? undefined, portOpen: qbGlobal.portOpen },
+      appriseConfigured,
     };
 
     if (merged.length === 0) {
