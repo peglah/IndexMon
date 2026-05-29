@@ -59,6 +59,19 @@ qBittorrent is optional. If `QBITTORRENT_BASE_URL` is unset or unreachable, the 
 
 IndexMon exposes Prometheus-compatible metrics at `GET /metrics` (unauthenticated, OpenMetrics format). Includes Node.js process stats (CPU, memory, event loop lag) plus custom metrics for poll duration, upstream reachability, and history row counts.
 
+## Tile Colors
+
+Each indexer in the status grid shows its composite health using a "worst wins" priority:
+
+| Color | When | Meaning |
+|-------|------|---------|
+| 🟥 Red | Prowlarr reports the indexer as down | Indexer is disabled or has a health check failure |
+| 🟧 Orange | qBittorrent has torrents but trackers report errors | Seeding/swarming may be broken |
+| 🟨 Yellow | Autobrr exists but IRC is disconnected or not monitoring | Can't receive new announcements |
+| 🟫 Amber | Tracker buffer ratio is below 0.80 | Low buffer — risk of hit-and-run |
+| ⬜ Grey | No Autobrr entry exists despite a known definition | Indexer won't auto-grab |
+| 🟩 Green | Everything is healthy | — |
+
 ## Development
 
 In production, nginx on port 80 proxies all requests to the backend. Port 3000 is the backend's direct listen port — you only need host access for local development (e.g. curling the API directly or using Vite's dev proxy).

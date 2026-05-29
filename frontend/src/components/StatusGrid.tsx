@@ -3,12 +3,14 @@ import { Indexer } from '../types';
 
 const stripApi = (name: string): string => name.replace(/\s*\(API\)/gi, '');
 
-type TileStatus = 'red' | 'yellow' | 'grey' | 'green';
+type TileStatus = 'red' | 'orange' | 'yellow' | 'amber' | 'grey' | 'green';
 
 const tileColor = (status: TileStatus): string => {
   switch (status) {
     case 'red': return 'bg-red-500';
+    case 'orange': return 'bg-orange-500';
     case 'yellow': return 'bg-yellow-400';
+    case 'amber': return 'bg-amber-400';
     case 'grey': return 'bg-gray-400 dark:bg-gray-500';
     case 'green': return 'bg-green-500';
   }
@@ -16,8 +18,10 @@ const tileColor = (status: TileStatus): string => {
 
 const classify = (indexer: Indexer): TileStatus => {
   if (indexer.status === 'down') return 'red';
+  if (indexer.qbittorrent?.hasTorrents && !indexer.qbittorrent.working) return 'orange';
   if (indexer.autobrr && !(indexer.autobrr.connected && indexer.autobrr.monitoring)) return 'yellow';
   if (indexer.autobrrMissing) return 'grey';
+  if (indexer.stats?.ratio !== null && indexer.stats?.ratio !== undefined && indexer.stats.ratio < 0.8) return 'amber';
   return 'green';
 };
 
@@ -52,7 +56,7 @@ export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
         const status = classify(indexer);
         const displayName = stripApi(indexer.name);
         const changeAnim = changedIds.has(indexer.id)
-          ? status === 'red' ? 'animate-alert-pulse' : 'animate-recover'
+          ? status === 'red' || status === 'orange' ? 'animate-alert-pulse' : 'animate-recover'
           : '';
         return (
           <div

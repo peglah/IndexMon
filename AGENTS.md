@@ -26,6 +26,21 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 | `GET /health` | No | Returns `{ ok: true }` for Docker HEALTHCHECK |
 | `GET /metrics` | No | Prometheus metrics (OpenMetrics format) |
 
+## StatusGrid Tile Colors
+
+Composite "worst wins" — first matching priority determines tile color:
+
+| Priority | Color | Condition | Source |
+|----------|-------|-----------|--------|
+| 1 | `bg-red-500` | `indexer.status === 'down'` | Prowlarr disabled/health failure |
+| 2 | `bg-orange-500` | `qbittorrent.hasTorrents && !qbittorrent.working` | qB tracker errors |
+| 3 | `bg-yellow-400` | Autobrr exists but not `connected && monitoring` | IRC not healthy |
+| 4 | `bg-amber-400` | `stats.ratio < 0.8` | Low buffer ratio |
+| 5 | `bg-gray-400` | `autobrrMissing` | No Autobrr entry (definition exists) |
+| 6 | `bg-green-500` | Default | All good |
+
+Defined in `frontend/src/components/StatusGrid.tsx:19-26`. Animates `alert-pulse` on transitions to red/orange, `recover` on transitions away.
+
 ## Quirks
 - **Prowlarr 2.x** drops `status` from `GET /api/v1/indexer`. Auto-disabled indexers detected via `GET /api/v1/health` → `IndexerStatusCheck` warning (comma-separated names). Manually-disabled via `enable` field. Header: `X-Api-Key`.
 - **Autobrr**: endpoint `/api/irc` (not `/api/indexers`). Header `X-API-Token`. Health = `channel.monitoring && network.connected` — `channel.enabled` is user preference, NOT checked.
