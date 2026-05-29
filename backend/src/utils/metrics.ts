@@ -26,6 +26,42 @@ export const historyRows = new client.Gauge({
   help: 'Number of rows in indexer_history table',
 });
 
+export const indexerUp = new client.Gauge({
+  name: 'indexmon_indexer_up',
+  help: 'Whether an indexer is up (1) or down (0) per source (prowlarr/autobrr/qbittorrent)',
+  labelNames: ['indexer', 'source'] as const,
+});
+
+export const indexerUptimePercentage = new client.Gauge({
+  name: 'indexmon_indexer_uptime_percentage',
+  help: '24-hour time-weighted uptime percentage per source',
+  labelNames: ['indexer', 'source'] as const,
+});
+
+export const announceAgeSeconds = new client.Gauge({
+  name: 'indexmon_announce_age_seconds',
+  help: 'Seconds since last Autobrr IRC announce per indexer',
+  labelNames: ['indexer'] as const,
+});
+
+export const trackerBufferBytes = new client.Gauge({
+  name: 'indexmon_tracker_buffer_bytes',
+  help: 'Per-indexer buffer (uploaded minus downloaded) in bytes',
+  labelNames: ['indexer'] as const,
+});
+
+export const trackerRatio = new client.Gauge({
+  name: 'indexmon_tracker_ratio',
+  help: 'Per-indexer upload/download ratio',
+  labelNames: ['indexer'] as const,
+});
+
+export const circuitBreakerOpen = new client.Gauge({
+  name: 'indexmon_circuit_breaker_open',
+  help: 'Whether the circuit breaker is open (1) for a service (prowlarr/autobrr)',
+  labelNames: ['service'] as const,
+});
+
 export const metricsHandler = async (_req: Request, res: Response) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());

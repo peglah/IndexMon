@@ -6,7 +6,7 @@ import { sendAlert } from './apprise';
 import { logger } from '../utils/logger';
 import { hasDefinition } from './definitions';
 import { normalize } from '../utils/normalize';
-import { pollDuration, pollTotal, upstreamReachable, historyRows as historyRowsGauge } from '../utils/metrics';
+import { pollDuration, pollTotal, upstreamReachable, historyRows as historyRowsGauge, indexerUp, indexerUptimePercentage, announceAgeSeconds, trackerBufferBytes, trackerRatio, circuitBreakerOpen } from '../utils/metrics';
 import { getQbitStatus, getQbitGlobalStatus, QbitStatus } from './qbittorrent';
 import { getTrackerStats, TrackerStats as TrackerStatsType } from './tracker-stats';
 
@@ -585,6 +585,36 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     } catch {
       logger.debug('Failed to count history rows');
     }
+
+    for (const indexer of merged) {
+      indexerUp.set({ indexer: indexer.name, source: 'prowlarr' }, indexer.status === 'up' ? 1 : 0);
+      if (indexer.uptimePercentage !== undefined) {
+        indexerUptimePercentage.set({ indexer: indexer.name, source: 'prowlarr' }, indexer.uptimePercentage);
+      }
+      if (indexer.autobrr) {
+        indexerUp.set({ indexer: indexer.name, source: 'autobrr' }, isChannelUp(indexer.autobrr) ? 1 : 0);
+        if (indexer.autobrrUptimePercentage !== undefined) {
+          indexerUptimePercentage.set({ indexer: indexer.name, source: 'autobrr' }, indexer.autobrrUptimePercentage);
+        }
+        if (indexer.autobrr.lastAnnounce) {
+          announceAgeSeconds.set({ indexer: indexer.name }, Math.floor((Date.now() - new Date(indexer.autobrr.lastAnnounce).getTime()) / 1000));
+        }
+      }
+      if (indexer.qbittorrent?.hasTorrents) {
+        indexerUp.set({ indexer: indexer.name, source: 'qbittorrent' }, indexer.qbittorrent.working ? 1 : 0);
+        if (indexer.qbUptimePercentage !== undefined) {
+          indexerUptimePercentage.set({ indexer: indexer.name, source: 'qbittorrent' }, indexer.qbUptimePercentage);
+        }
+      }
+      if (indexer.stats) {
+        trackerBufferBytes.set({ indexer: indexer.name }, indexer.stats.buffer);
+        if (isFinite(indexer.stats.ratio)) {
+          trackerRatio.set({ indexer: indexer.name }, indexer.stats.ratio);
+        }
+      }
+    }
+    circuitBreakerOpen.set({ service: 'prowlarr' }, breakerIsOpen('prowlarr') ? 1 : 0);
+    circuitBreakerOpen.set({ service: 'autobrr' }, breakerIsOpen('autobrr') ? 1 : 0);
 
     return { indexers: merged, services };
   } catch (error) {
