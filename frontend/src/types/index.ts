@@ -10,7 +10,6 @@ export interface TrackerStats {
   downloaded: number;
   ratio: number | null;
   buffer: number;
-  warning?: boolean;
 }
 
 export interface Indexer {
