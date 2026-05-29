@@ -1,8 +1,13 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import React from 'react';
+import { MemoryRouter } from 'react-router-dom';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { DashboardPage } from '../pages/DashboardPage';
 import { useIndexers } from '../hooks/useIndexers';
+import { AuthContext } from '../context/AuthContext';
+
+const mockLogout = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('../hooks/useIndexers');
 vi.mock('../utils/axios', () => ({ default: { post: vi.fn() } }));
@@ -38,9 +43,13 @@ const mockServices = {
 const renderDashboard = () => {
   const queryClient = new QueryClient();
   return render(
-    <QueryClientProvider client={queryClient}>
-      <DashboardPage />
-    </QueryClientProvider>,
+    <MemoryRouter>
+      <AuthContext.Provider value={{ token: 'test-token', login: vi.fn(), logout: mockLogout, isAuthenticated: true }}>
+        <QueryClientProvider client={queryClient}>
+          <DashboardPage />
+        </QueryClientProvider>
+      </AuthContext.Provider>
+    </MemoryRouter>,
   );
 };
 
