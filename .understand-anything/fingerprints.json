@@ -1,0 +1,2983 @@
+{
+  "version": "1.0.0",
+  "gitCommitHash": "916e33dddec28e0b369749ab94cc43b49d58f255",
+  "generatedAt": "2026-05-28T15:33:37.141Z",
+  "files": {
+    ".dockerignore": {
+      "filePath": ".dockerignore",
+      "contentHash": "2875372a15db202fb7cda49422a1b0d8ae68127558316c149fba5d054570a29d",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": false
+    },
+    ".env.example": {
+      "filePath": ".env.example",
+      "contentHash": "acac92d05ee62f9f7353a718bc1e82a38e02678472cd5bc459010e16c1502060",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 32,
+      "hasStructuralAnalysis": true
+    },
+    ".github/workflows/ci.yml": {
+      "filePath": ".github/workflows/ci.yml",
+      "contentHash": "efc0c9e8ec17342ec3a46f9e931a15ebda7b1f85ad45074181a8b22eaa0c6a2f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 132,
+      "hasStructuralAnalysis": true
+    },
+    ".understand-anything/.understandignore": {
+      "filePath": ".understand-anything/.understandignore",
+      "contentHash": "a0736a6e2a10b7850eba7c05d28a37c491af2c10320885fc8043d883c3ff996f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 27,
+      "hasStructuralAnalysis": false
+    },
+    "AGENTS.md": {
+      "filePath": "AGENTS.md",
+      "contentHash": "cc538fa5e4af22f5b9450e980214940d1d89d64c7bfcd677713aefb0b460e6c4",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 84,
+      "hasStructuralAnalysis": true
+    },
+    "backend/Dockerfile": {
+      "filePath": "backend/Dockerfile",
+      "contentHash": "8f390d720e0af13559dfc572d4b8a8f2c3b56af5cc26d7c29dcfe6a6ca66f120",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 28,
+      "hasStructuralAnalysis": true
+    },
+    "backend/eslint.config.mjs": {
+      "filePath": "backend/eslint.config.mjs",
+      "contentHash": "1ebabc91c587767fc861bd065c173ccaaad52bd6891977e9d0b134c9224c0d42",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@typescript-eslint/eslint-plugin",
+          "specifiers": [
+            "tseslint"
+          ]
+        },
+        {
+          "source": "@typescript-eslint/parser",
+          "specifiers": [
+            "tsparser"
+          ]
+        },
+        {
+          "source": "globals",
+          "specifiers": [
+            "globals"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 31,
+      "hasStructuralAnalysis": true
+    },
+    "backend/jest.config.js": {
+      "filePath": "backend/jest.config.js",
+      "contentHash": "0e93657fc86b7309f6faba19d219f8440a878062bc334f5511d2c04a804dd804",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 11,
+      "hasStructuralAnalysis": true
+    },
+    "backend/knexfile.ts": {
+      "filePath": "backend/knexfile.ts",
+      "contentHash": "2755b506330dfd56b7992ad400e51a50b928fc5ef674da924d1fa1af41aa2aac",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "knex",
+          "specifiers": [
+            "Knex"
+          ]
+        },
+        {
+          "source": "path",
+          "specifiers": [
+            "path"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "backend/migrations/20260518_init.ts": {
+      "filePath": "backend/migrations/20260518_init.ts",
+      "contentHash": "33a261fbe4db319649cd1d94fd37c942a84d4bab523719cb949544497c499b9d",
+      "functions": [
+        {
+          "name": "up",
+          "params": [
+            "knex"
+          ],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "lineCount": 34
+        },
+        {
+          "name": "down",
+          "params": [
+            "knex"
+          ],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "knex",
+          "specifiers": [
+            "Knex"
+          ]
+        }
+      ],
+      "exports": [
+        "up",
+        "down"
+      ],
+      "totalLines": 43,
+      "hasStructuralAnalysis": true
+    },
+    "backend/migrations/20260524_add_source_to_indexer_history.ts": {
+      "filePath": "backend/migrations/20260524_add_source_to_indexer_history.ts",
+      "contentHash": "9b22640af79529d7ab715b796d18996e9d840e9ff479fc9a09140ddf1b050aef",
+      "functions": [
+        {
+          "name": "up",
+          "params": [
+            "knex"
+          ],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "lineCount": 8
+        },
+        {
+          "name": "down",
+          "params": [
+            "knex"
+          ],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "knex",
+          "specifiers": [
+            "Knex"
+          ]
+        }
+      ],
+      "exports": [
+        "up",
+        "down"
+      ],
+      "totalLines": 17,
+      "hasStructuralAnalysis": true
+    },
+    "backend/migrations/20260527_add_alert_state.ts": {
+      "filePath": "backend/migrations/20260527_add_alert_state.ts",
+      "contentHash": "5bd190f808dcc18731afc2f3b7910ee9df56e91fa88ad9073a986a4d244ffe12",
+      "functions": [
+        {
+          "name": "up",
+          "params": [
+            "knex"
+          ],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "lineCount": 10
+        },
+        {
+          "name": "down",
+          "params": [
+            "knex"
+          ],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "knex",
+          "specifiers": [
+            "Knex"
+          ]
+        }
+      ],
+      "exports": [
+        "up",
+        "down"
+      ],
+      "totalLines": 17,
+      "hasStructuralAnalysis": true
+    },
+    "backend/package.json": {
+      "filePath": "backend/package.json",
+      "contentHash": "7c93050e7de9ee86a1f85120100ea4faaa27a822fb75c78804b01c811926c030",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 41,
+      "hasStructuralAnalysis": true
+    },
+    "backend/scripts/hash.sh": {
+      "filePath": "backend/scripts/hash.sh",
+      "contentHash": "eb3a965dd697aff76be8498e6ed5029fc0955201485af911315c4dab41e8da9f",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 14,
+      "hasStructuralAnalysis": true
+    },
+    "backend/scripts/init-db.cjs": {
+      "filePath": "backend/scripts/init-db.cjs",
+      "contentHash": "1d70c522afa68d26a19ff0471ea1934316c662ade342ab28d53417d7430b7f66",
+      "functions": [
+        {
+          "name": "createTables",
+          "params": [],
+          "exported": false,
+          "lineCount": 22
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 41,
+      "hasStructuralAnalysis": true
+    },
+    "backend/scripts/init-db.ts": {
+      "filePath": "backend/scripts/init-db.ts",
+      "contentHash": "d51e3a24e9b6b6925cf7a9b5cbb2fc7a3f8e760600546090ef02c8aa4016acd3",
+      "functions": [
+        {
+          "name": "createTables",
+          "params": [],
+          "exported": false,
+          "lineCount": 28
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "better-sqlite3",
+          "specifiers": [
+            "Database"
+          ]
+        },
+        {
+          "source": "path",
+          "specifiers": [
+            "* as path"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 39,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/app.ts": {
+      "filePath": "backend/src/app.ts",
+      "contentHash": "182a6393d06619f2c175dfbb056c0ff3fd1ae697e38bce4ce3197f7dd5ce1a8c",
+      "functions": [
+        {
+          "name": "iconContentType",
+          "params": [
+            "filePath"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 17
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "express",
+          "specifiers": [
+            "express"
+          ]
+        },
+        {
+          "source": "fs",
+          "specifiers": [
+            "fs"
+          ]
+        },
+        {
+          "source": "path",
+          "specifiers": [
+            "path"
+          ]
+        },
+        {
+          "source": "helmet",
+          "specifiers": [
+            "helmet"
+          ]
+        },
+        {
+          "source": "./routes/indexers",
+          "specifiers": [
+            "indexerRoutes"
+          ]
+        },
+        {
+          "source": "./routes/auth",
+          "specifiers": [
+            "authRoutes"
+          ]
+        },
+        {
+          "source": "./routes/apprise",
+          "specifiers": [
+            "appriseRoutes"
+          ]
+        },
+        {
+          "source": "./middleware/auth",
+          "specifiers": [
+            "authMiddleware"
+          ]
+        },
+        {
+          "source": "./middleware/error",
+          "specifiers": [
+            "errorHandler"
+          ]
+        },
+        {
+          "source": "./middleware/requestId",
+          "specifiers": [
+            "requestIdMiddleware"
+          ]
+        },
+        {
+          "source": "./utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        },
+        {
+          "source": "./utils/metrics",
+          "specifiers": [
+            "metricsHandler"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 72,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/config/database.ts": {
+      "filePath": "backend/src/config/database.ts",
+      "contentHash": "c8cdddc5532db64078e316583b0e32d111f1468e3fb3cb2aed7cc702f9205b2e",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "knex",
+          "specifiers": [
+            "knex"
+          ]
+        }
+      ],
+      "exports": [
+        "knex"
+      ],
+      "totalLines": 21,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/middleware/auth.ts": {
+      "filePath": "backend/src/middleware/auth.ts",
+      "contentHash": "5fdd0576e82f5036ff7bb183e6247ff7b32317f0592f057ae939b692b32df414",
+      "functions": [
+        {
+          "name": "setPasswordHash",
+          "params": [
+            "hash"
+          ],
+          "exported": true,
+          "lineCount": 3
+        },
+        {
+          "name": "stopSessionCleanup",
+          "params": [],
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "verifyPassword",
+          "params": [
+            "input",
+            "stored"
+          ],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 9
+        },
+        {
+          "name": "login",
+          "params": [
+            "req",
+            "res"
+          ],
+          "exported": true,
+          "lineCount": 19
+        },
+        {
+          "name": "logout",
+          "params": [
+            "req",
+            "res"
+          ],
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "authMiddleware",
+          "params": [
+            "req",
+            "res",
+            "next"
+          ],
+          "exported": true,
+          "lineCount": 16
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "express",
+          "specifiers": [
+            "Request",
+            "Response",
+            "NextFunction"
+          ]
+        },
+        {
+          "source": "crypto",
+          "specifiers": [
+            "createHash",
+            "randomBytes"
+          ]
+        },
+        {
+          "source": "zod",
+          "specifiers": [
+            "z"
+          ]
+        },
+        {
+          "source": "../utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        }
+      ],
+      "exports": [
+        "setPasswordHash",
+        "stopSessionCleanup",
+        "login",
+        "logout",
+        "authMiddleware"
+      ],
+      "totalLines": 89,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/middleware/error.ts": {
+      "filePath": "backend/src/middleware/error.ts",
+      "contentHash": "9de6ac14b432671c295dd5ab7c6b23669fb8d6358d733e42db09808397588e9f",
+      "functions": [
+        {
+          "name": "errorHandler",
+          "params": [
+            "err",
+            "req",
+            "res",
+            "_next"
+          ],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "express",
+          "specifiers": [
+            "Request",
+            "Response",
+            "NextFunction"
+          ]
+        },
+        {
+          "source": "../utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        }
+      ],
+      "exports": [
+        "errorHandler"
+      ],
+      "totalLines": 13,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/middleware/requestId.ts": {
+      "filePath": "backend/src/middleware/requestId.ts",
+      "contentHash": "a916d54b5836d9882684ee2c6a00198bbc9a91d3e51e92d5ce73fee2fafc5b56",
+      "functions": [
+        {
+          "name": "requestIdMiddleware",
+          "params": [
+            "req",
+            "res",
+            "next"
+          ],
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "crypto",
+          "specifiers": [
+            "randomUUID"
+          ]
+        },
+        {
+          "source": "express",
+          "specifiers": [
+            "Request",
+            "Response",
+            "NextFunction"
+          ]
+        },
+        {
+          "source": "../utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        }
+      ],
+      "exports": [
+        "requestIdMiddleware"
+      ],
+      "totalLines": 12,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/routes/apprise.ts": {
+      "filePath": "backend/src/routes/apprise.ts",
+      "contentHash": "51e670ebfc0b6327c47ce759cb4d0e81a9ad86a5179f5e6212a0a022cc124c1e",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "express",
+          "specifiers": [
+            "express"
+          ]
+        },
+        {
+          "source": "../services/apprise",
+          "specifiers": [
+            "sendTestNotification"
+          ]
+        },
+        {
+          "source": "../utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 25,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/routes/auth.ts": {
+      "filePath": "backend/src/routes/auth.ts",
+      "contentHash": "7b485c7279d23f3ad28179a1f2826a832e68304070f2986352f9529928e1f015",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "express",
+          "specifiers": [
+            "express"
+          ]
+        },
+        {
+          "source": "express-rate-limit",
+          "specifiers": [
+            "rateLimit"
+          ]
+        },
+        {
+          "source": "../middleware/auth",
+          "specifiers": [
+            "login",
+            "logout",
+            "authMiddleware"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 18,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/routes/indexers.ts": {
+      "filePath": "backend/src/routes/indexers.ts",
+      "contentHash": "1846ad94c06238a178e2f13a3c024964a9a300625cf9db6c359482c0ec0e6158",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "express",
+          "specifiers": [
+            "express"
+          ]
+        },
+        {
+          "source": "../config/database",
+          "specifiers": [
+            "knex"
+          ]
+        },
+        {
+          "source": "../services/indexer",
+          "specifiers": [
+            "fetchIndexers"
+          ]
+        },
+        {
+          "source": "../utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 41,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/server.ts": {
+      "filePath": "backend/src/server.ts",
+      "contentHash": "70398d66653ef22f3273716f0cf069183e5388003acc93e13b57caac72bdfe72",
+      "functions": [
+        {
+          "name": "startServer",
+          "params": [],
+          "exported": false,
+          "lineCount": 43
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "crypto",
+          "specifiers": [
+            "randomBytes",
+            "createHash"
+          ]
+        },
+        {
+          "source": "./utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        },
+        {
+          "source": "./app",
+          "specifiers": [
+            "app"
+          ]
+        },
+        {
+          "source": "./middleware/auth",
+          "specifiers": [
+            "setPasswordHash",
+            "stopSessionCleanup"
+          ]
+        },
+        {
+          "source": "./services/indexer",
+          "specifiers": [
+            "drainIconCaches"
+          ]
+        },
+        {
+          "source": "./services/definitions",
+          "specifiers": [
+            "initDefinitionChecker"
+          ]
+        },
+        {
+          "source": "./services/qbittorrent",
+          "specifiers": [
+            "startQbitPolling",
+            "stopQbitPolling"
+          ]
+        },
+        {
+          "source": "./services/tracker-stats",
+          "specifiers": [
+            "initTrackerStats",
+            "stopTrackerStats"
+          ]
+        },
+        {
+          "source": "./config/database",
+          "specifiers": [
+            "knex"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 58,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/services/apprise.ts": {
+      "filePath": "backend/src/services/apprise.ts",
+      "contentHash": "4169c22fa046291bef671849790a7081cdf68781e443beec0dd2fcbd454e68c8",
+      "functions": [
+        {
+          "name": "appriseBaseUrl",
+          "params": [],
+          "exported": false,
+          "lineCount": 2
+        },
+        {
+          "name": "appriseUrls",
+          "params": [],
+          "exported": false,
+          "lineCount": 2
+        },
+        {
+          "name": "sendAlert",
+          "params": [
+            "message"
+          ],
+          "exported": true,
+          "lineCount": 21
+        },
+        {
+          "name": "sendTestNotification",
+          "params": [],
+          "returnType": "Promise<{ ok: true }>",
+          "exported": true,
+          "lineCount": 14
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "axios",
+          "specifiers": [
+            "axios"
+          ]
+        },
+        {
+          "source": "../utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        }
+      ],
+      "exports": [
+        "sendAlert",
+        "sendTestNotification"
+      ],
+      "totalLines": 46,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/services/definitions.ts": {
+      "filePath": "backend/src/services/definitions.ts",
+      "contentHash": "6473ddfd608b01690e61476354976544ad8f10381c7e319c71af98ddfb6ca093",
+      "functions": [
+        {
+          "name": "fetchDefinitions",
+          "params": [],
+          "exported": false,
+          "lineCount": 12
+        },
+        {
+          "name": "initDefinitionChecker",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        },
+        {
+          "name": "hasDefinition",
+          "params": [
+            "name"
+          ],
+          "returnType": "boolean",
+          "exported": true,
+          "lineCount": 1
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "axios",
+          "specifiers": [
+            "axios"
+          ]
+        },
+        {
+          "source": "../utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        },
+        {
+          "source": "../utils/normalize",
+          "specifiers": [
+            "normalize"
+          ]
+        }
+      ],
+      "exports": [
+        "initDefinitionChecker",
+        "hasDefinition"
+      ],
+      "totalLines": 30,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/services/indexer.ts": {
+      "filePath": "backend/src/services/indexer.ts",
+      "contentHash": "37b7ae1293ee571a6a0922093416c1a4a6fa46e4358b2f2ac9ff462304240579",
+      "functions": [
+        {
+          "name": "fetchWithRetry",
+          "params": [
+            "url",
+            "config",
+            "retries"
+          ],
+          "returnType": "Promise<AxiosResponse<T>>",
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "breakerIsOpen",
+          "params": [
+            "name"
+          ],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "breakerOnSuccess",
+          "params": [
+            "name"
+          ],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "breakerOnFailure",
+          "params": [
+            "name"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "extractAutobrrIndexerName",
+          "params": [
+            "channel",
+            "network"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "buildAutobrrMap",
+          "params": [
+            "networks"
+          ],
+          "returnType": "Map<string, AutobrrStatus>",
+          "exported": false,
+          "lineCount": 20
+        },
+        {
+          "name": "isChannelUp",
+          "params": [
+            "a"
+          ],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "fetchProwlarrHealth",
+          "params": [
+            "healthUrl",
+            "apiKey"
+          ],
+          "returnType": "Promise<Set<string>>",
+          "exported": false,
+          "lineCount": 20
+        },
+        {
+          "name": "fetchProwlarr",
+          "params": [],
+          "returnType": "Promise<Indexer[]>",
+          "exported": false,
+          "lineCount": 35
+        },
+        {
+          "name": "fetchAutobrrNetworks",
+          "params": [],
+          "returnType": "Promise<AutobrrNetwork[]>",
+          "exported": false,
+          "lineCount": 21
+        },
+        {
+          "name": "persistAlertState",
+          "params": [
+            "key",
+            "downSinceTs",
+            "alerted"
+          ],
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "deleteAlertState",
+          "params": [
+            "key"
+          ],
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "fetchFaviconUrl",
+          "params": [
+            "siteUrl"
+          ],
+          "returnType": "Promise<string | null>",
+          "exported": false,
+          "lineCount": 14
+        },
+        {
+          "name": "cacheIcons",
+          "params": [
+            "indexers"
+          ],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "lineCount": 26
+        },
+        {
+          "name": "drainIconCaches",
+          "params": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "fetchIndexers",
+          "params": [],
+          "returnType": "Promise<{ indexers: Indexer[]; services: ServiceStatuses }>",
+          "exported": true,
+          "lineCount": 291
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "axios",
+          "specifiers": [
+            "axios",
+            "AxiosRequestConfig",
+            "AxiosResponse"
+          ]
+        },
+        {
+          "source": "fs",
+          "specifiers": [
+            "fs"
+          ]
+        },
+        {
+          "source": "path",
+          "specifiers": [
+            "path"
+          ]
+        },
+        {
+          "source": "../config/database",
+          "specifiers": [
+            "knex"
+          ]
+        },
+        {
+          "source": "./apprise",
+          "specifiers": [
+            "sendAlert"
+          ]
+        },
+        {
+          "source": "../utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        },
+        {
+          "source": "./definitions",
+          "specifiers": [
+            "hasDefinition"
+          ]
+        },
+        {
+          "source": "../utils/normalize",
+          "specifiers": [
+            "normalize"
+          ]
+        },
+        {
+          "source": "../utils/metrics",
+          "specifiers": [
+            "pollDuration",
+            "pollTotal",
+            "upstreamReachable",
+            "historyRowsGauge"
+          ]
+        },
+        {
+          "source": "./qbittorrent",
+          "specifiers": [
+            "getQbitStatus",
+            "getQbitGlobalStatus",
+            "QbitStatus"
+          ]
+        },
+        {
+          "source": "./tracker-stats",
+          "specifiers": [
+            "getTrackerStats",
+            "TrackerStatsType"
+          ]
+        }
+      ],
+      "exports": [
+        "drainIconCaches",
+        "fetchIndexers"
+      ],
+      "totalLines": 597,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/services/qbittorrent.ts": {
+      "filePath": "backend/src/services/qbittorrent.ts",
+      "contentHash": "3642bdbfa8e91644ea6fab9acbc168461099d34fbffd117de45bf41ff8e2c828",
+      "functions": [
+        {
+          "name": "stripWww",
+          "params": [
+            "domain"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getBaseUrl",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "login",
+          "params": [],
+          "returnType": "Promise<boolean>",
+          "exported": false,
+          "lineCount": 27
+        },
+        {
+          "name": "ensureAuth",
+          "params": [],
+          "returnType": "Promise<boolean>",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "fetchTorrents",
+          "params": [],
+          "returnType": "Promise<QbitTorrent[]>",
+          "exported": false,
+          "lineCount": 7
+        },
+        {
+          "name": "fetchTorrentsWithReauth",
+          "params": [],
+          "returnType": "Promise<QbitTorrent[]>",
+          "exported": false,
+          "lineCount": 13
+        },
+        {
+          "name": "fetchTrackers",
+          "params": [
+            "hash"
+          ],
+          "returnType": "Promise<QbitTracker[]>",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "extractDomain",
+          "params": [
+            "url"
+          ],
+          "returnType": "string | null",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "fetchGlobalStatus",
+          "params": [],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "lineCount": 23
+        },
+        {
+          "name": "refreshCache",
+          "params": [],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "lineCount": 79
+        },
+        {
+          "name": "startQbitPolling",
+          "params": [
+            "intervalS"
+          ],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 4
+        },
+        {
+          "name": "stopQbitPolling",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 6
+        },
+        {
+          "name": "getQbitStatus",
+          "params": [
+            "siteUrl"
+          ],
+          "returnType": "QbitStatus | null",
+          "exported": true,
+          "lineCount": 38
+        },
+        {
+          "name": "getQbitGlobalStatus",
+          "params": [],
+          "returnType": "{ connectionStatus: string | null; portOpen: boolean | null }",
+          "exported": true,
+          "lineCount": 4
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "axios",
+          "specifiers": [
+            "axios"
+          ]
+        },
+        {
+          "source": "../utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        }
+      ],
+      "exports": [
+        "startQbitPolling",
+        "stopQbitPolling",
+        "getQbitStatus",
+        "getQbitGlobalStatus"
+      ],
+      "totalLines": 283,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/services/tracker-stats.ts": {
+      "filePath": "backend/src/services/tracker-stats.ts",
+      "contentHash": "946893bcd35fa89eee3255c9a9bc4a3177ff3a3f387dbc921a000a0779acd9e7",
+      "functions": [
+        {
+          "name": "getBaseUrl",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "getApiKey",
+          "params": [],
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "fetchIndexerDetail",
+          "params": [
+            "id"
+          ],
+          "returnType": "Promise<ProwlarrIndexerDetail | null>",
+          "exported": false,
+          "lineCount": 12
+        },
+        {
+          "name": "extractApiKey",
+          "params": [
+            "fields",
+            "indexerName"
+          ],
+          "returnType": "string | null",
+          "exported": false,
+          "lineCount": 18
+        },
+        {
+          "name": "parseBytes",
+          "params": [
+            "value"
+          ],
+          "returnType": "number",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "parseStats",
+          "params": [
+            "raw"
+          ],
+          "returnType": "TrackerStats | null",
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "fetchUnit3dStats",
+          "params": [
+            "siteUrl",
+            "apiKey"
+          ],
+          "returnType": "Promise<TrackerStats | null>",
+          "exported": false,
+          "lineCount": 20
+        },
+        {
+          "name": "fetchAllStats",
+          "params": [],
+          "returnType": "Promise<void>",
+          "exported": false,
+          "lineCount": 95
+        },
+        {
+          "name": "getTrackerStats",
+          "params": [],
+          "returnType": "Map<string, TrackerStats>",
+          "exported": true,
+          "lineCount": 1
+        },
+        {
+          "name": "initTrackerStats",
+          "params": [],
+          "returnType": "Promise<void>",
+          "exported": true,
+          "lineCount": 9
+        },
+        {
+          "name": "stopTrackerStats",
+          "params": [],
+          "returnType": "void",
+          "exported": true,
+          "lineCount": 6
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "axios",
+          "specifiers": [
+            "axios"
+          ]
+        },
+        {
+          "source": "../utils/logger",
+          "specifiers": [
+            "logger"
+          ]
+        }
+      ],
+      "exports": [
+        "getTrackerStats",
+        "initTrackerStats",
+        "stopTrackerStats"
+      ],
+      "totalLines": 222,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/utils/logger.ts": {
+      "filePath": "backend/src/utils/logger.ts",
+      "contentHash": "94777568214e01933da1c00abd0376a7694467baa7c37ccd7e770e0d7744d551",
+      "functions": [
+        {
+          "name": "timestamp",
+          "params": [],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "makeLogger",
+          "params": [
+            "requestId"
+          ],
+          "exported": false,
+          "lineCount": 30
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "logger"
+      ],
+      "totalLines": 40,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/utils/metrics.ts": {
+      "filePath": "backend/src/utils/metrics.ts",
+      "contentHash": "a9054465199c06cf827d07f216093a9493607b8d497d4ae1369fc132d9a330a6",
+      "functions": [
+        {
+          "name": "metricsHandler",
+          "params": [
+            "_req",
+            "res"
+          ],
+          "exported": true,
+          "lineCount": 4
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "prom-client",
+          "specifiers": [
+            "client"
+          ]
+        },
+        {
+          "source": "express",
+          "specifiers": [
+            "Request",
+            "Response"
+          ]
+        }
+      ],
+      "exports": [
+        "pollDuration",
+        "pollTotal",
+        "upstreamReachable",
+        "historyRows",
+        "metricsHandler"
+      ],
+      "totalLines": 33,
+      "hasStructuralAnalysis": true
+    },
+    "backend/src/utils/normalize.ts": {
+      "filePath": "backend/src/utils/normalize.ts",
+      "contentHash": "ec7234e9e1e8ef3f4680e58135dbe968e61e252121fe71791a1cc13c64a54fb9",
+      "functions": [
+        {
+          "name": "normalize",
+          "params": [
+            "name"
+          ],
+          "returnType": "string",
+          "exported": true,
+          "lineCount": 7
+        }
+      ],
+      "classes": [],
+      "imports": [],
+      "exports": [
+        "normalize"
+      ],
+      "totalLines": 8,
+      "hasStructuralAnalysis": true
+    },
+    "backend/tests/apprise.test.ts": {
+      "filePath": "backend/tests/apprise.test.ts",
+      "contentHash": "b1dab8b8e200d876f8149157ad0a26f28c2af03f4a6b28144d1cdca70aec0826",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "supertest",
+          "specifiers": [
+            "request"
+          ]
+        },
+        {
+          "source": "crypto",
+          "specifiers": [
+            "createHash"
+          ]
+        },
+        {
+          "source": "axios",
+          "specifiers": [
+            "axios"
+          ]
+        },
+        {
+          "source": "../src/app",
+          "specifiers": [
+            "app"
+          ]
+        },
+        {
+          "source": "../src/config/database",
+          "specifiers": [
+            "knex"
+          ]
+        },
+        {
+          "source": "../src/middleware/auth",
+          "specifiers": [
+            "setPasswordHash",
+            "stopSessionCleanup"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 80,
+      "hasStructuralAnalysis": true
+    },
+    "backend/tests/auth.test.ts": {
+      "filePath": "backend/tests/auth.test.ts",
+      "contentHash": "94e5741fc286573015f2530da7302557ce040bc21f05ce866e0b28607e3c540d",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "supertest",
+          "specifiers": [
+            "request"
+          ]
+        },
+        {
+          "source": "crypto",
+          "specifiers": [
+            "createHash"
+          ]
+        },
+        {
+          "source": "../src/app",
+          "specifiers": [
+            "app"
+          ]
+        },
+        {
+          "source": "../src/config/database",
+          "specifiers": [
+            "knex"
+          ]
+        },
+        {
+          "source": "../src/middleware/auth",
+          "specifiers": [
+            "setPasswordHash",
+            "stopSessionCleanup"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 45,
+      "hasStructuralAnalysis": true
+    },
+    "backend/tests/fetchIndexers.test.ts": {
+      "filePath": "backend/tests/fetchIndexers.test.ts",
+      "contentHash": "43e9408d45398727c1db87be5b5156122a412fe9bded1450e9c3b61ac218bc86",
+      "functions": [
+        {
+          "name": "successResponse",
+          "params": [
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "healthWarnResponse",
+          "params": [
+            "names"
+          ],
+          "exported": false,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../src/services/indexer",
+          "specifiers": [
+            "fetchIndexers"
+          ]
+        },
+        {
+          "source": "../src/config/database",
+          "specifiers": [
+            "knex"
+          ]
+        },
+        {
+          "source": "axios",
+          "specifiers": [
+            "axios"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 239,
+      "hasStructuralAnalysis": true
+    },
+    "backend/tests/indexers.test.ts": {
+      "filePath": "backend/tests/indexers.test.ts",
+      "contentHash": "84b52f4034381641532d8b5c7e66dbd67f638ff3aa8366150254384ae1bf8a27",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "supertest",
+          "specifiers": [
+            "request"
+          ]
+        },
+        {
+          "source": "../src/app",
+          "specifiers": [
+            "app"
+          ]
+        },
+        {
+          "source": "../src/config/database",
+          "specifiers": [
+            "knex"
+          ]
+        },
+        {
+          "source": "../src/middleware/auth",
+          "specifiers": [
+            "stopSessionCleanup"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 40,
+      "hasStructuralAnalysis": true
+    },
+    "backend/tests/normalize.test.ts": {
+      "filePath": "backend/tests/normalize.test.ts",
+      "contentHash": "9b6de909eee5176d169844b6b1e4d721af8612eb3f673fe796d6b5faf29c52f6",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../src/utils/normalize",
+          "specifiers": [
+            "normalize"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 39,
+      "hasStructuralAnalysis": true
+    },
+    "backend/tsconfig.json": {
+      "filePath": "backend/tsconfig.json",
+      "contentHash": "2013e395a79c8b18b1b7b85bac76bcb6982e10ae7ec1e21b308d66635c5128cf",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 20,
+      "hasStructuralAnalysis": true
+    },
+    "docker-compose.yml": {
+      "filePath": "docker-compose.yml",
+      "contentHash": "29df315432608d07e7a4ef357a0d5466ce20e1a8fae03de0b971b55da3cbc5ba",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 15,
+      "hasStructuralAnalysis": true
+    },
+    "Dockerfile": {
+      "filePath": "Dockerfile",
+      "contentHash": "f1eb3b7a412743bb1b538ac268e202923ade0a327448ad30b4d0eb18de25da90",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 67,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/Dockerfile": {
+      "filePath": "frontend/Dockerfile",
+      "contentHash": "317f117c679af34d88e88c0f643609643bcd0d59e5eaf132b47a403e2518c5b6",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 11,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/eslint.config.js": {
+      "filePath": "frontend/eslint.config.js",
+      "contentHash": "342c65ecf05078709b33dc967f64160671c55c95f1a9dbdd5976a250a5d78368",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@typescript-eslint/eslint-plugin",
+          "specifiers": [
+            "tseslint"
+          ]
+        },
+        {
+          "source": "@typescript-eslint/parser",
+          "specifiers": [
+            "tsparser"
+          ]
+        },
+        {
+          "source": "eslint-plugin-react-hooks",
+          "specifiers": [
+            "reactHooks"
+          ]
+        },
+        {
+          "source": "eslint-plugin-react-refresh",
+          "specifiers": [
+            "reactRefresh"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 30,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/index.html": {
+      "filePath": "frontend/index.html",
+      "contentHash": "085ba985e89c6437b70d11eb7b8b8698411c6530d1dde87b3c03339a60a9fe5a",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 17,
+      "hasStructuralAnalysis": false
+    },
+    "frontend/nginx.conf": {
+      "filePath": "frontend/nginx.conf",
+      "contentHash": "ee56ed5853233c7112276b3e90f0f98db513b2e1368d411b7870738f90284a4c",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 20,
+      "hasStructuralAnalysis": false
+    },
+    "frontend/package.json": {
+      "filePath": "frontend/package.json",
+      "contentHash": "bb6fd3d4d45fadb9fd4d925e1a8328fa8b837ee66befe67744c29e598ebf8040",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 49,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/postcss.config.js": {
+      "filePath": "frontend/postcss.config.js",
+      "contentHash": "33e39ff2f29058a01e7d550bd1e78d74ad2bfdbaa2c4a4a09af48f5d63a4744b",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/App.tsx": {
+      "filePath": "frontend/src/App.tsx",
+      "contentHash": "4e987c6da14d1d27fc26154a43cf40c729bf8124b3f08f494c76054c371283d0",
+      "functions": [
+        {
+          "name": "App",
+          "params": [],
+          "exported": true,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react-router-dom",
+          "specifiers": [
+            "Outlet"
+          ]
+        },
+        {
+          "source": "./components/ui/toaster",
+          "specifiers": [
+            "Toaster"
+          ]
+        }
+      ],
+      "exports": [
+        "App"
+      ],
+      "totalLines": 11,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/CollapsibleSection.tsx": {
+      "filePath": "frontend/src/components/CollapsibleSection.tsx",
+      "contentHash": "69366fef618b872161ef36b45b4a926d7ade29dfa5d6f21a26d7ecec7f8c05ac",
+      "functions": [
+        {
+          "name": "slugKey",
+          "params": [
+            "title"
+          ],
+          "exported": false,
+          "lineCount": 2
+        },
+        {
+          "name": "ChevronIcon",
+          "params": [
+            "{ collapsed }"
+          ],
+          "exported": false,
+          "lineCount": 16
+        },
+        {
+          "name": "loadCollapsed",
+          "params": [
+            "key",
+            "defaultCollapsed"
+          ],
+          "returnType": "boolean",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "CollapsibleSection",
+          "params": [
+            "{\n  title,\n  children,\n  defaultCollapsed = false,\n}"
+          ],
+          "exported": true,
+          "lineCount": 41
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/utils/cn",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useCallback",
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "CollapsibleSection"
+      ],
+      "totalLines": 71,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/DashboardPage.test.tsx": {
+      "filePath": "frontend/src/components/DashboardPage.test.tsx",
+      "contentHash": "a1f143b47f16ee343b3543b155493e4bb2b6715380fbb62631c5d2321755c0e0",
+      "functions": [
+        {
+          "name": "renderDashboard",
+          "params": [],
+          "exported": false,
+          "lineCount": 8
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@testing-library/react",
+          "specifiers": [
+            "render",
+            "screen",
+            "fireEvent"
+          ]
+        },
+        {
+          "source": "@tanstack/react-query",
+          "specifiers": [
+            "QueryClient",
+            "QueryClientProvider"
+          ]
+        },
+        {
+          "source": "vitest",
+          "specifiers": [
+            "describe",
+            "it",
+            "expect",
+            "vi",
+            "beforeEach"
+          ]
+        },
+        {
+          "source": "../pages/DashboardPage",
+          "specifiers": [
+            "DashboardPage"
+          ]
+        },
+        {
+          "source": "../hooks/useIndexers",
+          "specifiers": [
+            "useIndexers"
+          ]
+        },
+        {
+          "source": "../utils/axios",
+          "specifiers": [
+            "api"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 162,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/ErrorBoundary.tsx": {
+      "filePath": "frontend/src/components/ErrorBoundary.tsx",
+      "contentHash": "1221bb7dc954595cd401f660947cb762ebbab79f4b0eb1840fffb044305ed980",
+      "functions": [],
+      "classes": [
+        {
+          "name": "ErrorBoundary",
+          "methods": [
+            "constructor",
+            "getDerivedStateFromError",
+            "componentDidCatch",
+            "render"
+          ],
+          "properties": [],
+          "exported": true,
+          "lineCount": 40
+        }
+      ],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "Component",
+            "ErrorInfo",
+            "ReactNode"
+          ]
+        }
+      ],
+      "exports": [
+        "ErrorBoundary"
+      ],
+      "totalLines": 52,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/IndexerTable.test.tsx": {
+      "filePath": "frontend/src/components/IndexerTable.test.tsx",
+      "contentHash": "024713d63967272d25bfb339e8bc4d823fffb5872e0658f25a0ed8744b288f95",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@testing-library/react",
+          "specifiers": [
+            "render",
+            "screen"
+          ]
+        },
+        {
+          "source": "vitest",
+          "specifiers": [
+            "describe",
+            "it",
+            "expect"
+          ]
+        },
+        {
+          "source": "./IndexerTable",
+          "specifiers": [
+            "IndexerTable"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 146,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/IndexerTable.tsx": {
+      "filePath": "frontend/src/components/IndexerTable.tsx",
+      "contentHash": "4b11a68ba9fa6c385b56226683d7790fb7ebab5db12f7625b0c77732e5c2dfcd",
+      "functions": [
+        {
+          "name": "stripApi",
+          "params": [
+            "name"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "formatDuration",
+          "params": [
+            "minutes"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 9
+        },
+        {
+          "name": "formatBytes",
+          "params": [
+            "bytes"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "UptimeTooltip",
+          "params": [
+            "{ uptimePercentage, children }"
+          ],
+          "exported": false,
+          "lineCount": 10
+        },
+        {
+          "name": "BufferTooltip",
+          "params": [
+            "{ stats, children }"
+          ],
+          "exported": false,
+          "lineCount": 11
+        },
+        {
+          "name": "StatusCell",
+          "params": [
+            "{\n  status,\n  downtimeMinutes,\n  uptimePercentage,\n  upLabel = 'UP',\n  downLabel = 'DOWN',\n}"
+          ],
+          "exported": false,
+          "lineCount": 25
+        },
+        {
+          "name": "CheckIcon",
+          "params": [
+            "{ className }"
+          ],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "XIcon",
+          "params": [
+            "{ className }"
+          ],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "ShieldIcon",
+          "params": [
+            "{ className }"
+          ],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "WarningIcon",
+          "params": [
+            "{ className }"
+          ],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "serviceIcon",
+          "params": [
+            "ok",
+            "connectionStatus"
+          ],
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "ServiceHeader",
+          "params": [
+            "{ label, ok, connectionStatus }"
+          ],
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "BufferCell",
+          "params": [
+            "{ stats }"
+          ],
+          "exported": false,
+          "lineCount": 12
+        },
+        {
+          "name": "IndexerTable",
+          "params": [
+            "{ indexers, services }"
+          ],
+          "exported": true,
+          "lineCount": 129
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "./ui/table",
+          "specifiers": [
+            "Table",
+            "TableBody",
+            "TableCell",
+            "TableHead",
+            "TableHeader",
+            "TableRow"
+          ]
+        },
+        {
+          "source": "../types",
+          "specifiers": [
+            "Indexer",
+            "ServicesStatus"
+          ]
+        }
+      ],
+      "exports": [
+        "IndexerTable"
+      ],
+      "totalLines": 257,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/ProtectedRoute.tsx": {
+      "filePath": "frontend/src/components/ProtectedRoute.tsx",
+      "contentHash": "83fe3b16a171d50771d3030984f1afe8673215e27098d6a7017366d6c33249ca",
+      "functions": [
+        {
+          "name": "ProtectedRoute",
+          "params": [
+            "{ children }"
+          ],
+          "exported": true,
+          "lineCount": 9
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "ReactNode"
+          ]
+        },
+        {
+          "source": "react-router-dom",
+          "specifiers": [
+            "Navigate"
+          ]
+        },
+        {
+          "source": "../context/AuthContext",
+          "specifiers": [
+            "useAuth"
+          ]
+        }
+      ],
+      "exports": [
+        "ProtectedRoute"
+      ],
+      "totalLines": 13,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/StatusGrid.tsx": {
+      "filePath": "frontend/src/components/StatusGrid.tsx",
+      "contentHash": "375e9b41fc83d256512961caf483e7b24e1253bb402b10f929b9392a4f9f10e0",
+      "functions": [
+        {
+          "name": "stripApi",
+          "params": [
+            "name"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 1
+        },
+        {
+          "name": "tileColor",
+          "params": [
+            "status"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "classify",
+          "params": [
+            "indexer"
+          ],
+          "returnType": "TileStatus",
+          "exported": false,
+          "lineCount": 6
+        },
+        {
+          "name": "StatusGrid",
+          "params": [
+            "{ indexers }"
+          ],
+          "exported": true,
+          "lineCount": 62
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useEffect",
+            "useMemo",
+            "useRef",
+            "useState"
+          ]
+        },
+        {
+          "source": "../types",
+          "specifiers": [
+            "Indexer"
+          ]
+        }
+      ],
+      "exports": [
+        "StatusGrid"
+      ],
+      "totalLines": 86,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/ui/button.tsx": {
+      "filePath": "frontend/src/components/ui/button.tsx",
+      "contentHash": "d7e5ce730e2b5291e8f67b3788985cedc48af7097f864d36d241f8d7c6d6c345",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "forwardRef"
+          ]
+        },
+        {
+          "source": "@/utils/cn",
+          "specifiers": [
+            "cn"
+          ]
+        },
+        {
+          "source": "@radix-ui/react-slot",
+          "specifiers": [
+            "Slot"
+          ]
+        }
+      ],
+      "exports": [
+        "Button"
+      ],
+      "totalLines": 24,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/ui/table.tsx": {
+      "filePath": "frontend/src/components/ui/table.tsx",
+      "contentHash": "b0a943631fc16fd90fb23ffe67e473fff63c07df716b6043d2f80630868df2f5",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "forwardRef"
+          ]
+        },
+        {
+          "source": "@/utils/cn",
+          "specifiers": [
+            "cn"
+          ]
+        }
+      ],
+      "exports": [
+        "Table",
+        "TableHeader",
+        "TableBody",
+        "TableRow",
+        "TableHead",
+        "TableCell",
+        "TableCaption"
+      ],
+      "totalLines": 61,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/ui/toaster.tsx": {
+      "filePath": "frontend/src/components/ui/toaster.tsx",
+      "contentHash": "37aece66aea455319ed3329c7debf439c8e028658735e4da5349b8709392f062",
+      "functions": [
+        {
+          "name": "Toaster",
+          "params": [],
+          "exported": true,
+          "lineCount": 15
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@/components/ui/use-toast",
+          "specifiers": [
+            "useToast"
+          ]
+        }
+      ],
+      "exports": [
+        "Toaster"
+      ],
+      "totalLines": 19,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/components/ui/use-toast.ts": {
+      "filePath": "frontend/src/components/ui/use-toast.ts",
+      "contentHash": "89af18714901f1242a9f3b54bf94dcb76710bd86b9b54b639ef3ccc90c16461f",
+      "functions": [
+        {
+          "name": "useToast",
+          "params": [],
+          "exported": true,
+          "lineCount": 15
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "useToast"
+      ],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/context/AuthContext.tsx": {
+      "filePath": "frontend/src/context/AuthContext.tsx",
+      "contentHash": "597d36925558c9b2b9a0347c20467d44c63945bbb160f0ba51cf411879bf091a",
+      "functions": [
+        {
+          "name": "AuthProvider",
+          "params": [
+            "{ children }"
+          ],
+          "exported": true,
+          "lineCount": 27
+        },
+        {
+          "name": "useAuth",
+          "params": [],
+          "exported": true,
+          "lineCount": 5
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "createContext",
+            "useContext",
+            "useState",
+            "useCallback",
+            "ReactNode"
+          ]
+        },
+        {
+          "source": "axios",
+          "specifiers": [
+            "axios"
+          ]
+        }
+      ],
+      "exports": [
+        "AuthProvider",
+        "useAuth"
+      ],
+      "totalLines": 47,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/hooks/useIndexers.ts": {
+      "filePath": "frontend/src/hooks/useIndexers.ts",
+      "contentHash": "a778d5116442a01515201718cf2c5b9d0364f24b20be08b66dd37093cb4cb6b6",
+      "functions": [
+        {
+          "name": "fetchIndexers",
+          "params": [],
+          "returnType": "Promise<IndexerResponse>",
+          "exported": false,
+          "lineCount": 4
+        },
+        {
+          "name": "useIndexers",
+          "params": [],
+          "exported": true,
+          "lineCount": 10
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@tanstack/react-query",
+          "specifiers": [
+            "useQuery"
+          ]
+        },
+        {
+          "source": "../utils/axios",
+          "specifiers": [
+            "axios"
+          ]
+        },
+        {
+          "source": "../types",
+          "specifiers": [
+            "Indexer",
+            "ServicesStatus"
+          ]
+        }
+      ],
+      "exports": [
+        "useIndexers"
+      ],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/index.css": {
+      "filePath": "frontend/src/index.css",
+      "contentHash": "14fd44b9103ee7f63d916b5e39c0d7850baabe251a16e84f6d42aa411cb17115",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 48,
+      "hasStructuralAnalysis": false
+    },
+    "frontend/src/main.tsx": {
+      "filePath": "frontend/src/main.tsx",
+      "contentHash": "68af4066db7cfaa6a40ab77bf3db7061013bb61c50fda15637e80546aa9db9b5",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "React"
+          ]
+        },
+        {
+          "source": "react-dom/client",
+          "specifiers": [
+            "ReactDOM"
+          ]
+        },
+        {
+          "source": "@tanstack/react-query",
+          "specifiers": [
+            "QueryClient",
+            "QueryClientProvider"
+          ]
+        },
+        {
+          "source": "react-router-dom",
+          "specifiers": [
+            "RouterProvider"
+          ]
+        },
+        {
+          "source": "./context/AuthContext",
+          "specifiers": [
+            "AuthProvider"
+          ]
+        },
+        {
+          "source": "./components/ErrorBoundary",
+          "specifiers": [
+            "ErrorBoundary"
+          ]
+        },
+        {
+          "source": "./routes",
+          "specifiers": [
+            "router"
+          ]
+        },
+        {
+          "source": "./index.css",
+          "specifiers": []
+        }
+      ],
+      "exports": [],
+      "totalLines": 22,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/pages/DashboardPage.tsx": {
+      "filePath": "frontend/src/pages/DashboardPage.tsx",
+      "contentHash": "63bcd22d1a573296d2b10dc84a769bcd11b2a687373854e07ca0fd17ee4702db",
+      "functions": [
+        {
+          "name": "formatISO",
+          "params": [
+            "iso"
+          ],
+          "returnType": "string",
+          "exported": false,
+          "lineCount": 5
+        },
+        {
+          "name": "SunIcon",
+          "params": [],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "MoonIcon",
+          "params": [],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "BellIcon",
+          "params": [],
+          "exported": false,
+          "lineCount": 3
+        },
+        {
+          "name": "DashboardPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 98
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "../components/CollapsibleSection",
+          "specifiers": [
+            "CollapsibleSection"
+          ]
+        },
+        {
+          "source": "../components/IndexerTable",
+          "specifiers": [
+            "IndexerTable"
+          ]
+        },
+        {
+          "source": "../components/StatusGrid",
+          "specifiers": [
+            "StatusGrid"
+          ]
+        },
+        {
+          "source": "../hooks/useIndexers",
+          "specifiers": [
+            "useIndexers"
+          ]
+        },
+        {
+          "source": "../utils/axios",
+          "specifiers": [
+            "api"
+          ]
+        },
+        {
+          "source": "react",
+          "specifiers": [
+            "useCallback",
+            "useEffect",
+            "useRef",
+            "useState"
+          ]
+        }
+      ],
+      "exports": [
+        "DashboardPage"
+      ],
+      "totalLines": 124,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/pages/LoginPage.tsx": {
+      "filePath": "frontend/src/pages/LoginPage.tsx",
+      "contentHash": "b3daf63720bb617dcfde60475cdd82cb12917f5a3d8fa6a61642b44608870c6c",
+      "functions": [
+        {
+          "name": "LoginPage",
+          "params": [],
+          "exported": true,
+          "lineCount": 43
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react",
+          "specifiers": [
+            "useState"
+          ]
+        },
+        {
+          "source": "react-router-dom",
+          "specifiers": [
+            "useNavigate"
+          ]
+        },
+        {
+          "source": "axios",
+          "specifiers": [
+            "axios"
+          ]
+        },
+        {
+          "source": "../context/AuthContext",
+          "specifiers": [
+            "useAuth"
+          ]
+        },
+        {
+          "source": "../components/ui/button",
+          "specifiers": [
+            "Button"
+          ]
+        }
+      ],
+      "exports": [
+        "LoginPage"
+      ],
+      "totalLines": 49,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/routes.tsx": {
+      "filePath": "frontend/src/routes.tsx",
+      "contentHash": "1614c3f06821173787481868a063fcef8c77475825d109afb949a714e18034f6",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "react-router-dom",
+          "specifiers": [
+            "createBrowserRouter"
+          ]
+        },
+        {
+          "source": "./App",
+          "specifiers": [
+            "App"
+          ]
+        },
+        {
+          "source": "./pages/LoginPage",
+          "specifiers": [
+            "LoginPage"
+          ]
+        },
+        {
+          "source": "./pages/DashboardPage",
+          "specifiers": [
+            "DashboardPage"
+          ]
+        },
+        {
+          "source": "./components/ProtectedRoute",
+          "specifiers": [
+            "ProtectedRoute"
+          ]
+        }
+      ],
+      "exports": [
+        "router"
+      ],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/setup-tests.ts": {
+      "filePath": "frontend/src/setup-tests.ts",
+      "contentHash": "8d6ce101a32b5c2a9c668129c02b4fe926ac75494a42bc75a4bffa5537a69ebb",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@testing-library/jest-dom",
+          "specifiers": []
+        }
+      ],
+      "exports": [],
+      "totalLines": 16,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/types/index.ts": {
+      "filePath": "frontend/src/types/index.ts",
+      "contentHash": "ce6539610ddce72cfb07b69ea977262578eb5359f6e4d43ed914447d56711821",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 57,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/utils/axios.ts": {
+      "filePath": "frontend/src/utils/axios.ts",
+      "contentHash": "3cc57fa7c5816555423e7bf151a986877c55374bab679319f9492384fad3e120",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "axios",
+          "specifiers": [
+            "axios"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 25,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/src/utils/cn.ts": {
+      "filePath": "frontend/src/utils/cn.ts",
+      "contentHash": "339d9e082c4c255ac7573a8903d667d3c742affe2c8af479d776e3a47430cd80",
+      "functions": [
+        {
+          "name": "cn",
+          "params": [
+            "...inputs"
+          ],
+          "exported": true,
+          "lineCount": 3
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "clsx",
+          "specifiers": [
+            "clsx",
+            "ClassValue"
+          ]
+        },
+        {
+          "source": "tailwind-merge",
+          "specifiers": [
+            "twMerge"
+          ]
+        }
+      ],
+      "exports": [
+        "cn"
+      ],
+      "totalLines": 6,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/tailwind.config.js": {
+      "filePath": "frontend/tailwind.config.js",
+      "contentHash": "66d38ff54667d647740dea233fb9512a6d0cd8da59627ad3300f215e71f711f5",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "tailwindcss",
+          "specifiers": [
+            "Config"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 78,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/tests/LoginPage.test.tsx": {
+      "filePath": "frontend/tests/LoginPage.test.tsx",
+      "contentHash": "76473cd0a5781806b55a3c5136e94b35a5ad59ff171b6db68f1ca17fe043e389",
+      "functions": [
+        {
+          "name": "renderLoginPage",
+          "params": [],
+          "exported": false,
+          "lineCount": 11
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "@testing-library/react",
+          "specifiers": [
+            "render",
+            "screen",
+            "waitFor",
+            "fireEvent"
+          ]
+        },
+        {
+          "source": "react-router-dom",
+          "specifiers": [
+            "BrowserRouter"
+          ]
+        },
+        {
+          "source": "@tanstack/react-query",
+          "specifiers": [
+            "QueryClient",
+            "QueryClientProvider"
+          ]
+        },
+        {
+          "source": "../src/pages/LoginPage",
+          "specifiers": [
+            "LoginPage"
+          ]
+        },
+        {
+          "source": "../src/context/AuthContext",
+          "specifiers": [
+            "AuthProvider"
+          ]
+        },
+        {
+          "source": "vitest",
+          "specifiers": [
+            "describe",
+            "it",
+            "expect",
+            "vi",
+            "beforeEach"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 87,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/tsconfig.json": {
+      "filePath": "frontend/tsconfig.json",
+      "contentHash": "b8f335bbaa445d1f1c4f89bf65ec06f618c8f22f6d8ff0b94b48baa256eeb242",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 26,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/tsconfig.node.json": {
+      "filePath": "frontend/tsconfig.node.json",
+      "contentHash": "7ce25b7cce219204f89e977ceeb338eb8e2cbb939c5b16f0cf9f42e438db4a02",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 9,
+      "hasStructuralAnalysis": true
+    },
+    "frontend/vite.config.ts": {
+      "filePath": "frontend/vite.config.ts",
+      "contentHash": "c382eeca7775faf8c5e75015a37fd590664ac21cb8bd526b39520362e2bbeab9",
+      "functions": [],
+      "classes": [],
+      "imports": [
+        {
+          "source": "vite",
+          "specifiers": [
+            "defineConfig"
+          ]
+        },
+        {
+          "source": "@vitejs/plugin-react",
+          "specifiers": [
+            "react"
+          ]
+        },
+        {
+          "source": "node:url",
+          "specifiers": [
+            "fileURLToPath",
+            "URL"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 29,
+      "hasStructuralAnalysis": true
+    },
+    "nginx.conf": {
+      "filePath": "nginx.conf",
+      "contentHash": "ec1992cd8d2eefabe2997f1dc88561804b0ff685d42883e2ede903f9046d4d72",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 29,
+      "hasStructuralAnalysis": false
+    },
+    "README.md": {
+      "filePath": "README.md",
+      "contentHash": "a06835c32de4977eef5841430a096409a93a898e4517b8ed31c58778cfb90c8e",
+      "functions": [],
+      "classes": [],
+      "imports": [],
+      "exports": [],
+      "totalLines": 85,
+      "hasStructuralAnalysis": true
+    },
+    "scripts/screenshot.mjs": {
+      "filePath": "scripts/screenshot.mjs",
+      "contentHash": "f08229ecd1ec6b9c85b04b43ffd6070e56b73bb108742de1f59a3cd10e094e64",
+      "functions": [
+        {
+          "name": "crc32",
+          "params": [
+            "buf"
+          ],
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "pngChunk",
+          "params": [
+            "type",
+            "data"
+          ],
+          "exported": false,
+          "lineCount": 8
+        },
+        {
+          "name": "makePNG",
+          "params": [
+            "r",
+            "g",
+            "b"
+          ],
+          "exported": false,
+          "lineCount": 24
+        },
+        {
+          "name": "setupRoutes",
+          "params": [
+            "page",
+            "iconCache"
+          ],
+          "exported": false,
+          "lineCount": 19
+        },
+        {
+          "name": "capture",
+          "params": [
+            "context",
+            "iconCache"
+          ],
+          "exported": false,
+          "lineCount": 20
+        },
+        {
+          "name": "frameMobileShot",
+          "params": [
+            "browser",
+            "imageBuf"
+          ],
+          "exported": false,
+          "lineCount": 23
+        }
+      ],
+      "classes": [],
+      "imports": [
+        {
+          "source": "playwright",
+          "specifiers": [
+            "chromium"
+          ]
+        },
+        {
+          "source": "zlib",
+          "specifiers": [
+            "zlib"
+          ]
+        }
+      ],
+      "exports": [],
+      "totalLines": 176,
+      "hasStructuralAnalysis": true
+    }
+  }
+}

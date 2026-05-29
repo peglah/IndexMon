@@ -1,0 +1,4048 @@
+{
+  "version": "1.0.0",
+  "project": {
+    "name": "IndexMon",
+    "languages": [
+      "typescript",
+      "javascript",
+      "json",
+      "yaml",
+      "markdown",
+      "dockerfile",
+      "html",
+      "css",
+      "shell",
+      "conf"
+    ],
+    "frameworks": [
+      "Express",
+      "React",
+      "Vite",
+      "Knex",
+      "Vitest",
+      "Jest",
+      "TailwindCSS",
+      "Radix UI",
+      "TanStack Query",
+      "Zod"
+    ],
+    "description": "A Dockerized dashboard for monitoring indexer health by polling Prowlarr, Autobrr, and qBittorrent tracker status. Runs as a single container with nginx on port 80 proxying to an Express backend on port 3000, with a React frontend served via Vite. Computes downtime and uptime percentages, manages transition-only history in SQLite, and fires Apprise alerts on state changes.",
+    "analyzedAt": "2026-05-28T15:32:41.027Z",
+    "gitCommitHash": "916e33dddec28e0b369749ab94cc43b49d58f255"
+  },
+  "nodes": [
+    {
+      "id": "file:backend/src/app.ts",
+      "type": "file",
+      "name": "App",
+      "filePath": "backend/src/app.ts",
+      "summary": "Express application entrypoint configuring security middleware, health check, Prometheus metrics, icon serving, and mounting auth/apprise/indexer routes",
+      "tags": [
+        "express",
+        "middleware",
+        "routes",
+        "api",
+        "tested"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/src/app.ts:iconContentType",
+      "type": "function",
+      "name": "iconContentType",
+      "filePath": "backend/src/app.ts",
+      "summary": "Detects image content type (PNG, ICO, SVG) by reading file magic bytes for icon serving",
+      "tags": [
+        "icon",
+        "content-type",
+        "detection"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/config/database.ts",
+      "type": "file",
+      "name": "Database Config",
+      "filePath": "backend/src/config/database.ts",
+      "summary": "Configures Knex with better-sqlite3 driver, WAL mode, and 5000ms busy timeout for SQLite database",
+      "tags": [
+        "database",
+        "knex",
+        "sqlite",
+        "configuration",
+        "tested"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/middleware/auth.ts",
+      "type": "file",
+      "name": "Auth Middleware",
+      "filePath": "backend/src/middleware/auth.ts",
+      "summary": "In-memory session management with salted SHA-256 password verification, token-based auth middleware, and periodic expired session cleanup",
+      "tags": [
+        "auth",
+        "middleware",
+        "session",
+        "security",
+        "tested"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:backend/src/middleware/auth.ts:setPasswordHash",
+      "type": "function",
+      "name": "setPasswordHash",
+      "filePath": "backend/src/middleware/auth.ts",
+      "summary": "Sets the stored admin password hash for login verification",
+      "tags": [
+        "auth",
+        "password",
+        "init"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/src/middleware/auth.ts:stopSessionCleanup",
+      "type": "function",
+      "name": "stopSessionCleanup",
+      "filePath": "backend/src/middleware/auth.ts",
+      "summary": "Clears the interval that periodically removes expired sessions",
+      "tags": [
+        "auth",
+        "cleanup",
+        "session"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/src/middleware/auth.ts:verifyPassword",
+      "type": "function",
+      "name": "verifyPassword",
+      "filePath": "backend/src/middleware/auth.ts",
+      "summary": "Verifies an input password against a stored salted SHA-256 hash",
+      "tags": [
+        "auth",
+        "password",
+        "crypto"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/src/middleware/auth.ts:login",
+      "type": "function",
+      "name": "login",
+      "filePath": "backend/src/middleware/auth.ts",
+      "summary": "Validates login credentials via Zod schema and issues a 24h session token on success",
+      "tags": [
+        "auth",
+        "login",
+        "session"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/src/middleware/auth.ts:logout",
+      "type": "function",
+      "name": "logout",
+      "filePath": "backend/src/middleware/auth.ts",
+      "summary": "Deletes the session token from the in-memory session store",
+      "tags": [
+        "auth",
+        "logout",
+        "session"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/src/middleware/auth.ts:authMiddleware",
+      "type": "function",
+      "name": "authMiddleware",
+      "filePath": "backend/src/middleware/auth.ts",
+      "summary": "Express middleware that validates Bearer tokens against in-memory sessions",
+      "tags": [
+        "auth",
+        "middleware",
+        "token"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:backend/src/middleware/auth.ts:Session",
+      "type": "class",
+      "name": "Session",
+      "filePath": "backend/src/middleware/auth.ts",
+      "summary": "TypeScript interface for a session object containing userId and expiresAt",
+      "tags": [
+        "auth",
+        "session",
+        "types"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/middleware/error.ts",
+      "type": "file",
+      "name": "Error Handler",
+      "filePath": "backend/src/middleware/error.ts",
+      "summary": "Global Express error-handling middleware that logs errors and returns JSON 500 responses",
+      "tags": [
+        "middleware",
+        "error",
+        "logging"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/src/middleware/error.ts:errorHandler",
+      "type": "function",
+      "name": "errorHandler",
+      "filePath": "backend/src/middleware/error.ts",
+      "summary": "Catches unhandled errors, logs the stack trace, and returns a 500 JSON response",
+      "tags": [
+        "middleware",
+        "error",
+        "logging"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/middleware/requestId.ts",
+      "type": "file",
+      "name": "Request ID Middleware",
+      "filePath": "backend/src/middleware/requestId.ts",
+      "summary": "Express middleware that attaches a UUID request ID and child logger to each request",
+      "tags": [
+        "middleware",
+        "request-id",
+        "logging"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/src/middleware/requestId.ts:requestIdMiddleware",
+      "type": "function",
+      "name": "requestIdMiddleware",
+      "filePath": "backend/src/middleware/requestId.ts",
+      "summary": "Generates a random UUID, attaches it and a child logger to res.locals, and sets X-Request-Id header",
+      "tags": [
+        "middleware",
+        "request-id",
+        "logging"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/routes/auth.ts",
+      "type": "file",
+      "name": "Auth Routes",
+      "filePath": "backend/src/routes/auth.ts",
+      "summary": "Defines POST /login with rate limiting and POST /logout routes using auth middleware handlers",
+      "tags": [
+        "routes",
+        "auth",
+        "rate-limit",
+        "express"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/routes/indexers.ts",
+      "type": "file",
+      "name": "Indexer Routes",
+      "filePath": "backend/src/routes/indexers.ts",
+      "summary": "Defines GET / to fetch current indexer status and GET /history to query historical downtime data",
+      "tags": [
+        "routes",
+        "indexers",
+        "api",
+        "history"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/utils/metrics.ts",
+      "type": "file",
+      "name": "Metrics",
+      "filePath": "backend/src/utils/metrics.ts",
+      "summary": "Defines Prometheus metrics (histogram, counter, gauges) and serves them via /metrics endpoint",
+      "tags": [
+        "metrics",
+        "prometheus",
+        "monitoring"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:backend/src/utils/metrics.ts:metricsHandler",
+      "type": "function",
+      "name": "metricsHandler",
+      "filePath": "backend/src/utils/metrics.ts",
+      "summary": "Express handler that returns Prometheus metrics in OpenMetrics format",
+      "tags": [
+        "metrics",
+        "prometheus",
+        "handler"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/tests/apprise.test.ts",
+      "type": "file",
+      "name": "Apprise Tests",
+      "filePath": "backend/tests/apprise.test.ts",
+      "summary": "Integration tests for the Apprise test notification endpoint covering auth, config validation, and HTTP error scenarios",
+      "tags": [
+        "test",
+        "apprise",
+        "integration",
+        "jest"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/tests/auth.test.ts",
+      "type": "file",
+      "name": "Auth Tests",
+      "filePath": "backend/tests/auth.test.ts",
+      "summary": "Integration tests for the login API covering empty body, wrong password, and successful authentication with token",
+      "tags": [
+        "test",
+        "auth",
+        "integration",
+        "jest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/tests/fetchIndexers.test.ts",
+      "type": "file",
+      "name": "FetchIndexers Tests",
+      "filePath": "backend/tests/fetchIndexers.test.ts",
+      "summary": "Comprehensive service-level tests for fetchIndexers covering Prowlarr/Autobrr health, history transitions, and downtime/uptime computation",
+      "tags": [
+        "test",
+        "indexers",
+        "service",
+        "jest"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/tests/indexers.test.ts",
+      "type": "file",
+      "name": "Indexer API Tests",
+      "filePath": "backend/tests/indexers.test.ts",
+      "summary": "Integration tests for indexer API routes checking auth enforcement and icon path traversal protection",
+      "tags": [
+        "test",
+        "indexers",
+        "api",
+        "jest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/components/CollapsibleSection.tsx",
+      "type": "file",
+      "name": "frontend/src/components/CollapsibleSection.tsx",
+      "filePath": "frontend/src/components/CollapsibleSection.tsx",
+      "summary": "Collapsible section component with localStorage persistence and animated expand/collapse via CSS grid-rows transition",
+      "tags": [
+        "react",
+        "component",
+        "ui"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/components/DashboardPage.test.tsx",
+      "type": "file",
+      "name": "frontend/src/components/DashboardPage.test.tsx",
+      "filePath": "frontend/src/components/DashboardPage.test.tsx",
+      "summary": "Vitest test suite for DashboardPage covering loading, error, data rendering, dark mode toggle, and test notification flows",
+      "tags": [
+        "test",
+        "vitest",
+        "react"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/components/IndexerTable.test.tsx",
+      "type": "file",
+      "name": "frontend/src/components/IndexerTable.test.tsx",
+      "filePath": "frontend/src/components/IndexerTable.test.tsx",
+      "summary": "Vitest test suite for IndexerTable covering Prowlarr, Autobrr, qBittorrent status display, buffer column, and service icons",
+      "tags": [
+        "test",
+        "vitest",
+        "react"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/components/IndexerTable.tsx",
+      "type": "file",
+      "name": "frontend/src/components/IndexerTable.tsx",
+      "filePath": "frontend/src/components/IndexerTable.tsx",
+      "summary": "Responsive indexer status table with Prowlarr/Autobrr/qBittorrent columns, tooltips, duration formatting, buffer display, and mobile card view",
+      "tags": [
+        "react",
+        "component",
+        "ui",
+        "table",
+        "tested"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:frontend/src/components/StatusGrid.tsx",
+      "type": "file",
+      "name": "frontend/src/components/StatusGrid.tsx",
+      "filePath": "frontend/src/components/StatusGrid.tsx",
+      "summary": "Color-coded grid of indexer status tiles with hover tooltips, alphabetical sorting, and state-change pulse/recover animations",
+      "tags": [
+        "react",
+        "component",
+        "ui",
+        "grid"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/components/ui/button.tsx",
+      "type": "file",
+      "name": "frontend/src/components/ui/button.tsx",
+      "filePath": "frontend/src/components/ui/button.tsx",
+      "summary": "shadcn/ui Button component with asChild prop support via Radix Slot and forwardRef",
+      "tags": [
+        "react",
+        "component",
+        "ui",
+        "shadcn"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/components/ui/table.tsx",
+      "type": "file",
+      "name": "frontend/src/components/ui/table.tsx",
+      "filePath": "frontend/src/components/ui/table.tsx",
+      "summary": "shadcn/ui Table component family (Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableCaption) with forwardRef",
+      "tags": [
+        "react",
+        "component",
+        "ui",
+        "shadcn"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/hooks/useIndexers.ts",
+      "type": "file",
+      "name": "frontend/src/hooks/useIndexers.ts",
+      "filePath": "frontend/src/hooks/useIndexers.ts",
+      "summary": "Custom React hook that polls /api/indexers every 15s using TanStack Query with retry and backoff logic",
+      "tags": [
+        "react",
+        "hook",
+        "query"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/pages/DashboardPage.tsx",
+      "type": "file",
+      "name": "frontend/src/pages/DashboardPage.tsx",
+      "filePath": "frontend/src/pages/DashboardPage.tsx",
+      "summary": "Main dashboard page composing CollapsibleSection, StatusGrid, and IndexerTable with dark mode toggle, test notification, and loading/error states",
+      "tags": [
+        "react",
+        "page",
+        "component",
+        "dashboard",
+        "tested"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/types/index.ts",
+      "type": "file",
+      "name": "index.ts",
+      "filePath": "frontend/src/types/index.ts",
+      "summary": "TypeScript interfaces defining Indexer, QbitStatus, TrackerStats, AutobrrStatus, and ServicesStatus data models",
+      "tags": [
+        "types",
+        "typescript",
+        "interfaces"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/utils/axios.ts",
+      "type": "file",
+      "name": "axios.ts",
+      "filePath": "frontend/src/utils/axios.ts",
+      "summary": "Configured axios instance with Bearer token request interceptor and 401 response redirect to /login",
+      "tags": [
+        "utils",
+        "networking",
+        "auth"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/utils/cn.ts",
+      "type": "file",
+      "name": "cn.ts",
+      "filePath": "frontend/src/utils/cn.ts",
+      "summary": "Utility function merging Tailwind CSS class names via clsx and tailwind-merge",
+      "tags": [
+        "utils",
+        "tailwind"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/CollapsibleSection.tsx:CollapsibleSection",
+      "type": "function",
+      "name": "CollapsibleSection",
+      "filePath": "frontend/src/components/CollapsibleSection.tsx",
+      "summary": "React component rendering a titled collapsible panel with animated expand/collapse and localStorage persistence",
+      "tags": [
+        "react",
+        "component"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/components/CollapsibleSection.tsx:ChevronIcon",
+      "type": "function",
+      "name": "ChevronIcon",
+      "filePath": "frontend/src/components/CollapsibleSection.tsx",
+      "summary": "Inline SVG chevron icon that rotates on collapse state",
+      "tags": [
+        "react",
+        "component",
+        "icon"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/ui/button.tsx:Button",
+      "type": "function",
+      "name": "Button",
+      "filePath": "frontend/src/components/ui/button.tsx",
+      "summary": "shadcn/ui Button component with asChild support for polymorphic rendering",
+      "tags": [
+        "react",
+        "component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/ui/table.tsx:Table",
+      "type": "function",
+      "name": "Table",
+      "filePath": "frontend/src/components/ui/table.tsx",
+      "summary": "Scrollable table wrapper component with forwardRef",
+      "tags": [
+        "react",
+        "component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/ui/table.tsx:TableHeader",
+      "type": "function",
+      "name": "TableHeader",
+      "filePath": "frontend/src/components/ui/table.tsx",
+      "summary": "Table thead element component with border styling",
+      "tags": [
+        "react",
+        "component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/ui/table.tsx:TableBody",
+      "type": "function",
+      "name": "TableBody",
+      "filePath": "frontend/src/components/ui/table.tsx",
+      "summary": "Table tbody element component with last-child border removal",
+      "tags": [
+        "react",
+        "component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/ui/table.tsx:TableRow",
+      "type": "function",
+      "name": "TableRow",
+      "filePath": "frontend/src/components/ui/table.tsx",
+      "summary": "Table tr element component with hover and selected state styling",
+      "tags": [
+        "react",
+        "component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/ui/table.tsx:TableHead",
+      "type": "function",
+      "name": "TableHead",
+      "filePath": "frontend/src/components/ui/table.tsx",
+      "summary": "Table th element component with muted foreground text",
+      "tags": [
+        "react",
+        "component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/ui/table.tsx:TableCell",
+      "type": "function",
+      "name": "TableCell",
+      "filePath": "frontend/src/components/ui/table.tsx",
+      "summary": "Table td element component with aligned padding",
+      "tags": [
+        "react",
+        "component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/ui/table.tsx:TableCaption",
+      "type": "function",
+      "name": "TableCaption",
+      "filePath": "frontend/src/components/ui/table.tsx",
+      "summary": "Table caption element component with muted text",
+      "tags": [
+        "react",
+        "component",
+        "ui"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/IndexerTable.tsx:IndexerTable",
+      "type": "function",
+      "name": "IndexerTable",
+      "filePath": "frontend/src/components/IndexerTable.tsx",
+      "summary": "Main exported component rendering a responsive table with Prowlarr, Autobrr, qBittorrent, and optional Buffer columns",
+      "tags": [
+        "react",
+        "component",
+        "table"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "function:frontend/src/components/IndexerTable.tsx:StatusCell",
+      "type": "function",
+      "name": "StatusCell",
+      "filePath": "frontend/src/components/IndexerTable.tsx",
+      "summary": "Renders green UP, yellow DOWN, or red duration badge with uptime tooltip",
+      "tags": [
+        "react",
+        "component"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/IndexerTable.tsx:BufferCell",
+      "type": "function",
+      "name": "BufferCell",
+      "filePath": "frontend/src/components/IndexerTable.tsx",
+      "summary": "Renders formatted buffer value with color-coded ratio, warning icon, and detail tooltip",
+      "tags": [
+        "react",
+        "component"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/components/IndexerTable.tsx:formatDuration",
+      "type": "function",
+      "name": "formatDuration",
+      "filePath": "frontend/src/components/IndexerTable.tsx",
+      "summary": "Converts minutes to human-readable duration string (m/h/d/w/M/y)",
+      "tags": [
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/IndexerTable.tsx:formatBytes",
+      "type": "function",
+      "name": "formatBytes",
+      "filePath": "frontend/src/components/IndexerTable.tsx",
+      "summary": "Converts bytes to human-readable string with appropriate unit (B/KB/MB/GB/TB/PB)",
+      "tags": [
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/components/StatusGrid.tsx:StatusGrid",
+      "type": "function",
+      "name": "StatusGrid",
+      "filePath": "frontend/src/components/StatusGrid.tsx",
+      "summary": "Renders alphabetically-sorted grid of color-coded status tiles with pop-in animations and state-change highlighting",
+      "tags": [
+        "react",
+        "component",
+        "grid"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/hooks/useIndexers.ts:useIndexers",
+      "type": "function",
+      "name": "useIndexers",
+      "filePath": "frontend/src/hooks/useIndexers.ts",
+      "summary": "Custom hook returning TanStack Query result for /api/indexers with 15s polling and exponential backoff retry",
+      "tags": [
+        "react",
+        "hook"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/hooks/useIndexers.ts:fetchIndexers",
+      "type": "function",
+      "name": "fetchIndexers",
+      "filePath": "frontend/src/hooks/useIndexers.ts",
+      "summary": "Async function that GETs /api/indexers and returns the response data",
+      "tags": [
+        "utility"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/pages/DashboardPage.tsx:DashboardPage",
+      "type": "function",
+      "name": "DashboardPage",
+      "filePath": "frontend/src/pages/DashboardPage.tsx",
+      "summary": "Main dashboard page composing Overview StatusGrid and Current Status IndexerTable with dark mode toggle and Apprise test notification",
+      "tags": [
+        "react",
+        "component",
+        "page",
+        "dashboard"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "function:frontend/src/utils/cn.ts:cn",
+      "type": "function",
+      "name": "cn",
+      "filePath": "frontend/src/utils/cn.ts",
+      "summary": "Merges Tailwind CSS class names using clsx and tailwind-merge",
+      "tags": [
+        "utility",
+        "tailwind"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "function:frontend/src/utils/axios.ts:axios",
+      "type": "function",
+      "name": "axios",
+      "filePath": "frontend/src/utils/axios.ts",
+      "summary": "Axios instance with Bearer auth request interceptor and 401 response redirect",
+      "tags": [
+        "utility",
+        "http",
+        "auth"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:frontend/src/types/index.ts:AutobrrStatus",
+      "type": "class",
+      "name": "AutobrrStatus",
+      "filePath": "frontend/src/types/index.ts",
+      "summary": "Interface for Autobrr IRC channel status: enabled, connected, monitoring, lastAnnounce",
+      "tags": [
+        "typescript",
+        "interface"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:frontend/src/types/index.ts:TrackerStats",
+      "type": "class",
+      "name": "TrackerStats",
+      "filePath": "frontend/src/types/index.ts",
+      "summary": "Interface for per-indexer tracker statistics: uploaded, downloaded, ratio, buffer, warning",
+      "tags": [
+        "typescript",
+        "interface"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:frontend/src/types/index.ts:Indexer",
+      "type": "class",
+      "name": "Indexer",
+      "filePath": "frontend/src/types/index.ts",
+      "summary": "Main indexer interface combining Prowlarr status, Autobrr status, qBittorrent status, uptime/downtime, and optional stats",
+      "tags": [
+        "typescript",
+        "interface"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "class:frontend/src/types/index.ts:QbitTorrentStatus",
+      "type": "class",
+      "name": "QbitTorrentStatus",
+      "filePath": "frontend/src/types/index.ts",
+      "summary": "Interface for individual qBittorrent torrent status code and optional message/seeds",
+      "tags": [
+        "typescript",
+        "interface"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:frontend/src/types/index.ts:QbitStatus",
+      "type": "class",
+      "name": "QbitStatus",
+      "filePath": "frontend/src/types/index.ts",
+      "summary": "Interface for qBittorrent tracker status: working, hasTorrents, statuses array, lastChecked",
+      "tags": [
+        "typescript",
+        "interface"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:frontend/src/types/index.ts:ServiceStatus",
+      "type": "class",
+      "name": "ServiceStatus",
+      "filePath": "frontend/src/types/index.ts",
+      "summary": "Interface for upstream service health: ok, connectionStatus, portOpen",
+      "tags": [
+        "typescript",
+        "interface"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "class:frontend/src/types/index.ts:ServicesStatus",
+      "type": "class",
+      "name": "ServicesStatus",
+      "filePath": "frontend/src/types/index.ts",
+      "summary": "Aggregate interface for all upstream services: prowlarr, autobrr, qbittorrent",
+      "tags": [
+        "typescript",
+        "interface"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/routes/apprise.ts",
+      "type": "file",
+      "name": "apprise.ts",
+      "filePath": "backend/src/routes/apprise.ts",
+      "summary": "Express router for POST /api/apprise/test — sends a test notification via the Apprise service and returns ok/error response",
+      "tags": [
+        "route",
+        "apprise",
+        "notification",
+        "express"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/server.ts",
+      "type": "file",
+      "name": "server.ts",
+      "filePath": "backend/src/server.ts",
+      "summary": "Application entrypoint: generates or loads admin password, starts definition checker, qB polling, tracker stats, Express listener on port 3000, and handles SIGTERM graceful shutdown",
+      "tags": [
+        "entrypoint",
+        "server",
+        "startup",
+        "shutdown",
+        "express"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/services/apprise.ts",
+      "type": "file",
+      "name": "apprise.ts",
+      "filePath": "backend/src/services/apprise.ts",
+      "summary": "Apprise notification service: sends alerts and test notifications via configured Apprise API URL with comma-separated notification URLs",
+      "tags": [
+        "service",
+        "notification",
+        "apprise",
+        "alerts"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/services/definitions.ts",
+      "type": "file",
+      "name": "definitions.ts",
+      "filePath": "backend/src/services/definitions.ts",
+      "summary": "Fetches Autobrr indexer definitions from GitHub API on startup and every 24h, provides lookup to detect missing Autobrr indexers",
+      "tags": [
+        "service",
+        "autobrr",
+        "definitions",
+        "github"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/services/indexer.ts",
+      "type": "file",
+      "name": "indexer.ts",
+      "filePath": "backend/src/services/indexer.ts",
+      "summary": "Core indexer service: fetches Prowlarr indexers with health check, Autobrr IRC networks, merges data, computes transition-only history, downtime/uptime percentages, circuit breaker, Apprise alerts, icon caching, and Prometheus metrics instrumentation",
+      "tags": [
+        "service",
+        "core",
+        "indexer",
+        "prowlarr",
+        "autobrr",
+        "history",
+        "alerts",
+        "metrics",
+        "circuit-breaker"
+      ],
+      "complexity": "complex"
+    },
+    {
+      "id": "file:backend/src/services/qbittorrent.ts",
+      "type": "file",
+      "name": "qbittorrent.ts",
+      "filePath": "backend/src/services/qbittorrent.ts",
+      "summary": "qBittorrent client: cookie-based auth with 403 re-auth, polls torrent tracker status in batches, domain suffix matching with overrides, global connection status and port test, background polling via setInterval",
+      "tags": [
+        "service",
+        "qbittorrent",
+        "tracker",
+        "polling",
+        "auth"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/services/tracker-stats.ts",
+      "type": "file",
+      "name": "tracker-stats.ts",
+      "filePath": "backend/src/services/tracker-stats.ts",
+      "summary": "Per-indexer tracker statistics fetcher: queries Prowlarr for API keys, attempts UNIT3D API calls with Bearer/query-param auth, caches platform type and stats results, configurable TTL via env var",
+      "tags": [
+        "service",
+        "tracker-stats",
+        "unit3d",
+        "stats",
+        "polling"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:backend/src/utils/logger.ts",
+      "type": "file",
+      "name": "logger.ts",
+      "filePath": "backend/src/utils/logger.ts",
+      "summary": "Structured JSON logger with debug/info/warn/error levels, log-level filtering via LOG_LEVEL env var, child loggers with requestId support",
+      "tags": [
+        "utility",
+        "logging",
+        "structured"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/src/utils/normalize.ts",
+      "type": "file",
+      "name": "normalize.ts",
+      "filePath": "backend/src/utils/normalize.ts",
+      "summary": "String normalization utility: lowercases, strips (API) suffix, removes punctuation/whitespace/hyphens/underscores and leading hash",
+      "tags": [
+        "utility",
+        "string",
+        "normalization",
+        "tested"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:backend/tests/normalize.test.ts",
+      "type": "file",
+      "name": "normalize.test.ts",
+      "filePath": "backend/tests/normalize.test.ts",
+      "summary": "Jest test suite for the normalize() utility covering lowercasing, (API) stripping, punctuation removal, hash stripping, edge cases, and real-world names",
+      "tags": [
+        "test",
+        "jest",
+        "normalize"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/App.tsx",
+      "type": "file",
+      "name": "App.tsx",
+      "filePath": "frontend/src/App.tsx",
+      "summary": "Root layout component rendering Outlet for child routes and Toaster for notifications",
+      "tags": [
+        "react",
+        "component",
+        "layout"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/components/ErrorBoundary.tsx",
+      "type": "file",
+      "name": "ErrorBoundary.tsx",
+      "filePath": "frontend/src/components/ErrorBoundary.tsx",
+      "summary": "Class component error boundary catching React errors with reload button fallback UI",
+      "tags": [
+        "react",
+        "component",
+        "error-handling"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/components/ProtectedRoute.tsx",
+      "type": "file",
+      "name": "ProtectedRoute.tsx",
+      "filePath": "frontend/src/components/ProtectedRoute.tsx",
+      "summary": "Auth guard component redirecting unauthenticated users to /login via Navigate",
+      "tags": [
+        "react",
+        "component",
+        "auth",
+        "routing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/main.tsx",
+      "type": "file",
+      "name": "main.tsx",
+      "filePath": "frontend/src/main.tsx",
+      "summary": "App entry point rendering React root with QueryClientProvider, AuthProvider, and ErrorBoundary wrapping RouterProvider",
+      "tags": [
+        "react",
+        "entry-point"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/pages/LoginPage.tsx",
+      "type": "file",
+      "name": "LoginPage.tsx",
+      "filePath": "frontend/src/pages/LoginPage.tsx",
+      "summary": "Login form with password input, credential validation error handling, and auth context integration",
+      "tags": [
+        "react",
+        "page",
+        "auth",
+        "login",
+        "tested"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/routes.tsx",
+      "type": "file",
+      "name": "routes.tsx",
+      "filePath": "frontend/src/routes.tsx",
+      "summary": "Browser router configuration defining /login and protected / dashboard routes",
+      "tags": [
+        "react",
+        "routing"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tests/LoginPage.test.tsx",
+      "type": "file",
+      "name": "LoginPage.test.tsx",
+      "filePath": "frontend/tests/LoginPage.test.tsx",
+      "summary": "Vitest tests for LoginPage covering form rendering, invalid credentials error, network failure error, and successful login token storage",
+      "tags": [
+        "test",
+        "vitest",
+        "react-testing-library"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.dockerignore",
+      "type": "config",
+      "name": ".dockerignore",
+      "filePath": ".dockerignore",
+      "summary": "Excludes node_modules/, .git, data/, dist/, .env, *.md, and .gitkeep from Docker build context to reduce image size and avoid leaking secrets.",
+      "tags": [
+        "docker",
+        "build-context",
+        "ignore"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:docker-compose.yml",
+      "type": "service",
+      "name": "docker-compose.yml",
+      "filePath": "docker-compose.yml",
+      "summary": "Single-service Compose config for indexmon — builds from Dockerfile, maps host port 80 to container port 80, mounts ./data:/app/data volume for SQLite persistence, and loads environment from .env file.",
+      "tags": [
+        "docker",
+        "compose",
+        "deployment",
+        "orchestration"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:Dockerfile",
+      "type": "service",
+      "name": "Dockerfile",
+      "filePath": "Dockerfile",
+      "summary": "Multi-stage Docker build: stage 1 builds the Vite React frontend, stage 2 compiles the TypeScript backend, stage 3 combines both with Nginx and SQLite in a single Alpine container exposing port 80 (nginx) and 3000 (backend), with healthcheck and CMD that initializes DB then starts both processes.",
+      "tags": [
+        "docker",
+        "multi-stage",
+        "build",
+        "container",
+        "nginx",
+        "node"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "service:backend/Dockerfile",
+      "type": "service",
+      "name": "backend/Dockerfile",
+      "filePath": "backend/Dockerfile",
+      "summary": "Single-stage Alpine Node.js container for the Express backend: installs production deps from package.json, copies compiled dist/ and init-db.cjs, initializes SQLite via better-sqlite3, runs as non-root appuser on port 3000.",
+      "tags": [
+        "docker",
+        "container",
+        "backend",
+        "node",
+        "alpine",
+        "sqlite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "service:frontend/Dockerfile",
+      "type": "service",
+      "name": "Frontend Service",
+      "filePath": "frontend/Dockerfile",
+      "summary": "Multi-stage Dockerfile that builds the Vite React frontend with Node 22 and serves it via Nginx on port 80",
+      "tags": [
+        "docker",
+        "frontend",
+        "nginx",
+        "vite",
+        "multi-stage",
+        "container"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "pipeline:.github/workflows/ci.yml",
+      "type": "pipeline",
+      "name": "CI",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "GitHub Actions workflow for linting, testing, building, publishing Docker images, and capturing screenshots on release tags",
+      "tags": [
+        "ci",
+        "github-actions",
+        "docker",
+        "screenshot"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:stage:.github/workflows/ci.yml:lint-test",
+      "type": "pipeline",
+      "name": "lint-test",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "Runs lint, typecheck, and tests for both backend (Node 22, npm ci, ESLint 8, Jest) and frontend (npm ci --legacy-peer-deps, ESLint 9, Vitest)",
+      "tags": [
+        "job",
+        "lint",
+        "test",
+        "backend",
+        "frontend"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "type": "pipeline",
+      "name": "build-and-publish",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "Builds and pushes Docker image to GHCR, then captures and uploads light/dark desktop+mobile screenshots to releases on version tags",
+      "tags": [
+        "job",
+        "docker",
+        "publish",
+        "ghcr",
+        "screenshot"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:lint-test-checkout",
+      "type": "step",
+      "name": "Checkout repository",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "actions/checkout@v4 with fetch-depth: 1",
+      "tags": [
+        "checkout",
+        "git"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:lint-test-setup-node",
+      "type": "step",
+      "name": "Setup Node.js",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "actions/setup-node@v4 with Node 22 and npm cache for backend + frontend lockfiles",
+      "tags": [
+        "node",
+        "setup",
+        "cache"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:lint-test-backend-install",
+      "type": "step",
+      "name": "Backend — Install",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "npm ci in backend directory",
+      "tags": [
+        "backend",
+        "install",
+        "npm"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:lint-test-backend-lint",
+      "type": "step",
+      "name": "Backend — Lint",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "npm run lint in backend directory (ESLint 8)",
+      "tags": [
+        "backend",
+        "lint",
+        "eslint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:lint-test-backend-typecheck",
+      "type": "step",
+      "name": "Backend — Typecheck",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "npm run typecheck in backend directory",
+      "tags": [
+        "backend",
+        "typecheck",
+        "typescript"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:lint-test-backend-test",
+      "type": "step",
+      "name": "Backend — Test",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "npm test with DB_PATH=./test-data/test.db (Jest + supertest)",
+      "tags": [
+        "backend",
+        "test",
+        "jest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:lint-test-frontend-install",
+      "type": "step",
+      "name": "Frontend — Install",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "npm ci --legacy-peer-deps in frontend directory (React 19 RC)",
+      "tags": [
+        "frontend",
+        "install",
+        "npm"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:lint-test-frontend-lint",
+      "type": "step",
+      "name": "Frontend — Lint",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "npm run lint in frontend directory (ESLint 9, max-warnings 0)",
+      "tags": [
+        "frontend",
+        "lint",
+        "eslint"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:lint-test-frontend-test",
+      "type": "step",
+      "name": "Frontend — Test",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "npm test in frontend directory (Vitest + jsdom + testing-library)",
+      "tags": [
+        "frontend",
+        "test",
+        "vitest"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:build-publish-checkout",
+      "type": "step",
+      "name": "Checkout repository",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "actions/checkout@v4 with fetch-depth: 1",
+      "tags": [
+        "checkout",
+        "git"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:build-publish-docker-login",
+      "type": "step",
+      "name": "Log in to GitHub Container Registry",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "docker/login-action@v4 authenticates to ghcr.io",
+      "tags": [
+        "docker",
+        "login",
+        "ghcr"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:build-publish-docker-metadata",
+      "type": "step",
+      "name": "Docker metadata",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "docker/metadata-action@v6 generates tags (develop, semver, latest) and labels",
+      "tags": [
+        "docker",
+        "metadata",
+        "tags"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:build-publish-build-push",
+      "type": "step",
+      "name": "Build and push Docker image",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "docker/build-push-action@v7 builds and pushes to GHCR with APP_VERSION build arg",
+      "tags": [
+        "docker",
+        "build",
+        "push",
+        "ghcr"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:build-publish-start-container",
+      "type": "step",
+      "name": "Start container for screenshot",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "Creates empty .env and runs docker compose up -d (conditional on v* tags)",
+      "tags": [
+        "docker",
+        "compose",
+        "screenshot"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:build-publish-wait-ready",
+      "type": "step",
+      "name": "Wait for container to be ready",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "Polls localhost with curl until HTTP 200, 30 retries with 2s sleep (conditional on v* tags)",
+      "tags": [
+        "health",
+        "wait",
+        "curl"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:build-publish-take-screenshot",
+      "type": "step",
+      "name": "Take screenshot",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "Installs Playwright 1.60.0 and chromium, runs scripts/screenshot.mjs (conditional on v* tags)",
+      "tags": [
+        "screenshot",
+        "playwright",
+        "e2e"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "step:.github/workflows/ci.yml:build-publish-upload-release",
+      "type": "step",
+      "name": "Upload screenshot to release",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "Creates/updates GitHub release and uploads light/dark desktop+mobile screenshots (conditional on v* tags)",
+      "tags": [
+        "release",
+        "upload",
+        "gh",
+        "screenshot"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:component:actions/checkout",
+      "type": "service",
+      "name": "actions/checkout@v4",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "GitHub Action to checkout repository source code",
+      "tags": [
+        "github-action",
+        "git",
+        "checkout"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:component:actions/setup-node",
+      "type": "service",
+      "name": "actions/setup-node@v4",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "GitHub Action to setup Node.js environment with npm caching",
+      "tags": [
+        "github-action",
+        "node",
+        "setup"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:component:docker/login-action",
+      "type": "service",
+      "name": "docker/login-action@v4",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "GitHub Action to log into a container registry",
+      "tags": [
+        "github-action",
+        "docker",
+        "login"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:component:docker/metadata-action",
+      "type": "service",
+      "name": "docker/metadata-action@v6",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "GitHub Action to extract Docker metadata (tags, labels)",
+      "tags": [
+        "github-action",
+        "docker",
+        "metadata"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:component:docker/build-push-action",
+      "type": "service",
+      "name": "docker/build-push-action@v7",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "GitHub Action to build and push Docker images",
+      "tags": [
+        "github-action",
+        "docker",
+        "build",
+        "push"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:component:playwright",
+      "type": "service",
+      "name": "Playwright",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "Browser automation framework used for screenshots (installed at runtime, chromium)",
+      "tags": [
+        "playwright",
+        "browser",
+        "screenshot",
+        "e2e"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:component:gh-cli",
+      "type": "service",
+      "name": "GitHub CLI",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "GitHub CLI used to create releases and upload assets",
+      "tags": [
+        "gh",
+        "github-cli",
+        "release"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:scripts/screenshot.mjs",
+      "type": "file",
+      "name": "screenshot.mjs",
+      "filePath": "scripts/screenshot.mjs",
+      "summary": "Playwright script that captures light/dark desktop+screenshots with route interception for mock data",
+      "tags": [
+        "script",
+        "screenshot",
+        "playwright"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "file:frontend/src/context/AuthContext.tsx",
+      "type": "file",
+      "name": "AuthContext.tsx",
+      "filePath": "frontend/src/context/AuthContext.tsx",
+      "summary": "React context providing authentication state (token, login, logout) to component tree via useContext hook",
+      "tags": [
+        "react",
+        "context",
+        "auth"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/components/ui/toaster.tsx",
+      "type": "file",
+      "name": "toaster.tsx",
+      "filePath": "frontend/src/components/ui/toaster.tsx",
+      "summary": "shadcn/ui Toaster component that renders toast notifications using useToast hook",
+      "tags": [
+        "react",
+        "component",
+        "ui",
+        "shadcn"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/src/components/ui/use-toast.ts",
+      "type": "file",
+      "name": "use-toast.ts",
+      "filePath": "frontend/src/components/ui/use-toast.ts",
+      "summary": "shadcn/ui useToast hook and Toast type definitions for managing toast notifications state",
+      "tags": [
+        "react",
+        "hook",
+        "ui",
+        "shadcn"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:.github/workflows/ci.yml",
+      "type": "file",
+      "name": "CI Workflow",
+      "filePath": ".github/workflows/ci.yml",
+      "summary": "GitHub Actions CI workflow definition with lint-test and build-and-publish jobs",
+      "tags": [
+        "ci",
+        "github-actions",
+        "yaml"
+      ],
+      "complexity": "moderate"
+    },
+    {
+      "id": "config:.env.example",
+      "type": "config",
+      "label": "Environment Variables Template",
+      "description": "Template for all required and optional environment variables: ADMIN_PASSWORD_HASH, Prowlarr API key/URL, Autobrr API key/URL, Apprise config, qBittorrent config, tracker stats TTL",
+      "complexity": "moderate",
+      "name": "Config:.Env",
+      "summary": "No summary available",
+      "tags": [
+        "untagged"
+      ]
+    },
+    {
+      "id": "document:AGENTS.md",
+      "type": "document",
+      "label": "Agent/Developer Reference",
+      "description": "Comprehensive development reference covering commands, auth, API endpoints, quirks (Prowlarr 2.x, Autobrr IRC, name matching), project structure, CI/CD pipeline, and testing setup",
+      "complexity": "moderate",
+      "name": "Document:AGENTS",
+      "summary": "No summary available",
+      "tags": [
+        "untagged"
+      ]
+    },
+    {
+      "id": "document:README.md",
+      "type": "document",
+      "label": "Project README",
+      "description": "Public-facing project documentation with quick start, Docker usage, environment variable reference table, Prometheus metrics overview, and local development instructions",
+      "complexity": "moderate",
+      "name": "Document:README",
+      "summary": "No summary available",
+      "tags": [
+        "untagged"
+      ]
+    },
+    {
+      "id": "file:frontend/index.html",
+      "type": "file",
+      "name": "Index HTML Shell",
+      "filePath": "frontend/index.html",
+      "summary": "Vite entry HTML page with dark mode inline script (localStorage/matchMedia detection before React render), mounts React at #root, loads src/main.tsx as module",
+      "tags": [
+        "html",
+        "entrypoint",
+        "dark-mode",
+        "vite"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/package.json",
+      "type": "config",
+      "name": "Frontend Package Config",
+      "filePath": "frontend/package.json",
+      "summary": "NPM package definition for indexmon-frontend (private, v0.0.0) with Vite 7 dev server, TypeScript 5.5, React 19 RC, Radix UI, TanStack Query, axios, react-router-dom, Tailwind CSS, Vitest, and Testing Library",
+      "tags": [
+        "npm",
+        "dependencies",
+        "scripts",
+        "config"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tsconfig.json",
+      "type": "config",
+      "name": "Frontend TypeScript Config",
+      "filePath": "frontend/tsconfig.json",
+      "summary": "TypeScript configuration for frontend source targeting ES2020 with strict mode, react-jsx transform, path alias @/* → src/*, project reference to tsconfig.node.json",
+      "tags": [
+        "typescript",
+        "config",
+        "react",
+        "paths-alias"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "file:frontend/tsconfig.node.json",
+      "type": "config",
+      "name": "Node TypeScript Config",
+      "filePath": "frontend/tsconfig.node.json",
+      "summary": "TypeScript project reference config for Node-side files (vite.config.ts) with composite mode, ESNext module, and Node module resolution",
+      "tags": [
+        "typescript",
+        "config",
+        "vite",
+        "project-reference"
+      ],
+      "complexity": "simple"
+    },
+    {
+      "id": "config:.understand-anything/.understandignore",
+      "type": "config",
+      "label": ".understandignore",
+      "tags": [
+        "config",
+        "ignore"
+      ],
+      "complexity": "moderate",
+      "name": "Understandignore",
+      "summary": "Exclusion patterns for the understand-anything analysis tool"
+    },
+    {
+      "id": "config:backend/eslint.config.mjs",
+      "type": "config",
+      "label": "eslint.config.mjs",
+      "tags": [
+        "backend",
+        "eslint",
+        "config",
+        "linting"
+      ],
+      "complexity": "moderate",
+      "name": "Eslint.Config",
+      "summary": "No summary available"
+    },
+    {
+      "id": "config:backend/jest.config.js",
+      "type": "config",
+      "label": "jest.config.js",
+      "tags": [
+        "backend",
+        "jest",
+        "config",
+        "testing"
+      ],
+      "complexity": "moderate",
+      "name": "Jest.Config",
+      "summary": "No summary available"
+    },
+    {
+      "id": "config:backend/knexfile.ts",
+      "type": "config",
+      "label": "knexfile.ts",
+      "tags": [
+        "backend",
+        "knex",
+        "config",
+        "database",
+        "migrations"
+      ],
+      "complexity": "moderate",
+      "name": "Knexfile",
+      "summary": "No summary available"
+    },
+    {
+      "id": "file:backend/migrations/20260518_init.ts",
+      "type": "file",
+      "label": "20260518_init.ts",
+      "tags": [
+        "backend",
+        "migration",
+        "database",
+        "knex",
+        "schema",
+        "users",
+        "sessions",
+        "indexer_history"
+      ],
+      "complexity": "moderate",
+      "name": "20260518 Init",
+      "summary": "No summary available"
+    },
+    {
+      "id": "file:backend/migrations/20260524_add_source_to_indexer_history.ts",
+      "type": "file",
+      "label": "20260524_add_source_to_indexer_history.ts",
+      "tags": [
+        "backend",
+        "migration",
+        "database",
+        "knex",
+        "schema",
+        "indexer_history"
+      ],
+      "complexity": "moderate",
+      "name": "20260524 Add Source To Indexer History",
+      "summary": "No summary available"
+    },
+    {
+      "id": "file:backend/migrations/20260527_add_alert_state.ts",
+      "type": "file",
+      "label": "20260527_add_alert_state.ts",
+      "tags": [
+        "backend",
+        "migration",
+        "database",
+        "knex",
+        "schema",
+        "alert_state"
+      ],
+      "complexity": "moderate",
+      "name": "20260527 Add Alert State",
+      "summary": "No summary available"
+    },
+    {
+      "id": "config:backend/package.json",
+      "type": "config",
+      "label": "package.json",
+      "tags": [
+        "backend",
+        "package",
+        "npm",
+        "config",
+        "dependencies"
+      ],
+      "complexity": "moderate",
+      "name": "Package",
+      "summary": "No summary available"
+    },
+    {
+      "id": "file:backend/scripts/hash.sh",
+      "type": "file",
+      "label": "hash.sh",
+      "tags": [
+        "backend",
+        "script",
+        "shell",
+        "auth",
+        "password"
+      ],
+      "complexity": "moderate",
+      "name": "Hash",
+      "summary": "No summary available"
+    },
+    {
+      "id": "file:backend/scripts/init-db.cjs",
+      "type": "file",
+      "label": "init-db.cjs",
+      "tags": [
+        "backend",
+        "script",
+        "database",
+        "init",
+        "commonjs"
+      ],
+      "complexity": "moderate",
+      "name": "Init Db",
+      "summary": "No summary available"
+    },
+    {
+      "id": "file:backend/scripts/init-db.ts",
+      "type": "file",
+      "label": "init-db.ts",
+      "tags": [
+        "backend",
+        "script",
+        "database",
+        "init",
+        "typescript"
+      ],
+      "complexity": "moderate",
+      "name": "Init Db",
+      "summary": "No summary available"
+    },
+    {
+      "id": "config:backend/tsconfig.json",
+      "type": "config",
+      "label": "tsconfig.json",
+      "tags": [
+        "backend",
+        "typescript",
+        "config"
+      ],
+      "complexity": "moderate",
+      "name": "Tsconfig",
+      "summary": "No summary available"
+    },
+    {
+      "id": "config:frontend/eslint.config.js",
+      "type": "config",
+      "label": "eslint.config.js",
+      "tags": [
+        "frontend",
+        "eslint",
+        "config",
+        "linting"
+      ],
+      "complexity": "moderate",
+      "name": "Eslint.Config",
+      "summary": "No summary available"
+    },
+    {
+      "id": "config:frontend/nginx.conf",
+      "type": "config",
+      "label": "nginx.conf (frontend)",
+      "tags": [
+        "frontend",
+        "nginx",
+        "config",
+        "reverse-proxy"
+      ],
+      "complexity": "moderate",
+      "name": "Nginx",
+      "summary": "No summary available"
+    },
+    {
+      "id": "config:frontend/postcss.config.js",
+      "type": "config",
+      "label": "postcss.config.js",
+      "tags": [
+        "frontend",
+        "postcss",
+        "config",
+        "css"
+      ],
+      "complexity": "moderate",
+      "name": "Postcss.Config",
+      "summary": "No summary available"
+    },
+    {
+      "id": "file:frontend/src/index.css",
+      "type": "file",
+      "label": "index.css",
+      "tags": [
+        "frontend",
+        "css",
+        "tailwind",
+        "styles",
+        "theme",
+        "css-variables"
+      ],
+      "complexity": "moderate",
+      "name": "Index",
+      "summary": "No summary available"
+    },
+    {
+      "id": "file:frontend/src/setup-tests.ts",
+      "type": "file",
+      "label": "setup-tests.ts",
+      "tags": [
+        "frontend",
+        "test",
+        "setup",
+        "jest-dom"
+      ],
+      "complexity": "moderate",
+      "name": "Setup Tests",
+      "summary": "No summary available"
+    },
+    {
+      "id": "config:frontend/tailwind.config.js",
+      "type": "config",
+      "label": "tailwind.config.js",
+      "tags": [
+        "frontend",
+        "tailwind",
+        "config",
+        "css",
+        "theme"
+      ],
+      "complexity": "moderate",
+      "name": "Tailwind.Config",
+      "summary": "No summary available"
+    },
+    {
+      "id": "config:frontend/vite.config.ts",
+      "type": "config",
+      "label": "vite.config.ts",
+      "tags": [
+        "frontend",
+        "vite",
+        "config",
+        "bundler",
+        "dev-server"
+      ],
+      "complexity": "moderate",
+      "name": "Vite.Config",
+      "summary": "No summary available"
+    },
+    {
+      "id": "config:nginx.conf",
+      "type": "config",
+      "label": "nginx.conf (root)",
+      "tags": [
+        "nginx",
+        "config",
+        "reverse-proxy",
+        "container"
+      ],
+      "complexity": "moderate",
+      "name": "Config:Nginx",
+      "summary": "No summary available"
+    }
+  ],
+  "edges": [
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/src/middleware/auth.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/src/middleware/error.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/src/middleware/requestId.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/src/routes/auth.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/src/routes/indexers.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/src/utils/metrics.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "function:backend/src/app.ts:iconContentType",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "function:backend/src/app.ts:iconContentType",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/routes/auth.ts",
+      "target": "file:backend/src/middleware/auth.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/routes/indexers.ts",
+      "target": "file:backend/src/config/database.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:setPasswordHash",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:stopSessionCleanup",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:verifyPassword",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:login",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:logout",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:authMiddleware",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "class:backend/src/middleware/auth.ts:Session",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "function:backend/src/middleware/auth.ts:login",
+      "target": "function:backend/src/middleware/auth.ts:verifyPassword",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:setPasswordHash",
+      "type": "exports",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:stopSessionCleanup",
+      "type": "exports",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:login",
+      "type": "exports",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:logout",
+      "type": "exports",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:authMiddleware",
+      "type": "exports",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/error.ts",
+      "target": "function:backend/src/middleware/error.ts:errorHandler",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/error.ts",
+      "target": "function:backend/src/middleware/error.ts:errorHandler",
+      "type": "exports",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/requestId.ts",
+      "target": "function:backend/src/middleware/requestId.ts:requestIdMiddleware",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/requestId.ts",
+      "target": "function:backend/src/middleware/requestId.ts:requestIdMiddleware",
+      "type": "exports",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/utils/metrics.ts",
+      "target": "function:backend/src/utils/metrics.ts:metricsHandler",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/utils/metrics.ts",
+      "target": "function:backend/src/utils/metrics.ts:metricsHandler",
+      "type": "exports",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/apprise.test.ts",
+      "target": "file:backend/src/app.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/apprise.test.ts",
+      "target": "file:backend/src/config/database.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/apprise.test.ts",
+      "target": "file:backend/src/middleware/auth.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/auth.test.ts",
+      "target": "file:backend/src/app.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/auth.test.ts",
+      "target": "file:backend/src/config/database.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/auth.test.ts",
+      "target": "file:backend/src/middleware/auth.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/fetchIndexers.test.ts",
+      "target": "file:backend/src/config/database.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/indexers.test.ts",
+      "target": "file:backend/src/app.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/indexers.test.ts",
+      "target": "file:backend/src/config/database.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/indexers.test.ts",
+      "target": "file:backend/src/middleware/auth.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/tests/apprise.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/tests/auth.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/tests/indexers.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "file:backend/tests/apprise.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "file:backend/tests/auth.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "file:backend/tests/indexers.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/config/database.ts",
+      "target": "file:backend/tests/apprise.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/config/database.ts",
+      "target": "file:backend/tests/auth.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/config/database.ts",
+      "target": "file:backend/tests/fetchIndexers.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/config/database.ts",
+      "target": "file:backend/tests/indexers.test.ts",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/routes/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:login",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/routes/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:logout",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/routes/auth.ts",
+      "target": "function:backend/src/middleware/auth.ts:authMiddleware",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/routes/indexers.ts",
+      "target": "file:backend/src/utils/metrics.ts",
+      "type": "depends_on",
+      "weight": 0.6,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/CollapsibleSection.tsx",
+      "target": "function:frontend/src/components/CollapsibleSection.tsx:CollapsibleSection",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/CollapsibleSection.tsx",
+      "target": "function:frontend/src/components/CollapsibleSection.tsx:ChevronIcon",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/ui/button.tsx",
+      "target": "function:frontend/src/components/ui/button.tsx:Button",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/ui/table.tsx",
+      "target": "function:frontend/src/components/ui/table.tsx:Table",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/ui/table.tsx",
+      "target": "function:frontend/src/components/ui/table.tsx:TableHeader",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/ui/table.tsx",
+      "target": "function:frontend/src/components/ui/table.tsx:TableBody",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/ui/table.tsx",
+      "target": "function:frontend/src/components/ui/table.tsx:TableRow",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/ui/table.tsx",
+      "target": "function:frontend/src/components/ui/table.tsx:TableHead",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/ui/table.tsx",
+      "target": "function:frontend/src/components/ui/table.tsx:TableCell",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/ui/table.tsx",
+      "target": "function:frontend/src/components/ui/table.tsx:TableCaption",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/IndexerTable.tsx",
+      "target": "function:frontend/src/components/IndexerTable.tsx:IndexerTable",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/IndexerTable.tsx",
+      "target": "function:frontend/src/components/IndexerTable.tsx:StatusCell",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/IndexerTable.tsx",
+      "target": "function:frontend/src/components/IndexerTable.tsx:BufferCell",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/IndexerTable.tsx",
+      "target": "function:frontend/src/components/IndexerTable.tsx:formatDuration",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/IndexerTable.tsx",
+      "target": "function:frontend/src/components/IndexerTable.tsx:formatBytes",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/StatusGrid.tsx",
+      "target": "function:frontend/src/components/StatusGrid.tsx:StatusGrid",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/hooks/useIndexers.ts",
+      "target": "function:frontend/src/hooks/useIndexers.ts:useIndexers",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/hooks/useIndexers.ts",
+      "target": "function:frontend/src/hooks/useIndexers.ts:fetchIndexers",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/pages/DashboardPage.tsx",
+      "target": "function:frontend/src/pages/DashboardPage.tsx:DashboardPage",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/utils/cn.ts",
+      "target": "function:frontend/src/utils/cn.ts:cn",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/utils/axios.ts",
+      "target": "function:frontend/src/utils/axios.ts:axios",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/types/index.ts",
+      "target": "class:frontend/src/types/index.ts:AutobrrStatus",
+      "type": "defines_schema",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/types/index.ts",
+      "target": "class:frontend/src/types/index.ts:TrackerStats",
+      "type": "defines_schema",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/types/index.ts",
+      "target": "class:frontend/src/types/index.ts:Indexer",
+      "type": "defines_schema",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/types/index.ts",
+      "target": "class:frontend/src/types/index.ts:QbitTorrentStatus",
+      "type": "defines_schema",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/types/index.ts",
+      "target": "class:frontend/src/types/index.ts:QbitStatus",
+      "type": "defines_schema",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/types/index.ts",
+      "target": "class:frontend/src/types/index.ts:ServiceStatus",
+      "type": "defines_schema",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/types/index.ts",
+      "target": "class:frontend/src/types/index.ts:ServicesStatus",
+      "type": "defines_schema",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/CollapsibleSection.tsx",
+      "target": "file:frontend/src/utils/cn.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/DashboardPage.test.tsx",
+      "target": "file:frontend/src/hooks/useIndexers.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/DashboardPage.test.tsx",
+      "target": "file:frontend/src/pages/DashboardPage.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/DashboardPage.test.tsx",
+      "target": "file:frontend/src/utils/axios.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/IndexerTable.test.tsx",
+      "target": "file:frontend/src/components/IndexerTable.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/IndexerTable.tsx",
+      "target": "file:frontend/src/components/ui/table.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/IndexerTable.tsx",
+      "target": "file:frontend/src/types/index.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/StatusGrid.tsx",
+      "target": "file:frontend/src/types/index.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/ui/button.tsx",
+      "target": "file:frontend/src/utils/cn.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/components/ui/table.tsx",
+      "target": "file:frontend/src/utils/cn.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/hooks/useIndexers.ts",
+      "target": "file:frontend/src/types/index.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/hooks/useIndexers.ts",
+      "target": "file:frontend/src/utils/axios.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/pages/DashboardPage.tsx",
+      "target": "file:frontend/src/components/CollapsibleSection.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/pages/DashboardPage.tsx",
+      "target": "file:frontend/src/components/IndexerTable.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/pages/DashboardPage.tsx",
+      "target": "file:frontend/src/components/StatusGrid.tsx",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/pages/DashboardPage.tsx",
+      "target": "file:frontend/src/hooks/useIndexers.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/pages/DashboardPage.tsx",
+      "target": "file:frontend/src/utils/axios.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/pages/DashboardPage.tsx",
+      "target": "file:frontend/src/components/DashboardPage.test.tsx",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward",
+      "description": "Direction corrected (was test → production)"
+    },
+    {
+      "source": "file:frontend/src/components/IndexerTable.tsx",
+      "target": "file:frontend/src/components/IndexerTable.test.tsx",
+      "type": "tested_by",
+      "weight": 0.5,
+      "direction": "forward",
+      "description": "Direction corrected (was test → production)"
+    },
+    {
+      "source": "file:frontend/src/components/ui/button.tsx",
+      "target": "file:frontend/src/pages/LoginPage.tsx",
+      "type": "related",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/pages/DashboardPage.tsx",
+      "target": "file:frontend/src/routes.tsx",
+      "type": "routes",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/routes/apprise.ts",
+      "target": "file:backend/src/services/apprise.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/routes/apprise.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/app.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/config/database.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/middleware/auth.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/services/definitions.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/services/indexer.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/services/qbittorrent.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/services/tracker-stats.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/apprise.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/definitions.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/definitions.ts",
+      "target": "file:backend/src/utils/normalize.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/config/database.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/services/apprise.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/services/definitions.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/services/qbittorrent.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/services/tracker-stats.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/utils/metrics.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/utils/normalize.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/qbittorrent.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/tracker-stats.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/tests/normalize.test.ts",
+      "target": "file:backend/src/utils/normalize.ts",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/utils/normalize.ts",
+      "target": "file:backend/tests/normalize.test.ts",
+      "type": "tested_by",
+      "weight": 0.9,
+      "direction": "forward",
+      "description": "Direction corrected (was test → production)"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/services/definitions.ts",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/services/qbittorrent.ts",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/services/tracker-stats.ts",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/services/indexer.ts",
+      "type": "calls",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/middleware/auth.ts",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/services/apprise.ts",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/services/definitions.ts",
+      "type": "calls",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/services/qbittorrent.ts",
+      "type": "calls",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/services/tracker-stats.ts",
+      "type": "calls",
+      "weight": 0.6,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/config/database.ts",
+      "type": "reads_from",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/config/database.ts",
+      "type": "writes_to",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/services/indexer.ts",
+      "target": "file:backend/src/utils/metrics.ts",
+      "type": "writes_to",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/routes/apprise.ts",
+      "target": "file:backend/src/app.ts",
+      "type": "routes",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/server.ts",
+      "target": "file:backend/src/config/database.ts",
+      "type": "calls",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/main.tsx",
+      "target": "file:frontend/src/components/ErrorBoundary.tsx",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/main.tsx",
+      "target": "file:frontend/src/routes.tsx",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/main.tsx",
+      "target": "file:frontend/src/index.css",
+      "type": "imports",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/routes.tsx",
+      "target": "file:frontend/src/App.tsx",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/routes.tsx",
+      "target": "file:frontend/src/pages/LoginPage.tsx",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/routes.tsx",
+      "target": "file:frontend/src/components/ProtectedRoute.tsx",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/routes.tsx",
+      "target": "file:frontend/src/pages/DashboardPage.tsx",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/routes.tsx",
+      "target": "file:frontend/src/pages/LoginPage.tsx",
+      "type": "routes",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/routes.tsx",
+      "target": "file:frontend/src/pages/DashboardPage.tsx",
+      "type": "routes",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/pages/LoginPage.tsx",
+      "target": "file:frontend/src/components/ui/button.tsx",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/pages/LoginPage.tsx",
+      "target": "file:frontend/tests/LoginPage.test.tsx",
+      "type": "tested_by",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/tests/LoginPage.test.tsx",
+      "target": "file:frontend/src/pages/LoginPage.tsx",
+      "type": "imports",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "service:docker-compose.yml",
+      "target": "service:Dockerfile",
+      "type": "deploys",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "config:.dockerignore",
+      "target": "service:Dockerfile",
+      "type": "configures",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "service:Dockerfile",
+      "target": "file:backend/src/server.ts",
+      "type": "serves",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "service:Dockerfile",
+      "target": "file:frontend/index.html",
+      "type": "serves",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "service:backend/Dockerfile",
+      "target": "file:backend/scripts/init-db.cjs",
+      "type": "depends_on",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "service:backend/Dockerfile",
+      "target": "file:backend/src/server.ts",
+      "type": "serves",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "service:frontend/Dockerfile",
+      "target": "file:frontend/package.json",
+      "type": "depends_on",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "service:frontend/Dockerfile",
+      "target": "file:frontend/index.html",
+      "type": "depends_on",
+      "weight": 0.7,
+      "direction": "forward"
+    },
+    {
+      "source": "pipeline:.github/workflows/ci.yml",
+      "target": "file:stage:.github/workflows/ci.yml:lint-test",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "pipeline:.github/workflows/ci.yml",
+      "target": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "target": "file:stage:.github/workflows/ci.yml:lint-test",
+      "type": "depends_on",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:lint-test",
+      "target": "step:.github/workflows/ci.yml:lint-test-checkout",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:lint-test",
+      "target": "step:.github/workflows/ci.yml:lint-test-setup-node",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:lint-test",
+      "target": "step:.github/workflows/ci.yml:lint-test-backend-install",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:lint-test",
+      "target": "step:.github/workflows/ci.yml:lint-test-backend-lint",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:lint-test",
+      "target": "step:.github/workflows/ci.yml:lint-test-backend-typecheck",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:lint-test",
+      "target": "step:.github/workflows/ci.yml:lint-test-backend-test",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:lint-test",
+      "target": "step:.github/workflows/ci.yml:lint-test-frontend-install",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:lint-test",
+      "target": "step:.github/workflows/ci.yml:lint-test-frontend-lint",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:lint-test",
+      "target": "step:.github/workflows/ci.yml:lint-test-frontend-test",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "target": "step:.github/workflows/ci.yml:build-publish-checkout",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "target": "step:.github/workflows/ci.yml:build-publish-docker-login",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "target": "step:.github/workflows/ci.yml:build-publish-docker-metadata",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "target": "step:.github/workflows/ci.yml:build-publish-build-push",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "target": "step:.github/workflows/ci.yml:build-publish-start-container",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "target": "step:.github/workflows/ci.yml:build-publish-wait-ready",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "target": "step:.github/workflows/ci.yml:build-publish-take-screenshot",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "file:stage:.github/workflows/ci.yml:build-and-publish",
+      "target": "step:.github/workflows/ci.yml:build-publish-upload-release",
+      "type": "contains",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-checkout",
+      "target": "step:.github/workflows/ci.yml:lint-test-setup-node",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-setup-node",
+      "target": "step:.github/workflows/ci.yml:lint-test-backend-install",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-backend-install",
+      "target": "step:.github/workflows/ci.yml:lint-test-backend-lint",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-backend-lint",
+      "target": "step:.github/workflows/ci.yml:lint-test-backend-typecheck",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-backend-typecheck",
+      "target": "step:.github/workflows/ci.yml:lint-test-backend-test",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-backend-test",
+      "target": "step:.github/workflows/ci.yml:lint-test-frontend-install",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-frontend-install",
+      "target": "step:.github/workflows/ci.yml:lint-test-frontend-lint",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-frontend-lint",
+      "target": "step:.github/workflows/ci.yml:lint-test-frontend-test",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-checkout",
+      "target": "step:.github/workflows/ci.yml:build-publish-docker-login",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-docker-login",
+      "target": "step:.github/workflows/ci.yml:build-publish-docker-metadata",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-docker-metadata",
+      "target": "step:.github/workflows/ci.yml:build-publish-build-push",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-build-push",
+      "target": "step:.github/workflows/ci.yml:build-publish-start-container",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-start-container",
+      "target": "step:.github/workflows/ci.yml:build-publish-wait-ready",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-wait-ready",
+      "target": "step:.github/workflows/ci.yml:build-publish-take-screenshot",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-take-screenshot",
+      "target": "step:.github/workflows/ci.yml:build-publish-upload-release",
+      "type": "next",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-checkout",
+      "target": "file:component:actions/checkout",
+      "type": "uses",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-setup-node",
+      "target": "file:component:actions/setup-node",
+      "type": "uses",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-checkout",
+      "target": "file:component:actions/checkout",
+      "type": "uses",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-docker-login",
+      "target": "file:component:docker/login-action",
+      "type": "uses",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-docker-metadata",
+      "target": "file:component:docker/metadata-action",
+      "type": "uses",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-build-push",
+      "target": "file:component:docker/build-push-action",
+      "type": "uses",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-take-screenshot",
+      "target": "file:component:playwright",
+      "type": "uses",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-upload-release",
+      "target": "file:component:gh-cli",
+      "type": "uses",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:build-publish-take-screenshot",
+      "target": "file:scripts/screenshot.mjs",
+      "type": "runs",
+      "weight": 0.8,
+      "direction": "forward"
+    },
+    {
+      "source": "file:.github/workflows/ci.yml",
+      "target": "pipeline:.github/workflows/ci.yml",
+      "type": "defines",
+      "weight": 1,
+      "direction": "forward"
+    },
+    {
+      "source": "step:.github/workflows/ci.yml:lint-test-frontend-install",
+      "target": "file:frontend/package.json",
+      "type": "references",
+      "weight": 0.5,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/index.html",
+      "target": "file:frontend/src/main.tsx",
+      "type": "references",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/tsconfig.json",
+      "target": "file:frontend/tsconfig.node.json",
+      "type": "references",
+      "weight": 0.9,
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/package.json",
+      "target": "file:frontend/tsconfig.json",
+      "type": "configured_by",
+      "weight": 0.6,
+      "direction": "forward"
+    },
+    {
+      "source": "config:backend/package.json",
+      "target": "config:backend/eslint.config.mjs",
+      "type": "configures",
+      "direction": "forward"
+    },
+    {
+      "source": "config:backend/package.json",
+      "target": "config:backend/jest.config.js",
+      "type": "configures",
+      "direction": "forward"
+    },
+    {
+      "source": "config:backend/package.json",
+      "target": "config:backend/knexfile.ts",
+      "type": "configures",
+      "direction": "forward"
+    },
+    {
+      "source": "config:backend/package.json",
+      "target": "config:backend/tsconfig.json",
+      "type": "configures",
+      "direction": "forward"
+    },
+    {
+      "source": "config:backend/knexfile.ts",
+      "target": "file:backend/migrations/20260518_init.ts",
+      "type": "configures",
+      "direction": "forward"
+    },
+    {
+      "source": "config:backend/knexfile.ts",
+      "target": "file:backend/migrations/20260524_add_source_to_indexer_history.ts",
+      "type": "configures",
+      "direction": "forward"
+    },
+    {
+      "source": "config:backend/knexfile.ts",
+      "target": "file:backend/migrations/20260527_add_alert_state.ts",
+      "type": "configures",
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/migrations/20260518_init.ts",
+      "target": "file:backend/migrations/20260524_add_source_to_indexer_history.ts",
+      "type": "depends_on",
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/migrations/20260524_add_source_to_indexer_history.ts",
+      "target": "file:backend/migrations/20260527_add_alert_state.ts",
+      "type": "depends_on",
+      "direction": "forward"
+    },
+    {
+      "source": "config:frontend/postcss.config.js",
+      "target": "config:frontend/tailwind.config.js",
+      "type": "configures",
+      "direction": "forward"
+    },
+    {
+      "source": "file:frontend/src/index.css",
+      "target": "config:frontend/tailwind.config.js",
+      "type": "depends_on",
+      "direction": "forward"
+    },
+    {
+      "source": "config:frontend/vite.config.ts",
+      "target": "file:frontend/src/setup-tests.ts",
+      "type": "configures",
+      "direction": "forward"
+    },
+    {
+      "source": "config:frontend/vite.config.ts",
+      "target": "config:frontend/postcss.config.js",
+      "type": "depends_on",
+      "direction": "forward"
+    },
+    {
+      "source": "config:nginx.conf",
+      "target": "config:frontend/nginx.conf",
+      "type": "similar_to",
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/scripts/init-db.cjs",
+      "target": "file:backend/scripts/init-db.ts",
+      "type": "similar_to",
+      "direction": "forward"
+    },
+    {
+      "source": "config:backend/eslint.config.mjs",
+      "target": "config:frontend/eslint.config.js",
+      "type": "similar_to",
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/scripts/init-db.cjs",
+      "target": "file:backend/migrations/20260518_init.ts",
+      "type": "related",
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/scripts/init-db.cjs",
+      "target": "file:backend/migrations/20260527_add_alert_state.ts",
+      "type": "related",
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/scripts/init-db.ts",
+      "target": "file:backend/migrations/20260518_init.ts",
+      "type": "related",
+      "direction": "forward"
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/src/routes/apprise.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "recoveredFromImportMap": true
+    },
+    {
+      "source": "file:backend/src/app.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "recoveredFromImportMap": true
+    },
+    {
+      "source": "file:backend/src/middleware/auth.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "recoveredFromImportMap": true
+    },
+    {
+      "source": "file:backend/src/middleware/error.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "recoveredFromImportMap": true
+    },
+    {
+      "source": "file:backend/src/middleware/requestId.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "recoveredFromImportMap": true
+    },
+    {
+      "source": "file:backend/src/routes/indexers.ts",
+      "target": "file:backend/src/services/indexer.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "recoveredFromImportMap": true
+    },
+    {
+      "source": "file:backend/src/routes/indexers.ts",
+      "target": "file:backend/src/utils/logger.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "recoveredFromImportMap": true
+    },
+    {
+      "source": "file:backend/tests/fetchIndexers.test.ts",
+      "target": "file:backend/src/services/indexer.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7,
+      "recoveredFromImportMap": true
+    },
+    {
+      "source": "file:frontend/src/App.tsx",
+      "target": "file:frontend/src/components/ui/toaster.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/components/ProtectedRoute.tsx",
+      "target": "file:frontend/src/context/AuthContext.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/main.tsx",
+      "target": "file:frontend/src/context/AuthContext.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/pages/LoginPage.tsx",
+      "target": "file:frontend/src/context/AuthContext.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/tests/LoginPage.test.tsx",
+      "target": "file:frontend/src/context/AuthContext.tsx",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    },
+    {
+      "source": "file:frontend/src/components/ui/toaster.tsx",
+      "target": "file:frontend/src/components/ui/use-toast.ts",
+      "type": "imports",
+      "direction": "forward",
+      "weight": 0.7
+    }
+  ],
+  "layers": [
+    {
+      "id": "layer:infrastructure",
+      "name": "Infrastructure",
+      "description": "Docker, nginx, and deployment configuration — container definitions, orchestration, reverse proxy, and build context exclusions",
+      "nodeIds": [
+        "service:Dockerfile",
+        "service:docker-compose.yml",
+        "config:nginx.conf",
+        "config:.dockerignore",
+        "service:backend/Dockerfile",
+        "service:frontend/Dockerfile",
+        "config:frontend/nginx.conf"
+      ]
+    },
+    {
+      "id": "layer:backend-entrypoint",
+      "name": "Backend — Server / Entrypoint",
+      "description": "Express application bootstrap: server startup, graceful shutdown, app-level middleware wiring, route mounting, and helper functions",
+      "nodeIds": [
+        "file:backend/src/server.ts",
+        "file:backend/src/app.ts",
+        "function:backend/src/app.ts:iconContentType"
+      ]
+    },
+    {
+      "id": "layer:backend-middleware",
+      "name": "Backend — Middleware",
+      "description": "Express middleware pipeline: in-memory token-based auth (SHA-256 password, session Map, 24h expiry, rate-limited login), global error handler, and per-request UUID/logger attachment",
+      "nodeIds": [
+        "file:backend/src/middleware/auth.ts",
+        "function:backend/src/middleware/auth.ts:setPasswordHash",
+        "function:backend/src/middleware/auth.ts:stopSessionCleanup",
+        "function:backend/src/middleware/auth.ts:verifyPassword",
+        "function:backend/src/middleware/auth.ts:login",
+        "function:backend/src/middleware/auth.ts:logout",
+        "function:backend/src/middleware/auth.ts:authMiddleware",
+        "class:backend/src/middleware/auth.ts:Session",
+        "file:backend/src/middleware/error.ts",
+        "function:backend/src/middleware/error.ts:errorHandler",
+        "file:backend/src/middleware/requestId.ts",
+        "function:backend/src/middleware/requestId.ts:requestIdMiddleware"
+      ]
+    },
+    {
+      "id": "layer:backend-routes",
+      "name": "Backend — Routes",
+      "description": "Express route handlers defining API endpoints: indexer status/history, auth login/logout, and Apprise test notification",
+      "nodeIds": [
+        "file:backend/src/routes/auth.ts",
+        "file:backend/src/routes/indexers.ts",
+        "file:backend/src/routes/apprise.ts"
+      ]
+    },
+    {
+      "id": "layer:backend-services",
+      "name": "Backend — Services / Core",
+      "description": "Core business logic: Prowlarr/Autobrr fetching with circuit breaker, history/downtime/uptime computation, Apprise alert dispatch, qBittorrent cookie-based polling, Autobrr definition sync, and UNIT3D tracker stats",
+      "nodeIds": [
+        "file:backend/src/services/apprise.ts",
+        "file:backend/src/services/definitions.ts",
+        "file:backend/src/services/indexer.ts",
+        "file:backend/src/services/qbittorrent.ts",
+        "file:backend/src/services/tracker-stats.ts"
+      ]
+    },
+    {
+      "id": "layer:backend-config-utils",
+      "name": "Backend — Config / Utils",
+      "description": "Shared infrastructure: Knex/SQLite database config with WAL mode, structured JSON logger (LOG_LEVEL-filtered), Prometheus metrics definitions and handler, indexer name normalization with hardcoded aliases",
+      "nodeIds": [
+        "file:backend/src/config/database.ts",
+        "file:backend/src/utils/logger.ts",
+        "file:backend/src/utils/metrics.ts",
+        "function:backend/src/utils/metrics.ts:metricsHandler",
+        "file:backend/src/utils/normalize.ts",
+        "config:.understand-anything/.understandignore"
+      ]
+    },
+    {
+      "id": "layer:backend-migrations",
+      "name": "Backend — Migrations",
+      "description": "Knex database migrations: initial schema (indexer_history), source column addition, and alert_state table",
+      "nodeIds": [
+        "file:backend/migrations/20260518_init.ts",
+        "file:backend/migrations/20260524_add_source_to_indexer_history.ts",
+        "file:backend/migrations/20260527_add_alert_state.ts"
+      ]
+    },
+    {
+      "id": "layer:backend-scripts",
+      "name": "Backend — Scripts",
+      "description": "Utility scripts for password hashing (bash helper) and database initialization (CJS/TS variants run at container startup)",
+      "nodeIds": [
+        "file:backend/scripts/hash.sh",
+        "file:backend/scripts/init-db.cjs",
+        "file:backend/scripts/init-db.ts"
+      ]
+    },
+    {
+      "id": "layer:backend-config-files",
+      "name": "Backend — Config Files",
+      "description": "Backend project metadata and tool configuration: package.json, TypeScript tsconfig, ESLint 8 config, Jest test runner config, Knex migration config",
+      "nodeIds": [
+        "config:backend/package.json",
+        "config:backend/tsconfig.json",
+        "config:backend/eslint.config.mjs",
+        "config:backend/jest.config.js",
+        "config:backend/knexfile.ts"
+      ]
+    },
+    {
+      "id": "layer:frontend-entrypoint",
+      "name": "Frontend — Entrypoint",
+      "description": "Application bootstrap: Vite HTML shell with dark mode inline script, React root render (QueryClientProvider, AuthProvider, ErrorBoundary, RouterProvider), root layout with Outlet/Toaster, and react-router route definitions",
+      "nodeIds": [
+        "file:frontend/src/main.tsx",
+        "file:frontend/src/App.tsx",
+        "file:frontend/index.html",
+        "file:frontend/src/routes.tsx"
+      ]
+    },
+    {
+      "id": "layer:frontend-pages",
+      "name": "Frontend — Pages",
+      "description": "Top-level route pages: LoginPage (password form, credential validation) and DashboardPage (StatusGrid, IndexerTable, dark mode toggle, test notification)",
+      "nodeIds": [
+        "file:frontend/src/pages/DashboardPage.tsx",
+        "function:frontend/src/pages/DashboardPage.tsx:DashboardPage",
+        "file:frontend/src/pages/LoginPage.tsx"
+      ]
+    },
+    {
+      "id": "layer:frontend-components",
+      "name": "Frontend — Components",
+      "description": "React UI components: CollapsibleSection (localStorage-persisted), IndexerTable (responsive with StatusCell/BufferCell helpers), StatusGrid (color-coded tiles), ErrorBoundary (class component), ProtectedRoute (auth guard), and shadcn/ui primitives (Button, Table family, Toaster, use-toast)",
+      "nodeIds": [
+        "file:frontend/src/components/CollapsibleSection.tsx",
+        "function:frontend/src/components/CollapsibleSection.tsx:CollapsibleSection",
+        "function:frontend/src/components/CollapsibleSection.tsx:ChevronIcon",
+        "file:frontend/src/components/IndexerTable.tsx",
+        "function:frontend/src/components/IndexerTable.tsx:IndexerTable",
+        "function:frontend/src/components/IndexerTable.tsx:StatusCell",
+        "function:frontend/src/components/IndexerTable.tsx:BufferCell",
+        "function:frontend/src/components/IndexerTable.tsx:formatDuration",
+        "function:frontend/src/components/IndexerTable.tsx:formatBytes",
+        "file:frontend/src/components/StatusGrid.tsx",
+        "function:frontend/src/components/StatusGrid.tsx:StatusGrid",
+        "file:frontend/src/components/ErrorBoundary.tsx",
+        "file:frontend/src/components/ProtectedRoute.tsx",
+        "file:frontend/src/components/ui/button.tsx",
+        "function:frontend/src/components/ui/button.tsx:Button",
+        "file:frontend/src/components/ui/table.tsx",
+        "function:frontend/src/components/ui/table.tsx:Table",
+        "function:frontend/src/components/ui/table.tsx:TableHeader",
+        "function:frontend/src/components/ui/table.tsx:TableBody",
+        "function:frontend/src/components/ui/table.tsx:TableRow",
+        "function:frontend/src/components/ui/table.tsx:TableHead",
+        "function:frontend/src/components/ui/table.tsx:TableCell",
+        "function:frontend/src/components/ui/table.tsx:TableCaption",
+        "file:frontend/src/components/ui/toaster.tsx",
+        "file:frontend/src/components/ui/use-toast.ts"
+      ]
+    },
+    {
+      "id": "layer:frontend-context-hooks",
+      "name": "Frontend — Context / Hooks",
+      "description": "React state management: AuthContext (token, login, logout via useContext) and useIndexers hook (TanStack Query polling of /api/indexers every 15s with retry)",
+      "nodeIds": [
+        "file:frontend/src/context/AuthContext.tsx",
+        "file:frontend/src/hooks/useIndexers.ts",
+        "function:frontend/src/hooks/useIndexers.ts:useIndexers",
+        "function:frontend/src/hooks/useIndexers.ts:fetchIndexers"
+      ]
+    },
+    {
+      "id": "layer:frontend-utils-types",
+      "name": "Frontend — Utils / Types",
+      "description": "Shared utilities and type definitions: Axios instance with Bearer auth interceptor, Tailwind class merge helper (cn), and TypeScript interfaces for Indexer, QbitStatus, TrackerStats, AutobrrStatus, and ServicesStatus",
+      "nodeIds": [
+        "file:frontend/src/utils/axios.ts",
+        "function:frontend/src/utils/axios.ts:axios",
+        "file:frontend/src/utils/cn.ts",
+        "function:frontend/src/utils/cn.ts:cn",
+        "file:frontend/src/types/index.ts",
+        "class:frontend/src/types/index.ts:AutobrrStatus",
+        "class:frontend/src/types/index.ts:TrackerStats",
+        "class:frontend/src/types/index.ts:Indexer",
+        "class:frontend/src/types/index.ts:QbitTorrentStatus",
+        "class:frontend/src/types/index.ts:QbitStatus",
+        "class:frontend/src/types/index.ts:ServiceStatus",
+        "class:frontend/src/types/index.ts:ServicesStatus"
+      ]
+    },
+    {
+      "id": "layer:frontend-styles",
+      "name": "Frontend — Styles",
+      "description": "CSS and design tokens: Tailwind CSS entry with custom CSS variables (theme colors for light/dark) and PostCSS/Tailwind configuration",
+      "nodeIds": [
+        "file:frontend/src/index.css",
+        "config:frontend/tailwind.config.js",
+        "config:frontend/postcss.config.js"
+      ]
+    },
+    {
+      "id": "layer:frontend-config-files",
+      "name": "Frontend — Config Files",
+      "description": "Frontend project metadata and tool configuration: package.json (React 19 RC, Vite 7, TanStack Query), TypeScript tsconfig (with Node project reference), Vite config, ESLint 9 config",
+      "nodeIds": [
+        "file:frontend/package.json",
+        "file:frontend/tsconfig.json",
+        "file:frontend/tsconfig.node.json",
+        "config:frontend/eslint.config.js",
+        "config:frontend/vite.config.ts"
+      ]
+    },
+    {
+      "id": "layer:testing",
+      "name": "Testing",
+      "description": "All test suites: Jest backend tests (auth, apprise, indexers API, fetchIndexers service, normalize utility) and Vitest frontend tests (DashboardPage, IndexerTable, LoginPage) with test setup configuration",
+      "nodeIds": [
+        "file:backend/tests/apprise.test.ts",
+        "file:backend/tests/auth.test.ts",
+        "file:backend/tests/fetchIndexers.test.ts",
+        "file:backend/tests/indexers.test.ts",
+        "file:backend/tests/normalize.test.ts",
+        "file:frontend/src/components/DashboardPage.test.tsx",
+        "file:frontend/src/components/IndexerTable.test.tsx",
+        "file:frontend/tests/LoginPage.test.tsx",
+        "file:frontend/src/setup-tests.ts"
+      ]
+    },
+    {
+      "id": "layer:documentation",
+      "name": "Documentation",
+      "description": "Project documentation: public README with quick start and environment reference, comprehensive AGENTS.md developer guide, and .env.example template for required/optional environment variables",
+      "nodeIds": [
+        "document:README.md",
+        "document:AGENTS.md",
+        "config:.env.example"
+      ]
+    },
+    {
+      "id": "layer:ci-cd",
+      "name": "CI/CD",
+      "description": "GitHub Actions pipeline: lint-test job (backend + frontend install, lint, typecheck, test) and build-and-publish job (Docker buildx, GHCR push, Playwright screenshot capture on version tags)",
+      "nodeIds": [
+        "pipeline:.github/workflows/ci.yml",
+        "file:.github/workflows/ci.yml",
+        "file:stage:.github/workflows/ci.yml:lint-test",
+        "file:stage:.github/workflows/ci.yml:build-and-publish",
+        "step:.github/workflows/ci.yml:lint-test-checkout",
+        "step:.github/workflows/ci.yml:lint-test-setup-node",
+        "step:.github/workflows/ci.yml:lint-test-backend-install",
+        "step:.github/workflows/ci.yml:lint-test-backend-lint",
+        "step:.github/workflows/ci.yml:lint-test-backend-typecheck",
+        "step:.github/workflows/ci.yml:lint-test-backend-test",
+        "step:.github/workflows/ci.yml:lint-test-frontend-install",
+        "step:.github/workflows/ci.yml:lint-test-frontend-lint",
+        "step:.github/workflows/ci.yml:lint-test-frontend-test",
+        "step:.github/workflows/ci.yml:build-publish-checkout",
+        "step:.github/workflows/ci.yml:build-publish-docker-login",
+        "step:.github/workflows/ci.yml:build-publish-docker-metadata",
+        "step:.github/workflows/ci.yml:build-publish-build-push",
+        "step:.github/workflows/ci.yml:build-publish-start-container",
+        "step:.github/workflows/ci.yml:build-publish-wait-ready",
+        "step:.github/workflows/ci.yml:build-publish-take-screenshot",
+        "step:.github/workflows/ci.yml:build-publish-upload-release",
+        "file:component:actions/checkout",
+        "file:component:actions/setup-node",
+        "file:component:docker/login-action",
+        "file:component:docker/metadata-action",
+        "file:component:docker/build-push-action",
+        "file:component:playwright",
+        "file:component:gh-cli"
+      ]
+    },
+    {
+      "id": "layer:scripts",
+      "name": "Scripts",
+      "description": "Standalone utility scripts: Playwright screenshot script for automated release captures (light/dark desktop + mobile frames with route interception)",
+      "nodeIds": [
+        "file:scripts/screenshot.mjs"
+      ]
+    }
+  ],
+  "tour": [
+    {
+      "order": 1,
+      "title": "Project Overview",
+      "description": "IndexMon is a Dockerized dashboard that polls Prowlarr, Autobrr, and qBittorrent to monitor indexer health. Start with the README and AGENTS.md to understand the architecture, endpoints, and quirks before diving into code.",
+      "nodeIds": [
+        "document:README.md",
+        "document:AGENTS.md",
+        "config:.env.example"
+      ]
+    },
+    {
+      "order": 2,
+      "title": "Infrastructure & Deployment",
+      "description": "The project runs as a single Docker container (nginx :80 proxying to Express :3000) with SQLite persistence. docker-compose.yml loads env vars, the root Dockerfile uses a 3-stage build (frontend, backend, production), and CI/CD publishes to GHCR with screenshot capture on version tags.",
+      "nodeIds": [
+        "service:Dockerfile",
+        "service:docker-compose.yml",
+        "config:nginx.conf",
+        "pipeline:.github/workflows/ci.yml"
+      ]
+    },
+    {
+      "order": 3,
+      "title": "Backend Entrypoint & Express Setup",
+      "description": "server.ts is the application entrypoint — it generates or loads the admin password, starts background services (Autobrr definitions, qB polling, tracker stats), and fires up Express on port 3000 with graceful SIGTERM shutdown. app.ts wires the middleware stack: requestId, error handler, public routes (health, metrics, icons), then auth middleware, then API routes.",
+      "nodeIds": [
+        "file:backend/src/server.ts",
+        "file:backend/src/app.ts"
+      ]
+    },
+    {
+      "order": 4,
+      "title": "Auth & Middleware Pipeline",
+      "description": "Auth uses an in-memory session Map with salted SHA-256 password verification. The authMiddleware validates Bearer tokens on protected routes. A global error handler catches unhandled exceptions, and the requestId middleware attaches a UUID + child logger to each request for traceability.",
+      "nodeIds": [
+        "file:backend/src/middleware/auth.ts",
+        "file:backend/src/middleware/error.ts",
+        "file:backend/src/middleware/requestId.ts"
+      ]
+    },
+    {
+      "order": 5,
+      "title": "API Routes",
+      "description": "Three route modules mount behind auth: /api/auth (rate-limited login, logout), /api/indexers (current status with inline service fetching, history with pagination clamped 1–5000), and /api/apprise/test (sends a test notification). Icon serving at /api/indexers/icon/:prowlarrId sits before auth middleware so browser <img> tags can load favicons.",
+      "nodeIds": [
+        "file:backend/src/routes/auth.ts",
+        "file:backend/src/routes/indexers.ts",
+        "file:backend/src/routes/apprise.ts"
+      ]
+    },
+    {
+      "order": 6,
+      "title": "Core Services — Indexer Health, Alerts & Background Polling",
+      "description": "The heart of the backend: indexer.ts fetches Prowlarr indexers (with health-check-based auto-disabled detection), Autobrr IRC networks, merges them via name normalization, computes transition-only history with time-weighted uptime %, fires Apprise alerts with dedup and configurable delay, and feeds Prometheus metrics. qbittorrent.ts handles cookie-based auth with 403 re-auth and domain-suffix matching. definitions.ts syncs Autobrr indexer definitions from GitHub. tracker-stats.ts queries UNIT3D APIs for per-indexer stats.",
+      "nodeIds": [
+        "file:backend/src/services/indexer.ts",
+        "file:backend/src/services/qbittorrent.ts",
+        "file:backend/src/services/apprise.ts",
+        "file:backend/src/services/definitions.ts",
+        "file:backend/src/services/tracker-stats.ts"
+      ]
+    },
+    {
+      "order": 7,
+      "title": "Frontend Entry & Data Flow",
+      "description": "React mounts via frontend/index.html (with dark mode inline script) → main.tsx wraps the app in QueryClientProvider, AuthProvider, and ErrorBoundary. Routes.tsx defines /login (public) and / (protected via ProtectedRoute). DashboardPage uses the useIndexers hook (TanStack Query polling /api/indexers every 15s) and AuthContext (token in localStorage) to drive the UI.",
+      "nodeIds": [
+        "file:frontend/index.html",
+        "file:frontend/src/main.tsx",
+        "file:frontend/src/routes.tsx",
+        "file:frontend/src/pages/DashboardPage.tsx",
+        "file:frontend/src/hooks/useIndexers.ts",
+        "file:frontend/src/context/AuthContext.tsx"
+      ]
+    },
+    {
+      "order": 8,
+      "title": "Frontend Components & Types",
+      "description": "IndexerTable renders a responsive table (desktop table, mobile cards) with color-coded status cells, buffer display, and uptime tooltips. StatusGrid shows an alphabetically-sorted grid of tiles with pop-in animations and state-change highlighting. CollapsibleSection persists open/closed state to localStorage. Shared types (Indexer, QbitStatus, ServicesStatus) define the data contracts between API and UI.",
+      "nodeIds": [
+        "file:frontend/src/components/IndexerTable.tsx",
+        "file:frontend/src/components/StatusGrid.tsx",
+        "file:frontend/src/components/CollapsibleSection.tsx",
+        "file:frontend/src/types/index.ts"
+      ]
+    }
+  ]
+}
