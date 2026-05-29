@@ -46,6 +46,7 @@ export interface QbitStatus {
 
 export interface ServiceStatus {
   ok: boolean;
+  configured?: boolean;
   connectionStatus?: string;
   portOpen?: boolean | null;
 }

@@ -76,6 +76,7 @@ interface ProwlarrResponse {
 
 export interface ServiceStatus {
   ok: boolean;
+  configured?: boolean;
   connectionStatus?: string;
   portOpen?: boolean | null;
 }
@@ -333,8 +334,8 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     const qbGlobal = getQbitGlobalStatus();
     const services: ServiceStatuses = {
       prowlarr: { ok: prowlarrReachable },
-      autobrr: { ok: autobrrReachable },
-      qbittorrent: { ok: qbGlobal.connectionStatus !== null && qbGlobal.connectionStatus !== 'disconnected', connectionStatus: qbGlobal.connectionStatus ?? undefined, portOpen: qbGlobal.portOpen },
+      autobrr: { ok: autobrrReachable, configured: !!process.env.AUTOBRR_API_KEY },
+      qbittorrent: { ok: qbGlobal.connectionStatus !== null && qbGlobal.connectionStatus !== 'disconnected', configured: !!process.env.QBITTORRENT_USERNAME, connectionStatus: qbGlobal.connectionStatus ?? undefined, portOpen: qbGlobal.portOpen },
     };
 
     if (merged.length === 0) {

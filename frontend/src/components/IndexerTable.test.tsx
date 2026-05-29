@@ -11,8 +11,8 @@ const baseIndexer = {
 
 const defaultServices = {
   prowlarr: { ok: true },
-  autobrr: { ok: true },
-  qbittorrent: { ok: true, connectionStatus: 'connected' },
+  autobrr: { ok: true, configured: true },
+  qbittorrent: { ok: true, configured: true, connectionStatus: 'connected' },
 };
 
 describe('IndexerTable', () => {
@@ -128,12 +128,30 @@ describe('IndexerTable', () => {
   it('shows service unavailable icons', () => {
     render(<IndexerTable indexers={[{ ...baseIndexer }]} services={{
       prowlarr: { ok: false },
-      autobrr: { ok: false },
-      qbittorrent: { ok: false },
+      autobrr: { ok: false, configured: true },
+      qbittorrent: { ok: false, configured: true },
     }} />);
     expect(screen.getByText('Prowlarr')).toBeInTheDocument();
     expect(screen.getAllByText(/Autobrr/)).toHaveLength(2);
     expect(screen.getByText('qBittorrent')).toBeInTheDocument();
+  });
+
+  it('hides autobrr column when not configured', () => {
+    render(<IndexerTable indexers={[{ ...baseIndexer }]} services={{
+      prowlarr: { ok: true },
+      autobrr: { ok: false, configured: false },
+      qbittorrent: { ok: true, configured: true, connectionStatus: 'connected' },
+    }} />);
+    expect(screen.queryByText(/Autobrr/)).not.toBeInTheDocument();
+  });
+
+  it('hides qb column when not configured', () => {
+    render(<IndexerTable indexers={[{ ...baseIndexer }]} services={{
+      prowlarr: { ok: true },
+      autobrr: { ok: true, configured: true },
+      qbittorrent: { ok: false, configured: false },
+    }} />);
+    expect(screen.queryByText('qBittorrent')).not.toBeInTheDocument();
   });
 
   it('links indexer name when siteUrl is provided', () => {

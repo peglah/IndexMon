@@ -154,24 +154,28 @@ export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; serv
                 <StatusCell status={indexer.status} downtimeMinutes={indexer.downtimeMinutes} uptimePercentage={indexer.uptimePercentage} />
               </div>
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
-                <span className="inline-flex items-center gap-1">
-                  <span className="text-muted-foreground">Autobrr:</span>
-                  {indexer.autobrrMissing ? (
-                    <span className="text-gray-400 dark:text-gray-500 font-semibold">MISSING</span>
-                  ) : indexer.autobrr ? (
-                    <StatusCell status={abUp ? 'up' : 'down'} downtimeMinutes={indexer.autobrrDowntimeMinutes} uptimePercentage={indexer.autobrrUptimePercentage} />
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </span>
-                <span className="inline-flex items-center gap-1">
-                  <span className="text-muted-foreground">qB:</span>
-                  {indexer.qbittorrent?.hasTorrents ? (
-                    <StatusCell status={indexer.qbittorrent.working ? 'up' : 'down'} downtimeMinutes={indexer.qbDowntimeMinutes} uptimePercentage={indexer.qbUptimePercentage} upLabel="WORKING" downLabel="ERROR" />
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </span>
+                {services?.autobrr.configured !== false && (
+                  <span className="inline-flex items-center gap-1">
+                    <span className="text-muted-foreground">Autobrr:</span>
+                    {indexer.autobrrMissing ? (
+                      <span className="text-gray-400 dark:text-gray-500 font-semibold">MISSING</span>
+                    ) : indexer.autobrr ? (
+                      <StatusCell status={abUp ? 'up' : 'down'} downtimeMinutes={indexer.autobrrDowntimeMinutes} uptimePercentage={indexer.autobrrUptimePercentage} />
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </span>
+                )}
+                {services?.qbittorrent.configured !== false && (
+                  <span className="inline-flex items-center gap-1">
+                    <span className="text-muted-foreground">qB:</span>
+                    {indexer.qbittorrent?.hasTorrents ? (
+                      <StatusCell status={indexer.qbittorrent.working ? 'up' : 'down'} downtimeMinutes={indexer.qbDowntimeMinutes} uptimePercentage={indexer.qbUptimePercentage} upLabel="WORKING" downLabel="ERROR" />
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </span>
+                )}
                 {hasStats && indexer.stats && (
                   <span className="inline-flex items-center gap-1">
                     <span className="text-muted-foreground">Buffer:</span>
@@ -190,8 +194,12 @@ export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; serv
           <TableHead className="w-8"></TableHead>
           <TableHead>Indexer</TableHead>
           <ServiceHeader label="Prowlarr" ok={!!services?.prowlarr.ok} />
+        {services?.autobrr.configured !== false && (
           <ServiceHeader label="Autobrr" ok={!!services?.autobrr.ok} />
+        )}
+        {services?.qbittorrent.configured !== false && (
           <ServiceHeader label="qBittorrent" ok={!!services?.qbittorrent.ok} connectionStatus={services?.qbittorrent.connectionStatus} />
+        )}
           {hasStats && <TableHead>Buffer</TableHead>}
         </TableRow>
       </TableHeader>
@@ -220,22 +228,26 @@ export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; serv
               <TableCell>
                 <StatusCell status={indexer.status} downtimeMinutes={indexer.downtimeMinutes} uptimePercentage={indexer.uptimePercentage} />
               </TableCell>
-              <TableCell>
-                {indexer.autobrrMissing ? (
-                  <span className="text-gray-400 dark:text-gray-500 font-semibold">MISSING</span>
-                ) : indexer.autobrr ? (
-                  <StatusCell status={abUp ? 'up' : 'down'} downtimeMinutes={indexer.autobrrDowntimeMinutes} uptimePercentage={indexer.autobrrUptimePercentage} />
-                ) : (
-                  <span className="text-muted-foreground">—</span>
-                )}
-              </TableCell>
-              <TableCell>
-                {indexer.qbittorrent?.hasTorrents ? (
-                  <StatusCell status={indexer.qbittorrent.working ? 'up' : 'down'} downtimeMinutes={indexer.qbDowntimeMinutes} uptimePercentage={indexer.qbUptimePercentage} upLabel="WORKING" downLabel="ERROR" />
-                ) : (
-                  <span className="text-muted-foreground">—</span>
-                )}
-              </TableCell>
+              {services?.autobrr.configured !== false && (
+                <TableCell>
+                  {indexer.autobrrMissing ? (
+                    <span className="text-gray-400 dark:text-gray-500 font-semibold">MISSING</span>
+                  ) : indexer.autobrr ? (
+                    <StatusCell status={abUp ? 'up' : 'down'} downtimeMinutes={indexer.autobrrDowntimeMinutes} uptimePercentage={indexer.autobrrUptimePercentage} />
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+              )}
+              {services?.qbittorrent.configured !== false && (
+                <TableCell>
+                  {indexer.qbittorrent?.hasTorrents ? (
+                    <StatusCell status={indexer.qbittorrent.working ? 'up' : 'down'} downtimeMinutes={indexer.qbDowntimeMinutes} uptimePercentage={indexer.qbUptimePercentage} upLabel="WORKING" downLabel="ERROR" />
+                  ) : (
+                    <span className="text-muted-foreground">—</span>
+                  )}
+                </TableCell>
+              )}
               {hasStats && (
                 <TableCell>
                   {indexer.stats ? (
