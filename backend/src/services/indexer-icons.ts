@@ -32,7 +32,8 @@ export const cacheIcons = async (indexers: Indexer[], isFirstPoll: boolean): Pro
   await Promise.all(
     indexers.map(async (indexer) => {
       const prowlarrId = indexer.id.replace('prowlarr-', '');
-      const cachePath = path.join(ICONS_DIR, `${prowlarrId}.png`);
+      const cachePath = path.resolve(ICONS_DIR, `${prowlarrId}.png`);
+      if (!cachePath.startsWith(ICONS_DIR + path.sep)) return;
       try {
         const stat = fs.statSync(cachePath);
         const jitterMs = (Math.random() - 0.5) * 60 * 60 * 1000;
