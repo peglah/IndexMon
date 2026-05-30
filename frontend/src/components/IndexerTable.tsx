@@ -2,6 +2,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { Indexer, ServicesStatus } from '../types';
 import { stripApi } from '../utils/stripApi';
 
+const isSafeUrl = (url: string): boolean => /^https?:\/\//i.test(url);
+
 const MINUTE = 1;
 const HOUR = 60 * MINUTE;
 const DAY = 24 * HOUR;
@@ -136,7 +138,7 @@ export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; serv
                     className="w-5 h-5 shrink-0"
                     onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
                   />
-                  {indexer.siteUrl ? (
+                  {indexer.siteUrl && isSafeUrl(indexer.siteUrl) ? (
                     <a href={indexer.siteUrl} target="_blank" rel="noreferrer" className="font-medium text-sm truncate hover:underline">
                       {stripApi(indexer.name)}
                     </a>
@@ -210,7 +212,7 @@ export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; serv
                 />
               </TableCell>
               <TableCell className="font-medium">
-                {indexer.siteUrl ? (
+                {indexer.siteUrl && isSafeUrl(indexer.siteUrl) ? (
                   <a href={indexer.siteUrl} target="_blank" rel="noreferrer" className="hover:underline">
                   {stripApi(indexer.name)}
                     </a>
