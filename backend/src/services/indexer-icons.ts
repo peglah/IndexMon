@@ -2,6 +2,7 @@ import axios from 'axios';
 import fs from 'fs';
 import path from 'path';
 import { logger } from '../utils/logger';
+import { isPrivateUrl } from '../utils/ssrf';
 import { Indexer } from './indexer-types';
 
 const ICONS_DIR = path.join(
@@ -11,6 +12,7 @@ const ICONS_DIR = path.join(
 const ICON_TTL_MS = 24 * 60 * 60 * 1000;
 
 const fetchFaviconUrl = async (siteUrl: string): Promise<string | null> => {
+  if (isPrivateUrl(siteUrl)) return null;
   try {
     const base = siteUrl.replace(/\/+$/, '');
     const resp = await axios.get(base + '/', { timeout: 5000, responseType: 'text', maxBodyLength: 500000 });
@@ -42,8 +44,10 @@ export const cacheIcons = async (indexers: Indexer[], isFirstPoll: boolean): Pro
         logger.debug(`Icon cache stat failed for ${indexer.name}, will download`);
       }
       if (!indexer.siteUrl) return;
+      if (isPrivateUrl(indexer.siteUrl)) return;
       try {
         const faviconUrl = (await fetchFaviconUrl(indexer.siteUrl)) || `${indexer.siteUrl.replace(/\/+$/, '')}/favicon.ico`;
+        if (isPrivateUrl(faviconUrl)) return;
         const resp = await axios.get(faviconUrl, { responseType: 'arraybuffer', timeout: 5000, maxBodyLength: 500000 });
         if (resp.data && resp.data.byteLength > 0) {
           fs.writeFileSync(cachePath, resp.data);

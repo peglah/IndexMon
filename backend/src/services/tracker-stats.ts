@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { randomUUID } from 'crypto';
 import { logger } from '../utils/logger';
+import { isPrivateUrl } from '../utils/ssrf';
 
 export interface TrackerStats {
   uploaded: number;
@@ -86,6 +87,7 @@ const parseStats = (raw: Record<string, unknown>): TrackerStats | null => {
 };
 
 const fetchUnit3dStats = async (siteUrl: string, apiKey: string): Promise<TrackerStats | null> => {
+  if (isPrivateUrl(siteUrl)) return null;
   const base = siteUrl.replace(/\/+$/, '');
   const url = `${base}/api/user`;
   // Try Bearer header first, then api_token query param
