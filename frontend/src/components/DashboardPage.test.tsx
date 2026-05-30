@@ -45,7 +45,7 @@ const renderDashboard = () => {
   const queryClient = new QueryClient();
   return render(
     <MemoryRouter>
-      <AuthContext.Provider value={{ token: 'test-token', login: vi.fn(), logout: mockLogout, isAuthenticated: true }}>
+      <AuthContext.Provider value={{ isAuthenticated: true, loading: false, login: vi.fn(), logout: mockLogout }}>
         <QueryClientProvider client={queryClient}>
           <DashboardPage />
         </QueryClientProvider>

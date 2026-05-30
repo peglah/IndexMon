@@ -2,6 +2,7 @@ import express from 'express';
 import fs from 'fs';
 import path from 'path';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import indexerRoutes from './routes/indexers';
 import authRoutes from './routes/auth';
 import appriseRoutes from './routes/apprise';
@@ -18,6 +19,7 @@ app.set('trust proxy', 1);
 
 // Security middleware
 app.use(helmet());
+app.use(cookieParser());
 app.use(express.json());
 app.use(requestIdMiddleware);
 app.use(httpMetricsMiddleware);

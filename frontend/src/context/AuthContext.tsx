@@ -1,39 +1,42 @@
 /* eslint-disable react-refresh/only-export-components */
-import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
-import axios from 'axios';
+import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from 'react';
+import api from '../utils/axios';
 
 interface AuthContextType {
-  token: string | null;
+  isAuthenticated: boolean;
+  loading: boolean;
   login: (password: string) => Promise<void>;
   logout: () => Promise<void>;
-  isAuthenticated: boolean;
 }
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    api.get('/api/auth/me')
+      .then(() => setIsAuthenticated(true))
+      .catch(() => setIsAuthenticated(false))
+      .finally(() => setLoading(false));
+  }, []);
 
   const login = useCallback(async (password: string) => {
-    const res = await axios.post('/api/auth/login', { password }, { timeout: 30000 });
-    const t = res.data.token;
-    setToken(t);
-    localStorage.setItem('token', t);
+    await api.post('/api/auth/login', { password });
+    setIsAuthenticated(true);
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      if (token) {
-        await axios.post('/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` }, timeout: 30000 });
-      }
+      await api.post('/api/auth/logout');
     } finally {
-      setToken(null);
-      localStorage.removeItem('token');
+      setIsAuthenticated(false);
     }
-  }, [token]);
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ token, login, logout, isAuthenticated: !!token }}>
+    <AuthContext.Provider value={{ isAuthenticated, loading, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

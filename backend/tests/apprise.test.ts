@@ -18,13 +18,14 @@ const mockAxiosPost = axios.post as unknown as jest.Mock;
 const testPassword = 'test-pass';
 const testHash = createHash('sha256').update(testPassword).digest('hex');
 
-let token = '';
+let cookies: string[] = [];
 
 beforeAll(async () => {
   await knex.migrate.latest();
   setPasswordHash(testHash);
   const res = await request(app).post('/api/auth/login').send({ password: testPassword });
-  token = res.body.token;
+  const raw = res.headers['set-cookie'];
+  cookies = Array.isArray(raw) ? raw : raw ? [raw] : [];
 });
 
 afterAll(async () => {
@@ -71,7 +72,7 @@ describe('POST /api/apprise/test', () => {
   });
 
   it('should return 400 when APPRISE_URLS not set', async () => {
-    const res = await request(app).post('/api/apprise/test').set('Authorization', `Bearer ${token}`);
+    const res = await request(app).post('/api/apprise/test').set('Cookie', cookies);
     expect(res.status).toBe(400);
     expect(res.body.error).toBe('Apprise not configured');
   });
@@ -79,7 +80,7 @@ describe('POST /api/apprise/test', () => {
   it('should return 500 when apprise binary not found', async () => {
     process.env.APPRISE_URLS = 'slack://token/chan';
     mockENOENT();
-    const res = await request(app).post('/api/apprise/test').set('Authorization', `Bearer ${token}`);
+    const res = await request(app).post('/api/apprise/test').set('Cookie', cookies);
     expect(res.status).toBe(500);
     expect(res.body.error).toBe('Notification service unavailable');
   });
@@ -87,7 +88,7 @@ describe('POST /api/apprise/test', () => {
   it('should return 502 when apprise fails', async () => {
     process.env.APPRISE_URLS = 'slack://token/chan';
     mockError('Connection refused');
-    const res = await request(app).post('/api/apprise/test').set('Authorization', `Bearer ${token}`);
+    const res = await request(app).post('/api/apprise/test').set('Cookie', cookies);
     expect(res.status).toBe(502);
     expect(res.body.error).toBe('Failed to send notification');
   });
@@ -95,7 +96,7 @@ describe('POST /api/apprise/test', () => {
   it('should return 200 on success with non-ntfy URL', async () => {
     process.env.APPRISE_URLS = 'slack://token/chan';
     mockSuccess();
-    const res = await request(app).post('/api/apprise/test').set('Authorization', `Bearer ${token}`);
+    const res = await request(app).post('/api/apprise/test').set('Cookie', cookies);
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true });
     expect(mockExecFile).toHaveBeenCalledWith(
@@ -109,7 +110,7 @@ describe('POST /api/apprise/test', () => {
   it('should return 200 on success with ntfy URL', async () => {
     process.env.APPRISE_URLS = 'ntfy://host/topic?token=abc&tags=warning';
     mockSuccess();
-    const res = await request(app).post('/api/apprise/test').set('Authorization', `Bearer ${token}`);
+    const res = await request(app).post('/api/apprise/test').set('Cookie', cookies);
     expect(res.status).toBe(200);
     expect(res.body).toEqual({ ok: true });
     expect(mockAxiosPost).toHaveBeenCalledTimes(1);
