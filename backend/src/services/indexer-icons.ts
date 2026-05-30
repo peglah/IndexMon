@@ -44,7 +44,7 @@ export const cacheIcons = async (indexers: Indexer[], isFirstPoll: boolean): Pro
       if (!indexer.siteUrl) return;
       try {
         const faviconUrl = (await fetchFaviconUrl(indexer.siteUrl)) || `${indexer.siteUrl.replace(/\/+$/, '')}/favicon.ico`;
-        const resp = await axios.get(faviconUrl, { responseType: 'arraybuffer', timeout: 5000 });
+        const resp = await axios.get(faviconUrl, { responseType: 'arraybuffer', timeout: 5000, maxBodyLength: 500000 });
         if (resp.data && resp.data.byteLength > 0) {
           fs.writeFileSync(cachePath, resp.data);
         }
