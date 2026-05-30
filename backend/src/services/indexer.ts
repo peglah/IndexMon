@@ -333,7 +333,7 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     }
 
     const qbGlobal = getQbitGlobalStatus();
-    const appriseConfigured = !!(process.env.APPRISE_API_URL && process.env.APPRISE_URLS);
+    const appriseConfigured = !!process.env.APPRISE_URLS;
     const services: ServiceStatuses = {
       prowlarr: { ok: prowlarrReachable },
       autobrr: { ok: autobrrReachable, configured: !!process.env.AUTOBRR_API_KEY },

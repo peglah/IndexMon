@@ -13,7 +13,7 @@ router.post('/test', async (req, res) => {
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     log.warn('Apprise test notification failed:', msg);
-    if (msg.includes('not configured')) {
+    if (msg.includes('not configured') || msg.includes('ENOENT')) {
       res.status(400).json({ error: msg });
     } else {
       res.status(502).json({ error: msg });

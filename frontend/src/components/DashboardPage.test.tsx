@@ -145,11 +145,11 @@ describe('DashboardPage', () => {
       isLoading: false,
       isError: false,
     } as never);
-    vi.mocked(api.post).mockRejectedValue({ response: { data: { error: 'APPRISE_API_URL not configured' } } });
+    vi.mocked(api.post).mockRejectedValue({ response: { data: { error: 'APPRISE_URLS not configured' } } });
     renderDashboard();
 
     fireEvent.click(screen.getByRole('button', { name: 'Test notifications' }));
-    const msg = await screen.findByText('APPRISE_API_URL not configured');
+    const msg = await screen.findByText('APPRISE_URLS not configured');
     expect(msg).toBeInTheDocument();
     expect(msg.className).toContain('text-destructive');
   });

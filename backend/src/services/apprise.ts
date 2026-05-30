@@ -1,8 +1,9 @@
-import axios from 'axios';
+import { execFile } from 'child_process';
+import { promisify } from 'util';
 import { logger } from '../utils/logger';
 
-const appriseBaseUrl = () =>
-  (process.env.APPRISE_API_URL || '').replace(/\/$/, '');
+const execFileAsync = promisify(execFile);
+const APPRISE_BIN = '/usr/local/bin/apprise-go';
 
 const appriseUrls = () =>
   process.env.APPRISE_URLS?.split(',').filter(Boolean) || [];
@@ -11,18 +12,8 @@ export const sendAlert = async (message: string) => {
   const urls = appriseUrls();
   if (!urls.length) return;
 
-  const apiUrl = appriseBaseUrl();
-  if (!apiUrl) {
-    logger.warn('APPRISE_API_URL not set — skipping alert(s)');
-    return;
-  }
-
   try {
-    await axios.post(`${apiUrl}/notify`, {
-      urls: urls.join(','),
-      body: message,
-      title: 'Indexer Alert',
-    }, { timeout: 10000 });
+    await execFileAsync(APPRISE_BIN, ['-t', 'Indexer Alert', '-b', message, ...urls], { timeout: 15000 });
     logger.info(`Apprise alert sent to ${urls.length} URL(s)`);
   } catch (error) {
     logger.error('Failed to send alert:', error);
@@ -32,14 +23,8 @@ export const sendAlert = async (message: string) => {
 export const sendTestNotification = async (): Promise<{ ok: true }> => {
   const urls = appriseUrls();
   if (!urls.length) throw new Error('APPRISE_URLS not configured');
-  const apiUrl = appriseBaseUrl();
-  if (!apiUrl) throw new Error('APPRISE_API_URL not configured');
 
-  await axios.post(`${apiUrl}/notify`, {
-    urls: urls.join(','),
-    body: 'Test notification from IndexMon',
-    title: 'Indexer Alert',
-  }, { timeout: 10000 });
+  await execFileAsync(APPRISE_BIN, ['-t', 'Indexer Alert', '-b', 'Test notification from IndexMon', ...urls], { timeout: 15000 });
 
   return { ok: true };
 };
