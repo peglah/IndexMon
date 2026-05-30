@@ -59,7 +59,14 @@ const login = async (req: Request, res: Response) => {
   res.json({ token: sessionToken });
 };
 
+const logoutSchema = z.object({}).strict();
+
 const logout = async (req: Request, res: Response) => {
+  const parsed = logoutSchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid request body' });
+  }
+
   const token = req.headers.authorization?.split(' ')[1];
   if (!token) {
     return res.status(401).json({ error: 'No token provided' });

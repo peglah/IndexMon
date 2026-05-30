@@ -8,6 +8,7 @@ import appriseRoutes from './routes/apprise';
 import { authMiddleware } from './middleware/auth';
 import { errorHandler } from './middleware/error';
 import { requestIdMiddleware } from './middleware/requestId';
+import { httpMetricsMiddleware } from './middleware/httpMetrics';
 import { logger } from './utils/logger';
 import { metricsHandler } from './utils/metrics';
 
@@ -19,6 +20,7 @@ app.set('trust proxy', 1);
 app.use(helmet());
 app.use(express.json());
 app.use(requestIdMiddleware);
+app.use(httpMetricsMiddleware);
 
 // Routes
 app.use('/api/auth', authRoutes);

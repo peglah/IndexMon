@@ -1,9 +1,15 @@
 import express from 'express';
+import { z } from 'zod';
 import { knex } from '../config/database';
 import { fetchIndexers } from '../services/indexer';
 import { logger } from '../utils/logger';
 
 const router = express.Router();
+
+const historyQuerySchema = z.object({
+  limit: z.coerce.number().int().min(1).max(5000).default(1000),
+  offset: z.coerce.number().int().min(0).default(0),
+});
 
 // Get current indexer status
 router.get('/', async (req, res) => {
@@ -22,8 +28,11 @@ router.get('/', async (req, res) => {
 router.get('/history', async (req, res) => {
   const log = res.locals.logger || logger;
   try {
-    const limit = Math.min(Math.max(parseInt(req.query.limit as string, 10) || 1000, 1), 5000);
-    const offset = Math.max(parseInt(req.query.offset as string, 10) || 0, 0);
+    const parsed = historyQuerySchema.safeParse(req.query);
+    if (!parsed.success) {
+      return res.status(400).json({ error: 'Invalid query parameters' });
+    }
+    const { limit, offset } = parsed.data;
     const history = await knex('indexer_history').select('*').limit(limit).offset(offset);
     res.json(history.map((entry) => ({
       indexerId: entry.indexer_id,

@@ -1,10 +1,17 @@
 import express from 'express';
+import { z } from 'zod';
 import { sendTestNotification } from '../services/apprise';
 import { logger } from '../utils/logger';
 
 const router = express.Router();
 
+const testBodySchema = z.object({}).strict();
+
 router.post('/test', async (req, res) => {
+  const parsed = testBodySchema.safeParse(req.body || {});
+  if (!parsed.success) {
+    return res.status(400).json({ error: 'Invalid request body' });
+  }
   const log = res.locals.logger || logger;
   try {
     await sendTestNotification();

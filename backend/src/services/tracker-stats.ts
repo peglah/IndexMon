@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { randomUUID } from 'crypto';
 import { logger } from '../utils/logger';
 
 export interface TrackerStats {
@@ -106,6 +107,7 @@ const fetchUnit3dStats = async (siteUrl: string, apiKey: string): Promise<Tracke
 };
 
 const fetchAllStats = async (): Promise<void> => {
+  const log = logger.child(randomUUID());
   try {
     const prowlarrKey = getApiKey();
     if (!prowlarrKey) return;
@@ -116,19 +118,19 @@ const fetchAllStats = async (): Promise<void> => {
     });
     const indexers = Array.isArray(listResp.data) ? listResp.data as Array<{ id: number; name: string; indexerUrls?: string[] }> : [];
 
-    logger.info(`Tracker stats: checking ${indexers.length} Prowlarr indexers`);
+    log.info(`Tracker stats: checking ${indexers.length} Prowlarr indexers`);
 
     const results = await Promise.all(
       indexers.map(async (indexer) => {
         const siteUrl = indexer.indexerUrls?.[0];
         if (!siteUrl) {
-          logger.debug(`Tracker stats: no siteUrl for ${indexer.name}, skipping`);
+          log.debug(`Tracker stats: no siteUrl for ${indexer.name}, skipping`);
           return null;
         }
 
         const cachedPlatform = platformCache.get(indexer.name);
         if (cachedPlatform === 'none') {
-          logger.debug(`Tracker stats: ${indexer.name} previously failed, skipping`);
+          log.debug(`Tracker stats: ${indexer.name} previously failed, skipping`);
           return null;
         }
 
@@ -146,11 +148,11 @@ const fetchAllStats = async (): Promise<void> => {
           // First time: fetch detail to get fields
           const detail = await fetchIndexerDetail(indexer.id);
           if (!detail) {
-            logger.info(`Tracker stats: ${indexer.name} — failed to fetch detail from Prowlarr`);
+            log.info(`Tracker stats: ${indexer.name} — failed to fetch detail from Prowlarr`);
             return null;
           }
 
-          logger.info(`Tracker stats: ${indexer.name} — impl=${detail.implementation} implName=${detail.implementationName}`);
+          log.info(`Tracker stats: ${indexer.name} — impl=${detail.implementation} implName=${detail.implementationName}`);
 
           fieldApiKey = extractApiKey(detail.fields, indexer.name);
           if (!fieldApiKey) {
@@ -158,15 +160,15 @@ const fetchAllStats = async (): Promise<void> => {
             return null;
           }
 
-          logger.info(`Tracker stats: ${indexer.name} — found apiKey, trying UNIT3D at ${siteUrl}`);
+          log.info(`Tracker stats: ${indexer.name} — found apiKey, trying UNIT3D at ${siteUrl}`);
           const stats = await fetchUnit3dStats(siteUrl, fieldApiKey);
           if (stats) {
             platformCache.set(indexer.name, 'unit3d');
-            logger.info(`Tracker stats: ${indexer.name} → UNIT3D, buffer=${stats.buffer}`);
+            log.info(`Tracker stats: ${indexer.name} → UNIT3D, buffer=${stats.buffer}`);
             return { name: indexer.name, stats };
           }
 
-          logger.info(`Tracker stats: ${indexer.name} — UNIT3D failed`);
+          log.info(`Tracker stats: ${indexer.name} — UNIT3D failed`);
           platformCache.set(indexer.name, 'none');
           return null;
         }
@@ -175,11 +177,11 @@ const fetchAllStats = async (): Promise<void> => {
         const statsCached = await fetchUnit3dStats(siteUrl, fieldApiKey);
 
         if (statsCached) {
-          logger.debug(`Tracker stats: ${indexer.name} ${cachedPlatform}, buffer=${statsCached.buffer}`);
+          log.debug(`Tracker stats: ${indexer.name} ${cachedPlatform}, buffer=${statsCached.buffer}`);
           return { name: indexer.name, stats: statsCached };
         }
 
-        logger.debug(`Tracker stats: ${indexer.name} ${cachedPlatform} fetch failed, clearing cache`);
+        log.debug(`Tracker stats: ${indexer.name} ${cachedPlatform} fetch failed, clearing cache`);
         platformCache.set(indexer.name, 'none');
         return null;
       }),
@@ -195,9 +197,9 @@ const fetchAllStats = async (): Promise<void> => {
     for (const [key, val] of newCache) {
       statsCache.set(key, val);
     }
-    logger.info(`Tracker stats fetched for ${statsCache.size} indexers`);
+    log.info(`Tracker stats fetched for ${statsCache.size} indexers`);
   } catch (error) {
-    logger.error('Tracker stats poll failed:', error);
+    log.error('Tracker stats poll failed:', error);
   }
 };
 
