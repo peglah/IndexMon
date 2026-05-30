@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { createHash, randomBytes, timingSafeEqual } from 'crypto';
+import { randomBytes } from 'crypto';
+import bcrypt from 'bcrypt';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
 
@@ -32,17 +33,8 @@ const cleanupInterval = setInterval(() => {
 
 export const stopSessionCleanup = () => clearInterval(cleanupInterval);
 
-const verifyPassword = (input: string, stored: string): boolean => {
-  let salt = '';
-  let expected = stored;
-  if (stored.includes(':')) {
-    [salt, expected] = stored.split(':');
-  }
-  const computed = createHash('sha256').update(salt + input).digest('hex');
-  const computedBuf = Buffer.from(computed, 'hex');
-  const expectedBuf = Buffer.from(expected, 'hex');
-  if (computedBuf.length !== expectedBuf.length) return false;
-  return timingSafeEqual(computedBuf, expectedBuf);
+const verifyPassword = async (input: string, stored: string): Promise<boolean> => {
+  return bcrypt.compare(input, stored);
 };
 
 const login = async (req: Request, res: Response) => {
@@ -52,7 +44,7 @@ const login = async (req: Request, res: Response) => {
   }
   const { password } = parsed.data;
 
-  if (!storedPasswordHash || !verifyPassword(password, storedPasswordHash)) {
+  if (!storedPasswordHash || !(await verifyPassword(password, storedPasswordHash))) {
     logger.warn('Login failed', { ip: req.ip });
     return res.status(401).json({ error: 'Invalid credentials' });
   }

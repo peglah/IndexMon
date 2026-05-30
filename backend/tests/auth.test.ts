@@ -1,12 +1,12 @@
 import request from 'supertest';
-import { createHash } from 'crypto';
+import bcrypt from 'bcrypt';
 import app from '../src/app';
 import { knex } from '../src/config/database';
 import { setPasswordHash, stopSessionCleanup } from '../src/middleware/auth';
 
 describe('Auth API', () => {
   const testPassword = 'correct-password';
-  const testHash = createHash('sha256').update(testPassword).digest('hex');
+  const testHash = bcrypt.hashSync(testPassword, 10);
 
   beforeAll(async () => {
     await knex.migrate.latest();

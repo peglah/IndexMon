@@ -1,4 +1,5 @@
-import { randomBytes, createHash } from 'crypto';
+import { randomBytes } from 'crypto';
+import bcrypt from 'bcrypt';
 import { logger } from './utils/logger';
 import app from './app';
 import { setPasswordHash, stopSessionCleanup } from './middleware/auth';
@@ -20,7 +21,7 @@ const startServer = async () => {
       logger.info('Admin password configured from ADMIN_PASSWORD_HASH');
     } else {
       const adminPassword = randomBytes(12).toString('hex');
-      const passwordHash = createHash('sha256').update(adminPassword).digest('hex');
+      const passwordHash = await bcrypt.hash(adminPassword, 10);
       setPasswordHash(passwordHash);
       logger.info(`=== Generated admin password: ${adminPassword} ===`);
     }

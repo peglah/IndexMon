@@ -1,5 +1,5 @@
 import request from 'supertest';
-import { createHash } from 'crypto';
+import bcrypt from 'bcrypt';
 import { execFile } from 'child_process';
 import axios from 'axios';
 import app from '../src/app';
@@ -16,7 +16,7 @@ const mockExecFile = execFile as unknown as jest.Mock;
 const mockAxiosPost = axios.post as unknown as jest.Mock;
 
 const testPassword = 'test-pass';
-const testHash = createHash('sha256').update(testPassword).digest('hex');
+const testHash = bcrypt.hashSync(testPassword, 10);
 
 let cookies: string[] = [];
 
