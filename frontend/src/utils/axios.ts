@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const instance = axios.create();
+const instance = axios.create({ timeout: 30000 });
 
 instance.interceptors.request.use((config) => {
   const token = localStorage.getItem('token');

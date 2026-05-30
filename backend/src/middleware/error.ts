@@ -9,5 +9,5 @@ export const errorHandler = (
 ) => {
   const log = res.locals.logger || logger;
   log.error('Unhandled error:', err.stack);
-  res.status(500).json({ error: 'Internal Server Error', detail: err.message });
+  res.status(500).json({ error: 'Internal Server Error' });
 };

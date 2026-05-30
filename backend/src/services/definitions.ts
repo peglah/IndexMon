@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { randomUUID } from 'crypto';
 import { logger } from '../utils/logger';
 import { normalize } from '../utils/normalize';
 
@@ -8,15 +9,24 @@ const REFRESH_INTERVAL = 24 * 60 * 60 * 1000;
 let knownDefinitions = new Set<string>();
 
 const fetchDefinitions = async () => {
-  try {
-    const response = await axios.get<{ name: string }[]>(GITHUB_API, { timeout: 15000 });
-    const names = response.data
-      .filter((f) => f.name.endsWith('.yaml'))
-      .map((f) => normalize(f.name.replace(/\.yaml$/, '')));
-    knownDefinitions = new Set(names);
-    logger.info(`Loaded ${names.length} Autobrr indexer definitions`);
-  } catch (error) {
-    logger.error('Failed to fetch Autobrr definitions:', error);
+  const log = logger.child(randomUUID());
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const response = await axios.get<{ name: string }[]>(GITHUB_API, { timeout: 15000 });
+      const names = response.data
+        .filter((f) => f.name.endsWith('.yaml'))
+        .map((f) => normalize(f.name.replace(/\.yaml$/, '')));
+      knownDefinitions = new Set(names);
+      log.info(`Loaded ${names.length} Autobrr indexer definitions`);
+      return;
+    } catch (error) {
+      if (attempt < 2) {
+        log.warn(`Retry attempt ${attempt + 1}/3 for Autobrr definitions`);
+        await new Promise(r => setTimeout(r, Math.min(1000 * 2 ** attempt, 10000)));
+      } else {
+        log.error('Failed to fetch Autobrr definitions:', error);
+      }
+    }
   }
 };
 

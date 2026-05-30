@@ -15,7 +15,7 @@ const makeLogger = (requestId?: string) => {
       if (a instanceof Error) {
         parts.push(a.message);
         if (level === 'error') {
-          entry.stack = a.stack?.split('\n').slice(0, 5).join('\n');
+          entry.stack = a.stack?.split('\n').slice(0, 20).join('\n');
         }
       } else if (typeof a === 'object' && a !== null) {
         Object.assign(entry, a);

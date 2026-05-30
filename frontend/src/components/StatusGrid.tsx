@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Indexer } from '../types';
-
-const stripApi = (name: string): string => name.replace(/\s*\(API\)/gi, '');
+import { stripApi } from '../utils/stripApi';
 
 type TileStatus = 'red' | 'orange' | 'yellow' | 'amber' | 'grey' | 'green';
 

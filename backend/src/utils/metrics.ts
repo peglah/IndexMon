@@ -56,6 +56,12 @@ export const trackerRatio = new client.Gauge({
   labelNames: ['indexer'] as const,
 });
 
+export const upstreamErrors = new client.Counter({
+  name: 'indexmon_upstream_errors_total',
+  help: 'Total upstream service errors per source',
+  labelNames: ['service'] as const,
+});
+
 export const circuitBreakerOpen = new client.Gauge({
   name: 'indexmon_circuit_breaker_open',
   help: 'Whether the circuit breaker is open (1) for a service (prowlarr/autobrr)',

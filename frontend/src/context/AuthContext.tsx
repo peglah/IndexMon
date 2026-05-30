@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
 
   const login = useCallback(async (password: string) => {
-    const res = await axios.post('/api/auth/login', { password });
+    const res = await axios.post('/api/auth/login', { password }, { timeout: 30000 });
     const t = res.data.token;
     setToken(t);
     localStorage.setItem('token', t);
@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const logout = useCallback(async () => {
     try {
       if (token) {
-        await axios.post('/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` } });
+        await axios.post('/api/auth/logout', {}, { headers: { Authorization: `Bearer ${token}` }, timeout: 30000 });
       }
     } finally {
       setToken(null);

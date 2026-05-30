@@ -1,7 +1,6 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Indexer, ServicesStatus } from '../types';
-
-const stripApi = (name: string): string => name.replace(/\s*\(API\)/gi, '');
+import { stripApi } from '../utils/stripApi';
 
 const MINUTE = 1;
 const HOUR = 60 * MINUTE;
@@ -213,10 +212,10 @@ export const IndexerTable = ({ indexers, services }: { indexers: Indexer[]; serv
               <TableCell className="font-medium">
                 {indexer.siteUrl ? (
                   <a href={indexer.siteUrl} target="_blank" rel="noreferrer" className="hover:underline">
-                    {indexer.name.replace(/\s*\(API\)/gi, '')}
-                  </a>
-                ) : (
-                  indexer.name.replace(/\s*\(API\)/gi, '')
+                  {stripApi(indexer.name)}
+                    </a>
+                  ) : (
+                    stripApi(indexer.name)
                 )}
               </TableCell>
               <TableCell>

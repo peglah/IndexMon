@@ -1,5 +1,7 @@
 import axios from 'axios';
+import { randomUUID } from 'crypto';
 import { logger } from '../utils/logger';
+import { upstreamErrors } from '../utils/metrics';
 
 interface QbitTorrent {
   hash: string;
@@ -89,14 +91,33 @@ const fetchTorrents = async (): Promise<QbitTorrent[]> => {
   return resp.data;
 };
 
+const fetchTorrentsWithRetry = async (retries = 2): Promise<QbitTorrent[]> => {
+  let lastError: unknown;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      return await fetchTorrents();
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        throw error;
+      }
+      lastError = error;
+      if (attempt < retries) {
+        logger.warn(`qB torrent fetch retry ${attempt + 1}/${retries}`);
+        await new Promise(r => setTimeout(r, Math.min(1000 * 2 ** attempt, 5000)));
+      }
+    }
+  }
+  throw lastError;
+};
+
 const fetchTorrentsWithReauth = async (): Promise<QbitTorrent[]> => {
   try {
-    return await fetchTorrents();
+    return await fetchTorrentsWithRetry(2);
   } catch (error) {
     if (axios.isAxiosError(error) && error.response?.status === 403) {
       cookie = '';
       if (await login()) {
-        return await fetchTorrents();
+        return await fetchTorrentsWithRetry(2);
       }
     }
     throw error;
@@ -146,6 +167,7 @@ const fetchGlobalStatus = async (): Promise<void> => {
 };
 
 const refreshCache = async (): Promise<void> => {
+  const log = logger.child(randomUUID());
   try {
     if (!(await ensureAuth())) {
       connectionStatus = 'disconnected';
@@ -182,7 +204,7 @@ const refreshCache = async (): Promise<void> => {
             const trackers = await fetchTrackers(hash);
             return [domain, trackers] as [string, QbitTracker[]];
           } catch {
-            logger.debug(`qB tracker fetch failed for ${domain}`);
+            log.debug(`qB tracker fetch failed for ${domain}`);
             return [domain, null] as [string, null];
           }
         }),
@@ -216,10 +238,11 @@ const refreshCache = async (): Promise<void> => {
     }
 
     cache = newCache;
-    logger.info(`qB poll complete — ${cache.size} tracker domains cached`);
+    log.info(`qB poll complete — ${cache.size} tracker domains cached`);
     await fetchGlobalStatus();
   } catch (error) {
-    logger.error('qBittorrent poll failed:', error);
+    log.error('qBittorrent poll failed:', error);
+    upstreamErrors.inc({ service: 'qbittorrent' });
     connectionStatus = 'disconnected';
     portOpen = null;
   }

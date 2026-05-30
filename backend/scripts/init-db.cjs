@@ -3,8 +3,8 @@ const path = require('path');
 const fs = require('fs');
 
 // Initialize the SQLite database
-const dataDir = '/app/data';
-const dbPath = '/app/data/indexmon.db';
+const dbPath = process.env.DB_PATH || '/app/data/indexmon.db';
+const dataDir = path.dirname(dbPath);
 
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true });
