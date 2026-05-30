@@ -3,6 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import helmet from 'helmet';
 import cookieParser from 'cookie-parser';
+import rateLimit from 'express-rate-limit';
 import indexerRoutes from './routes/indexers';
 import authRoutes from './routes/auth';
 import appriseRoutes from './routes/apprise';
@@ -52,7 +53,15 @@ const iconContentType = (filePath: string): string => {
   return 'image/png';
 };
 
-app.get('/api/indexers/icon/:prowlarrId', (req, res) => {
+const iconLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests' },
+});
+
+app.get('/api/indexers/icon/:prowlarrId', iconLimiter, (req, res) => {
   const iconsDir = path.resolve(
     path.dirname(process.env.DB_PATH || '/app/data/indexmon.db'),
     'icons',
