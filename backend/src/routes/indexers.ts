@@ -20,7 +20,7 @@ router.get('/', async (req, res) => {
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     log.error('Failed to fetch indexers:', detail);
-    res.status(500).json({ error: 'Failed to fetch indexers', detail });
+    res.status(500).json({ error: 'Failed to fetch indexers' });
   }
 });
 
@@ -43,7 +43,7 @@ router.get('/history', async (req, res) => {
   } catch (error) {
     const detail = error instanceof Error ? error.message : String(error);
     log.error('Failed to fetch history:', detail);
-    res.status(500).json({ error: 'Failed to fetch history', detail });
+    res.status(500).json({ error: 'Failed to fetch history' });
   }
 });
 

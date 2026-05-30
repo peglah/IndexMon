@@ -73,15 +73,15 @@ describe('POST /api/apprise/test', () => {
   it('should return 400 when APPRISE_URLS not set', async () => {
     const res = await request(app).post('/api/apprise/test').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(400);
-    expect(res.body.error).toContain('APPRISE_URLS');
+    expect(res.body.error).toBe('Apprise not configured');
   });
 
-  it('should return 400 when apprise binary not found', async () => {
+  it('should return 500 when apprise binary not found', async () => {
     process.env.APPRISE_URLS = 'slack://token/chan';
     mockENOENT();
     const res = await request(app).post('/api/apprise/test').set('Authorization', `Bearer ${token}`);
-    expect(res.status).toBe(400);
-    expect(res.body.error).toContain('ENOENT');
+    expect(res.status).toBe(500);
+    expect(res.body.error).toBe('Notification service unavailable');
   });
 
   it('should return 502 when apprise fails', async () => {
@@ -89,7 +89,7 @@ describe('POST /api/apprise/test', () => {
     mockError('Connection refused');
     const res = await request(app).post('/api/apprise/test').set('Authorization', `Bearer ${token}`);
     expect(res.status).toBe(502);
-    expect(res.body.error).toContain('Connection refused');
+    expect(res.body.error).toBe('Failed to send notification');
   });
 
   it('should return 200 on success with non-ntfy URL', async () => {

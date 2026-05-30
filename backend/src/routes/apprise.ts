@@ -20,10 +20,12 @@ router.post('/test', async (req, res) => {
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     log.warn('Apprise test notification failed:', msg);
-    if (msg.includes('not configured') || msg.includes('ENOENT')) {
-      res.status(400).json({ error: msg });
+    if (msg.includes('not configured')) {
+      res.status(400).json({ error: 'Apprise not configured' });
+    } else if (msg.includes('ENOENT')) {
+      res.status(500).json({ error: 'Notification service unavailable' });
     } else {
-      res.status(502).json({ error: msg });
+      res.status(502).json({ error: 'Failed to send notification' });
     }
   }
 });
