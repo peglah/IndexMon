@@ -34,8 +34,13 @@ ENV APP_VERSION=$APP_VERSION
 WORKDIR /app
 
 # Install dependencies
-RUN apk add --no-cache nginx sqlite curl python3 py3-pip && \
-    pip3 install --break-system-packages apprise
+RUN apk add --no-cache nginx sqlite curl
+
+# Download apprise-go binary (Unraid Go port of Apprise)
+ARG APPRISE_GO_VERSION=v0.2.6
+RUN curl -fsSLo /usr/local/bin/apprise-go \
+      https://github.com/unraid/apprise-go/releases/download/${APPRISE_GO_VERSION}/apprise-go-linux-amd64 \
+    && chmod +x /usr/local/bin/apprise-go
 
 # Copy frontend build from stage 1
 COPY --from=frontend-builder /app/dist /usr/share/nginx/html

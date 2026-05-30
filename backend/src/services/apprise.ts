@@ -4,7 +4,7 @@ import axios from 'axios';
 import { logger } from '../utils/logger';
 
 const execFileAsync = promisify(execFile);
-const APPRISE_BIN = 'apprise';
+const APPRISE_BIN = '/usr/local/bin/apprise-go';
 const FAVICON_URL = 'https://raw.githubusercontent.com/peglah/IndexMon/refs/heads/main/frontend/public/favicon.png';
 
 interface NtfyConfig {

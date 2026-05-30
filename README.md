@@ -48,7 +48,7 @@ Then open http://localhost. If you set `ADMIN_PASSWORD_HASH` in `.env`, use that
 | `AUTOBRR_API_KEY` | Yes | — | Autobrr API key (Settings → API Keys) |
 | `AUTOBRR_BASE_URL` | No | `http://autobrr:7474` | Autobrr URL |
 | `ADMIN_PASSWORD_HASH` | No | random on each startup | Salted SHA-256 hash. Generate via `backend/scripts/hash.sh yourpass`. If unset, a random password is generated and printed to logs. |
-| `APPRISE_URLS` | No | — | Comma-separated Apprise notification URLs (e.g. `ntfy://host/topic?token=...`). Sent via bundled Python `apprise` binary directly — no external API server needed. |
+| `APPRISE_URLS` | No | — | Comma-separated Apprise notification URLs (e.g. `ntfy://host/topic?token=...`). Sent via bundled `apprise-go` binary for non-ntfy services; ntfy URLs use a direct HTTP API call with `Icon` header for the favicon. |
 | `ALERT_DELAY_M` | No | `0` | Minimum downtime (minutes) before an Apprise alert fires |
 | `QBITTORRENT_BASE_URL` | No | `http://qbittorrent:8080` | qBittorrent Web UI URL (optional — omit to disable tracker checks) |
 | `QBITTORRENT_USERNAME` | No | — | qBittorrent login username |
