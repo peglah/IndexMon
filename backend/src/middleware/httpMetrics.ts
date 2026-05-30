@@ -17,7 +17,7 @@ const httpRequestsTotal = new client.Counter({
 export const httpMetricsMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const end = httpRequestDuration.startTimer();
   res.on('finish', () => {
-    const route = req.route?.path || (res.statusCode === 404 ? 'unknown' : req.path);
+    const route = req.route?.path || 'unknown';
     const labels = { method: req.method, route, status: res.statusCode };
     httpRequestsTotal.inc(labels);
     end(labels);
