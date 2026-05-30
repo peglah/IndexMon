@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { createHash, randomBytes } from 'crypto';
+import { createHash, randomBytes, timingSafeEqual } from 'crypto';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
 
@@ -36,7 +36,10 @@ const verifyPassword = (input: string, stored: string): boolean => {
     [salt, expected] = stored.split(':');
   }
   const computed = createHash('sha256').update(salt + input).digest('hex');
-  return computed === expected;
+  const computedBuf = Buffer.from(computed, 'hex');
+  const expectedBuf = Buffer.from(expected, 'hex');
+  if (computedBuf.length !== expectedBuf.length) return false;
+  return timingSafeEqual(computedBuf, expectedBuf);
 };
 
 const login = async (req: Request, res: Response) => {
