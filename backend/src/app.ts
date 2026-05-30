@@ -20,7 +20,7 @@ app.set('trust proxy', 1);
 // Security middleware
 app.use(helmet());
 app.use(cookieParser());
-app.use(express.json());
+app.use(express.json({ limit: '50kb' }));
 app.use(requestIdMiddleware);
 app.use(httpMetricsMiddleware);
 
