@@ -28,7 +28,10 @@ export const LoginPage = () => {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-lg shadow-md">
-        <h2 className="text-2xl font-bold text-center text-foreground">Enter Password</h2>
+        <div className="flex flex-col items-center gap-3">
+          <img src="/favicon.svg" className="h-12 w-12" alt="IndexMon" />
+          <h2 className="text-2xl font-bold text-center text-foreground">Enter Password</h2>
+        </div>
         <form onSubmit={handleSubmit} className="space-y-4">
           {error && <p className="text-destructive text-sm text-center">{error}</p>}
           <input

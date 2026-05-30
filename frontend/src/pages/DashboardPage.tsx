@@ -104,7 +104,11 @@ export const DashboardPage = () => {
   return (
     <div className="p-8 space-y-8 flex flex-col min-h-screen">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Indexer Status Dashboard</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2">
+          <img src="/favicon.svg" className="h-7 w-7 shrink-0" alt="IndexMon" />
+          <span className="hidden sm:inline">Indexer Status Dashboard</span>
+          <span className="sm:hidden">ISD</span>
+        </h1>
         <div className="flex items-center gap-2">
           {services?.appriseConfigured && (
             <button onClick={sendTestNotification} className="p-2 rounded-md hover:bg-muted transition-colors" aria-label="Test notifications" title="Send a test Apprise notification">

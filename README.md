@@ -1,5 +1,9 @@
 # IndexMon
 
+<p align="center">
+  <img src="frontend/public/favicon.svg" width="128" height="128" alt="IndexMon">
+</p>
+
 A Dockerized dashboard for monitoring indexer health by polling Prowlarr, Autobrr, and qBittorrent tracker status.
 
 <picture>

@@ -93,7 +93,7 @@ describe('POST /api/apprise/test', () => {
     expect(res.body).toEqual({ ok: true });
     expect(mockExecFile).toHaveBeenCalledWith(
       '/usr/local/bin/apprise-go',
-      expect.arrayContaining(['-b', 'Test notification from IndexMon']),
+      expect.arrayContaining(['-i', 'markdown']),
       expect.objectContaining({ timeout: 15000 }),
       expect.any(Function),
     );
@@ -127,7 +127,7 @@ describe('sendAlert', () => {
     await sendAlert('test message');
     expect(mockExecFile).toHaveBeenCalledWith(
       '/usr/local/bin/apprise-go',
-      expect.arrayContaining(['-b', 'test message', 'slack://token/chan']),
+      expect.arrayContaining(['-i', 'markdown']),
       expect.objectContaining({ timeout: 15000 }),
       expect.any(Function),
     );

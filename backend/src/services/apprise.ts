@@ -13,7 +13,8 @@ export const sendAlert = async (message: string) => {
   if (!urls.length) return;
 
   try {
-    await execFileAsync(APPRISE_BIN, ['-t', 'Indexer Alert', '-b', message, ...urls], { timeout: 15000 });
+    const body = `![IndexMon](/favicon.svg) ${message}`;
+    await execFileAsync(APPRISE_BIN, ['-t', 'Indexer Alert', '-i', 'markdown', '-b', body, ...urls], { timeout: 15000 });
     logger.info(`Apprise alert sent to ${urls.length} URL(s)`);
   } catch (error) {
     logger.error('Failed to send alert:', error);
@@ -24,7 +25,7 @@ export const sendTestNotification = async (): Promise<{ ok: true }> => {
   const urls = appriseUrls();
   if (!urls.length) throw new Error('APPRISE_URLS not configured');
 
-  await execFileAsync(APPRISE_BIN, ['-t', 'Indexer Alert', '-b', 'Test notification from IndexMon', ...urls], { timeout: 15000 });
+  await execFileAsync(APPRISE_BIN, ['-t', 'Indexer Alert', '-i', 'markdown', '-b', '![IndexMon](/favicon.svg) Test notification from IndexMon', ...urls], { timeout: 15000 });
 
   return { ok: true };
 };

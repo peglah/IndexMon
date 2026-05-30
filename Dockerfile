@@ -10,6 +10,7 @@ COPY frontend/tailwind.config.js ./
 COPY frontend/postcss.config.js ./
 COPY frontend/vite.config.ts ./
 COPY frontend/index.html ./
+COPY frontend/public ./public
 COPY frontend/src ./src
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --legacy-peer-deps
