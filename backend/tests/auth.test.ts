@@ -1,5 +1,5 @@
 import request from 'supertest';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import app from '../src/app';
 import { knex } from '../src/config/database';
 import { setPasswordHash, stopSessionCleanup } from '../src/middleware/auth';

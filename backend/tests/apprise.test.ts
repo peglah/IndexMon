@@ -1,5 +1,5 @@
 import request from 'supertest';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { execFile } from 'child_process';
 import axios from 'axios';
 import app from '../src/app';

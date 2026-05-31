@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { randomBytes } from 'crypto';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { logger } from '../utils/logger';
 

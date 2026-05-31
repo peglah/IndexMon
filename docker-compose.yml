@@ -13,3 +13,5 @@ services:
       - ./data:/app/data
     env_file:
       - .env
+    environment:
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH}

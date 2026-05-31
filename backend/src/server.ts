@@ -1,5 +1,5 @@
 import { randomBytes } from 'crypto';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { logger } from './utils/logger';
 import app from './app';
 import { setPasswordHash, stopSessionCleanup } from './middleware/auth';

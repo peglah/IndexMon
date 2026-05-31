@@ -64,11 +64,15 @@ RUN mkdir -p /app/data && \
 COPY nginx.conf /etc/nginx/nginx.conf
 RUN chmod -R 755 /etc/nginx
 
+# Copy Docker entrypoint script
+COPY scripts/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Expose ports
 EXPOSE 80 3000
 
 # Health check
 HEALTHCHECK --interval=30s --timeout=5s --start-period=15s CMD wget --no-verbose --tries=1 --spider http://127.0.0.1:3000/health || exit 1
 
-# Start both Nginx and the backend (initialize DB first)
-CMD ["sh", "-c", "node ./scripts/init-db.cjs && nginx && node dist/server.js"]
+# Use entrypoint script that handles both normal startup and hash-password command
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
