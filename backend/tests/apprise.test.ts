@@ -117,10 +117,11 @@ describe('POST /api/apprise/test', () => {
     const args = mockAxiosPost.mock.calls[0];
     expect(args[0]).toBe('http://host:80/topic');
     expect(args[1]).toBe('Test notification from IndexMon');
-    expect((args[2] as any).headers['Title']).toBe('Indexer Alert');
-    expect((args[2] as any).headers['Icon']).toContain('favicon.png');
-    expect((args[2] as any).headers['Tags']).toBe('warning');
-    expect((args[2] as any).headers['Authorization']).toBe('Bearer abc');
+    const config = args[2] as { headers: Record<string, string> };
+    expect(config.headers['Title']).toBe('Indexer Alert');
+    expect(config.headers['Icon']).toContain('favicon.png');
+    expect(config.headers['Tags']).toBe('warning');
+    expect(config.headers['Authorization']).toBe('Bearer abc');
   });
 });
 
@@ -169,9 +170,10 @@ describe('sendAlert', () => {
     const args = mockAxiosPost.mock.calls[0];
     expect(args[0]).toBe('http://myhost:9090/mytopic');
     expect(args[1]).toBe('test message');
-    expect((args[2] as any).headers['Title']).toBe('Indexer Alert');
-    expect((args[2] as any).headers['Icon']).toContain('favicon.png');
-    expect((args[2] as any).headers['Authorization']).toBe('Bearer secret');
+    const config = args[2] as { headers: Record<string, string> };
+    expect(config.headers['Title']).toBe('Indexer Alert');
+    expect(config.headers['Icon']).toContain('favicon.png');
+    expect(config.headers['Authorization']).toBe('Bearer secret');
     expect(mockExecFile).not.toHaveBeenCalled();
   });
 
