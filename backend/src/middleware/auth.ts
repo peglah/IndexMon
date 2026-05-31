@@ -59,6 +59,7 @@ const login = async (req: Request, res: Response) => {
     sameSite: 'strict',
     maxAge: COOKIE_MAX_AGE,
     path: '/',
+    secure: req.secure,
   });
 
   res.json({ ok: true });
@@ -76,7 +77,7 @@ const logout = async (req: Request, res: Response) => {
   if (token) {
     sessions.delete(token);
   }
-  res.clearCookie(COOKIE_NAME, { path: '/' });
+  res.clearCookie(COOKIE_NAME, { path: '/', secure: req.secure });
   res.json({ message: 'Logged out' });
 };
 
@@ -95,7 +96,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
   if (!session || session.expiresAt < new Date()) {
     logger.warn('Invalid/expired token');
     sessions.delete(token);
-    res.clearCookie(COOKIE_NAME, { path: '/' });
+    res.clearCookie(COOKIE_NAME, { path: '/', secure: req.secure });
     return res.status(401).json({ error: 'Invalid or expired session' });
   }
 
