@@ -47,7 +47,7 @@ jobs:
 
       - name: Frontend — Install
         working-directory: frontend
-        run: npm ci --legacy-peer-deps
+        run: npm ci
 
       - name: Frontend — Lint
         working-directory: frontend
