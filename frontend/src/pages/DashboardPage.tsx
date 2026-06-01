@@ -58,7 +58,7 @@ export const DashboardPage = () => {
 
   const { data, isLoading, isError, error } = useIndexers();
   const [testStatus, setTestStatus] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-  const testTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const testTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const { logout } = useAuth();
   const navigate = useNavigate();
 
