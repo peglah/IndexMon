@@ -57,6 +57,9 @@ jobs:
         working-directory: frontend
         run: npm test
 
+      - name: Build Docker image
+        run: docker compose build --build-arg APP_VERSION=test
+
   build-and-publish:
     needs: lint-test
     if: github.event_name != 'pull_request'
