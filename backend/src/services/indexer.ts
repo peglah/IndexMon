@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { logger } from '../utils/logger';
 import { normalize } from '../utils/normalize';
 import { hasDefinition } from './definitions';
@@ -78,6 +80,23 @@ const recordMetrics = async (merged: Indexer[], services: ServiceStatuses, endTi
   circuitBreakerOpen.set({ service: 'autobrr' }, breakerIsOpen('autobrr') ? 1 : 0);
 };
 
+const dbPath = process.env.DB_PATH || '/app/data/indexmon.db';
+const CACHE_FILE_PATH = dbPath === ':memory:' ? '' : path.join(path.dirname(dbPath), 'last-indexers.json');
+let lastDiskSerialized: string | null = null;
+
+const readCacheFromDisk = (): { indexers: Indexer[]; services: ServiceStatuses } | null => {
+  if (!CACHE_FILE_PATH) return null;
+  try {
+    if (fs.existsSync(CACHE_FILE_PATH)) {
+      const data = fs.readFileSync(CACHE_FILE_PATH, 'utf-8');
+      return JSON.parse(data);
+    }
+  } catch (e) {
+    logger.warn('Failed to read indexer cache from disk:', e);
+  }
+  return null;
+};
+
 let cachedResult: { indexers: Indexer[]; services: ServiceStatuses } | null = null;
 let backgroundPromise: Promise<void> | null = null;
 
@@ -134,6 +153,15 @@ const triggerBackgroundFetch = (): void => {
     .then(result => {
       cachedResult = result;
       backgroundPromise = null;
+      const serialized = JSON.stringify(result);
+      if (CACHE_FILE_PATH && serialized !== lastDiskSerialized) {
+        try {
+          fs.writeFileSync(CACHE_FILE_PATH, serialized);
+          lastDiskSerialized = serialized;
+        } catch (e) {
+          logger.warn('Failed to write indexer cache to disk:', e);
+        }
+      }
     })
     .catch(err => {
       logger.error('Background fetch failed:', err);
@@ -152,7 +180,7 @@ export const fetchIndexersFresh = doFetch;
 
 export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: ServiceStatuses }> => {
   if (!cachedResult) {
-    cachedResult = { indexers: [], services: buildServiceStatuses() };
+    cachedResult = readCacheFromDisk() || { indexers: [], services: buildServiceStatuses() };
   }
 
   triggerBackgroundFetch();
