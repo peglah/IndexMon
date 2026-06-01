@@ -34,7 +34,7 @@
     "@types/supertest": "^6.0.2",
     "@typescript-eslint/eslint-plugin": "^8.0.0",
     "@typescript-eslint/parser": "^8.0.0",
-    "eslint": "^9.0.0",
+    "eslint": "^10.4.1",
     "globals": "^17.6.0",
     "supertest": "^7.0.0",
     "ts-jest": "^29.4.11",
