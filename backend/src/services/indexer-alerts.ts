@@ -101,7 +101,7 @@ export const handlePollAlerts = async (merged: Indexer[]): Promise<void> => {
           messages.push(`${name} down in Autobrr!`);
         }
       }
-      sendAlert(messages.join('\n'));
+      sendAlert(messages.join('\n')).catch(err => logger.error('Unhandled sendAlert rejection:', err));
     }
   }
 };
