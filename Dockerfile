@@ -6,7 +6,6 @@ WORKDIR /app
 COPY frontend/package.json frontend/package-lock.json ./
 COPY frontend/tsconfig.json ./
 COPY frontend/tsconfig.node.json ./
-COPY frontend/tailwind.config.js ./
 COPY frontend/postcss.config.js ./
 COPY frontend/vite.config.ts ./
 COPY frontend/index.html ./
