@@ -1,10 +1,21 @@
 import express from 'express';
+import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
 import { knex } from '../config/database';
 import { fetchIndexers } from '../services/indexer';
 import { logger } from '../utils/logger';
 
 const router = express.Router();
+
+const indexerLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 900,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { error: 'Too many requests. Try again later.' },
+});
+
+router.use(indexerLimiter);
 
 const historyQuerySchema = z.object({
   limit: z.coerce.number().int().min(1).max(5000).default(1000),
