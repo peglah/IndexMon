@@ -7,7 +7,7 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
-    "test": "jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "migrate": "knex migrate:latest",
@@ -39,6 +39,6 @@
     "supertest": "^7.0.0",
     "ts-jest": "^29.4.11",
     "tsx": "^4.22.4",
-    "typescript": "^5.4.5"
+    "typescript": "^6.0.3"
   }
 }
