@@ -3,7 +3,7 @@ import { handlePollAlerts, isFirstPoll, resetAlertState } from '../src/services/
 import { Indexer } from '../src/services/indexer-types';
 
 jest.mock('../src/services/apprise', () => ({
-  sendAlert: jest.fn(),
+  sendAlert: jest.fn().mockResolvedValue(undefined),
 }));
 
 import { sendAlert } from '../src/services/apprise';
