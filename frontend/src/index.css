@@ -1,6 +1,47 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+
+@theme {
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+}
+
+@keyframes pop-in {
+  0% { opacity: 0; transform: scale(0) rotate(-12deg); }
+  60% { opacity: 1; transform: scale(1.08) rotate(2deg); }
+  100% { opacity: 1; transform: scale(1) rotate(0deg); }
+}
+
+@keyframes alert-pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0px rgba(239,68,68,0); }
+  25% { transform: scale(1.12); box-shadow: 0 0 18px rgba(239,68,68,0.7); }
+  100% { transform: scale(1); box-shadow: 0 0 0px rgba(239,68,68,0); }
+}
+
+@keyframes recover {
+  0% { box-shadow: 0 0 0px rgba(34,197,94,0); }
+  50% { box-shadow: 0 0 14px rgba(34,197,94,0.6); }
+  100% { box-shadow: 0 0 0px rgba(34,197,94,0); }
+}
 
 :root {
   --background: 0 0% 98%;
