@@ -1,4 +1,4 @@
-import { fetchIndexers } from '../src/services/indexer';
+import { fetchIndexersFresh } from '../src/services/indexer';
 import { knex } from '../src/config/database';
 import axios from 'axios';
 
@@ -46,7 +46,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      const result = await fetchIndexers();
+      const result = await fetchIndexersFresh();
       expect(result.indexers).toHaveLength(0);
       expect(result.services.prowlarr.ok).toBe(true);
       expect(result.services.autobrr.ok).toBe(true);
@@ -60,7 +60,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      const result = await fetchIndexers();
+      const result = await fetchIndexersFresh();
       expect(result.indexers).toHaveLength(1);
       expect(result.indexers[0].name).toBe('Test Indexer');
       expect(result.indexers[0].status).toBe('up');
@@ -74,7 +74,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      const result = await fetchIndexers();
+      const result = await fetchIndexersFresh();
       expect(result.indexers[0].status).toBe('down');
     });
 
@@ -86,7 +86,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      const result = await fetchIndexers();
+      const result = await fetchIndexersFresh();
       expect(result.indexers[0].status).toBe('down');
     });
   });
@@ -104,7 +104,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      const result = await fetchIndexers();
+      const result = await fetchIndexersFresh();
       expect(result.indexers[0].autobrr).not.toBeNull();
       expect(result.indexers[0].autobrr!.connected).toBe(true);
       expect(result.indexers[0].autobrr!.monitoring).toBe(true);
@@ -120,7 +120,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      const result = await fetchIndexers();
+      const result = await fetchIndexersFresh();
       expect(result.indexers[0].autobrr).not.toBeNull();
       expect(result.indexers[0].autobrr!.monitoring).toBe(false);
     });
@@ -135,7 +135,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      const result = await fetchIndexers();
+      const result = await fetchIndexersFresh();
       expect(result.indexers[0].autobrr).not.toBeNull();
       expect(result.indexers[0].autobrr!.connected).toBe(false);
     });
@@ -150,11 +150,11 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      await fetchIndexers();
+      await fetchIndexersFresh();
       const rows1 = await knex('indexer_history').select();
       expect(rows1).toHaveLength(2); // prowlarr + autobrr
 
-      await fetchIndexers();
+      await fetchIndexersFresh();
       const rows2 = await knex('indexer_history').select();
       expect(rows2).toHaveLength(2); // no duplicate inserts
     });
@@ -167,7 +167,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      await fetchIndexers();
+      await fetchIndexersFresh();
       const rows1 = await knex('indexer_history').select('source', 'status');
       expect(rows1).toHaveLength(2);
       const autobrrRow = rows1.find(r => r.source === 'autobrr');
@@ -182,7 +182,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      await fetchIndexers();
+      await fetchIndexersFresh();
       const rows2 = await knex('indexer_history').select('source', 'status');
       expect(rows2).toHaveLength(3); // 2 existing + 1 new (prowlarr up→down, autobrr still down→no change)
     });
@@ -204,7 +204,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      const result = await fetchIndexers();
+      const result = await fetchIndexersFresh();
       expect(result.indexers[0].downtimeMinutes).toBeGreaterThanOrEqual(28);
       expect(result.indexers[0].downtimeMinutes).toBeLessThanOrEqual(32);
     });
@@ -229,7 +229,7 @@ describe('fetchIndexers', () => {
         return successResponse('');
       });
 
-      const result = await fetchIndexers();
+      const result = await fetchIndexersFresh();
       // 12h up / 24h window = 50%
       expect(result.indexers[0].uptimePercentage).toBeGreaterThanOrEqual(48);
       expect(result.indexers[0].uptimePercentage).toBeLessThanOrEqual(52);

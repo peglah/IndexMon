@@ -78,7 +78,10 @@ const recordMetrics = async (merged: Indexer[], services: ServiceStatuses, endTi
   circuitBreakerOpen.set({ service: 'autobrr' }, breakerIsOpen('autobrr') ? 1 : 0);
 };
 
-export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: ServiceStatuses }> => {
+let cachedResult: { indexers: Indexer[]; services: ServiceStatuses } | null = null;
+let backgroundPromise: Promise<void> | null = null;
+
+const doFetch = async (): Promise<{ indexers: Indexer[]; services: ServiceStatuses }> => {
   logger.info('Fetching indexers...');
   resetReachabilityFlags();
   const endTimer = pollDuration.startTimer();
@@ -100,21 +103,20 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
 
     const services = buildServiceStatuses();
 
-    if (merged.length === 0) {
-      return { indexers: [], services };
+    if (merged.length > 0) {
+      await insertTransitions(merged);
+      const [downtime, uptime] = await Promise.all([
+        computeDowntime(merged),
+        computeUptime(merged),
+      ]);
+      attachDowntimeUptime(merged, downtime, uptime);
+
+      const wasFirstPoll = isFirstPoll();
+      await handlePollAlerts(merged);
+      await cleanupOldHistory();
+      scheduleIconCache(merged, wasFirstPoll);
     }
 
-    await insertTransitions(merged);
-    const [downtime, uptime] = await Promise.all([
-      computeDowntime(merged),
-      computeUptime(merged),
-    ]);
-    attachDowntimeUptime(merged, downtime, uptime);
-
-    const wasFirstPoll = isFirstPoll();
-    await handlePollAlerts(merged);
-    await cleanupOldHistory();
-    scheduleIconCache(merged, wasFirstPoll);
     await recordMetrics(merged, services, endTimer);
 
     return { indexers: merged, services };
@@ -124,4 +126,35 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
     endTimer();
     throw error;
   }
+};
+
+const triggerBackgroundFetch = (): void => {
+  if (backgroundPromise) return;
+  backgroundPromise = doFetch()
+    .then(result => {
+      cachedResult = result;
+      backgroundPromise = null;
+    })
+    .catch(err => {
+      logger.error('Background fetch failed:', err);
+      backgroundPromise = null;
+    });
+};
+
+// For testing: clear in-memory cache between test runs
+export const resetIndexerCache = (): void => {
+  cachedResult = null;
+  backgroundPromise = null;
+};
+
+// For testing: bypass cache and fetch synchronously (fresh data)
+export const fetchIndexersFresh = doFetch;
+
+export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: ServiceStatuses }> => {
+  if (!cachedResult) {
+    cachedResult = { indexers: [], services: buildServiceStatuses() };
+  }
+
+  triggerBackgroundFetch();
+  return cachedResult;
 };
