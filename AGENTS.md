@@ -24,7 +24,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 | `GET /api/auth/me` | Yes | Validates current session, used by AuthContext on mount |
 | `GET /api/indexers` | Yes | Fetches Prowlarr + Autobrr inline, writes history, computes downtime + 24h uptime % (time-weighted), fires Apprise alerts, merges qB + tracker stats |
 | `GET /api/indexers/history` | Yes | `?limit=1000&offset=0` (clamped 1–5000). Maps `indexer_id`→`indexerId`, `last_checked`→`timestamp` |
-| `GET /api/indexers/icon/:prowlarrId` | No | Before auth middleware — `<img>` tags can't send cookies. Rate-limited (100/15min). Detects PNG/ICO/SVG via magic bytes |
+| `GET /api/indexers/icon/:prowlarrId` | No | Before auth middleware — `<img>` tags can't send cookies. Rate-limited (500/15min). Detects PNG/ICO/SVG via magic bytes |
 | `POST /api/apprise/test` | Yes | Tests Apprise notification config with a test message |
 | `GET /health` | No | Returns `{ ok: true }` for Docker HEALTHCHECK |
 | `GET /metrics` | No | Prometheus metrics (OpenMetrics format) |
