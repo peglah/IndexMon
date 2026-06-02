@@ -26,10 +26,6 @@ const startServer = async () => {
       logger.info(`=== Generated admin password: ${adminPassword} ===`);
     }
 
-    await initDefinitionChecker();
-    startQbitPolling(parseInt(process.env.QBITTORRENT_POLL_INTERVAL_S || '300', 10));
-    await initTrackerStats();
-
     const server = app.listen(PORT, '0.0.0.0', () => {
       logger.info(`IndexMon v${version} running on http://0.0.0.0:${PORT}`);
     });
@@ -50,6 +46,11 @@ const startServer = async () => {
         process.exit(1);
       }, 10_000).unref();
     });
+
+    // Heavyweight init — no longer blocks the socket from accepting
+    await initDefinitionChecker();
+    startQbitPolling(parseInt(process.env.QBITTORRENT_POLL_INTERVAL_S || '300', 10));
+    await initTrackerStats();
   } catch (error) {
     logger.error('Failed to start server:', error);
     process.exit(1);
