@@ -4,9 +4,10 @@ import path from 'path';
 import { logger } from '../utils/logger';
 import { isPrivateUrl } from '../utils/ssrf';
 import { Indexer } from './indexer-types';
+import { dbPath } from '../config/database';
 
 const ICONS_DIR = path.join(
-  path.dirname(process.env.DB_PATH || '/app/data/indexmon.db'),
+  path.dirname(dbPath),
   'icons',
 );
 const ICON_TTL_MS = 24 * 60 * 60 * 1000;

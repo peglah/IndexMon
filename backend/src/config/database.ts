@@ -1,6 +1,6 @@
 import knex from 'knex';
 
-const dbPath = process.env.DB_PATH || '/app/data/indexmon.db';
+export const dbPath = process.env.DB_PATH || '/app/data/indexmon.db';
 
 const db = knex({
   client: 'better-sqlite3',

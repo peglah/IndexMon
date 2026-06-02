@@ -6,7 +6,7 @@ import { hasDefinition } from './definitions';
 import { pollDuration, pollTotal, upstreamReachable, historyRows as historyRowsGauge, indexerUp, indexerUptimePercentage, announceAgeSeconds, trackerBufferBytes, trackerRatio, circuitBreakerOpen } from '../utils/metrics';
 import { getQbitStatus, getQbitGlobalStatus, isBreakerOpen as isQbitBreakerOpen } from './qbittorrent';
 import { getTrackerStats } from './tracker-stats';
-import { knex } from '../config/database';
+import { knex, dbPath } from '../config/database';
 import { Indexer, ServiceStatuses } from './indexer-types';
 import { fetchProwlarr, fetchAutobrrNetworks, buildAutobrrMap, isChannelUp, breakerIsOpen, resetReachabilityFlags, getProwlarrReachable, getAutobrrReachable } from './indexer-fetcher';
 import { insertTransitions, computeDowntime, computeUptime, attachDowntimeUptime, cleanupOldHistory } from './indexer-history';
@@ -81,7 +81,6 @@ const recordMetrics = async (merged: Indexer[], services: ServiceStatuses, endTi
   circuitBreakerOpen.set({ service: 'qbittorrent' }, isQbitBreakerOpen() ? 1 : 0);
 };
 
-const dbPath = process.env.DB_PATH || '/app/data/indexmon.db';
 const CACHE_FILE_PATH = dbPath === ':memory:' ? '' : path.join(path.dirname(dbPath), 'last-indexers.json');
 let lastDiskSerialized: string | null = null;
 

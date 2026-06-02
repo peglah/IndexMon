@@ -13,6 +13,7 @@ import { requestIdMiddleware } from './middleware/requestId';
 import { httpMetricsMiddleware } from './middleware/httpMetrics';
 import { logger } from './utils/logger';
 import { metricsHandler } from './utils/metrics';
+import { dbPath } from './config/database';
 
 const app = express();
 
@@ -63,7 +64,7 @@ const iconLimiter = rateLimit({
 
 app.get('/api/indexers/icon/:prowlarrId', iconLimiter, (req, res) => {
   const iconsDir = path.resolve(
-    path.dirname(process.env.DB_PATH || '/app/data/indexmon.db'),
+    path.dirname(dbPath),
     'icons',
   );
   const filePath = path.resolve(iconsDir, req.params.prowlarrId + '.png');
