@@ -68,6 +68,12 @@ export const circuitBreakerOpen = new client.Gauge({
   labelNames: ['service'] as const,
 });
 
+export const alertSends = new client.Counter({
+  name: 'indexmon_alert_sends_total',
+  help: 'Total alert sends per result',
+  labelNames: ['result'] as const,
+});
+
 export const metricsHandler = async (_req: Request, res: Response) => {
   res.set('Content-Type', client.register.contentType);
   res.end(await client.register.metrics());

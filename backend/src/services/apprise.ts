@@ -2,6 +2,7 @@ import { execFile } from 'child_process';
 import { promisify } from 'util';
 import axios from 'axios';
 import { logger } from '../utils/logger';
+import { alertSends } from '../utils/metrics';
 
 const execFileAsync = promisify(execFile);
 const APPRISE_BIN = '/usr/local/bin/apprise-go';
@@ -115,6 +116,9 @@ export const sendAlert = async (message: string) => {
 
   const succeeded = results.filter(r => r.status === 'fulfilled').length;
   const failed = results.filter(r => r.status === 'rejected').length;
+
+  alertSends.inc({ result: 'success' }, succeeded);
+  alertSends.inc({ result: 'failure' }, failed);
 
   if (failed === 0) {
     logger.info(`Apprise alert sent to all channels`);
