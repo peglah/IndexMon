@@ -28,7 +28,7 @@ const startServer = async () => {
 
     await initDefinitionChecker();
     startQbitPolling(parseInt(process.env.QBITTORRENT_POLL_INTERVAL_S || '300', 10));
-    initTrackerStats();
+    await initTrackerStats();
 
     const server = app.listen(PORT, '0.0.0.0', () => {
       logger.info(`IndexMon v${version} running on http://0.0.0.0:${PORT}`);
