@@ -12,6 +12,17 @@ export interface TrackerStats {
 
 const statsCache = new Map<string, TrackerStats>();
 const platformCache = new Map<string, 'unit3d' | 'none'>();
+const blacklistedUntil = new Map<string, number>();
+const BLACKLIST_TTL_MS = 60 * 60 * 1000;
+
+const isBlacklisted = (name: string): boolean => {
+  const expiry = blacklistedUntil.get(name);
+  if (!expiry) return false;
+  if (Date.now() < expiry) return true;
+  blacklistedUntil.delete(name);
+  return false;
+};
+
 let intervalId: ReturnType<typeof setInterval> | null = null;
 
 const getBaseUrl = () => process.env.PROWLARR_BASE_URL || 'http://prowlarr:9696';
@@ -131,7 +142,7 @@ const fetchAllStats = async (): Promise<void> => {
         }
 
         const cachedPlatform = platformCache.get(indexer.name);
-        if (cachedPlatform === 'none') {
+        if (cachedPlatform === 'none' && isBlacklisted(indexer.name)) {
           log.debug(`Tracker stats: ${indexer.name} previously failed, skipping`);
           return null;
         }
@@ -185,6 +196,7 @@ const fetchAllStats = async (): Promise<void> => {
 
         log.debug(`Tracker stats: ${indexer.name} ${cachedPlatform} fetch failed, clearing cache`);
         platformCache.set(indexer.name, 'none');
+        blacklistedUntil.set(indexer.name, Date.now() + BLACKLIST_TTL_MS);
         return null;
       }),
     );
