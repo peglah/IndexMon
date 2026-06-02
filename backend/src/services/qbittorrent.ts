@@ -72,8 +72,8 @@ const login = async (): Promise<boolean> => {
       cookie = Array.isArray(setCookie) ? setCookie.join('; ') : setCookie;
     }
     return true;
-  } catch {
-    logger.warn('qBittorrent login failed');
+  } catch (e) {
+    logger.warn('qBittorrent login failed', e);
     return false;
   }
 };
@@ -136,8 +136,8 @@ const fetchTrackers = async (hash: string): Promise<QbitTracker[]> => {
 const extractDomain = (url: string): string | null => {
   try {
     return new URL(url).hostname.toLowerCase();
-  } catch {
-    logger.debug(`qB: failed to extract domain from URL: ${url}`);
+  } catch (e) {
+    logger.debug(`qB: failed to extract domain from URL: ${url}`, e);
     return null;
   }
 };
@@ -149,8 +149,8 @@ const fetchGlobalStatus = async (): Promise<void> => {
       timeout: 10000,
     });
     connectionStatus = resp.data.connection_status;
-  } catch {
-    logger.warn('qB: failed to fetch connection status');
+  } catch (e) {
+    logger.warn('qB: failed to fetch connection status', e);
     connectionStatus = 'disconnected';
   }
 
@@ -160,8 +160,8 @@ const fetchGlobalStatus = async (): Promise<void> => {
       timeout: 10000,
     });
     portOpen = portResp.data === true;
-  } catch {
-    logger.warn('qB: port test failed');
+  } catch (e) {
+    logger.warn('qB: port test failed', e);
     portOpen = null;
   }
 };
@@ -203,8 +203,8 @@ const refreshCache = async (): Promise<void> => {
           try {
             const trackers = await fetchTrackers(hash);
             return [domain, trackers] as [string, QbitTracker[]];
-          } catch {
-            log.debug(`qB tracker fetch failed for ${domain}`);
+          } catch (e) {
+            log.debug(`qB tracker fetch failed for ${domain}`, e);
             return [domain, null] as [string, null];
           }
         }),
@@ -273,8 +273,8 @@ export const getQbitStatus = (siteUrl: string | undefined): QbitStatus | null =>
         return status;
       }
     }
-  } catch {
-    logger.debug(`qB: failed to parse siteUrl: ${siteUrl}`);
+  } catch (e) {
+    logger.debug(`qB: failed to parse siteUrl: ${siteUrl}`, e);
     return null;
   }
 
@@ -292,8 +292,8 @@ export const getQbitStatus = (siteUrl: string | undefined): QbitStatus | null =>
         }
       }
     }
-  } catch {
-    logger.debug(`qB: override lookup failed for siteUrl: ${siteUrl}`);
+  } catch (e) {
+    logger.debug(`qB: override lookup failed for siteUrl: ${siteUrl}`, e);
   }
 
   return null;

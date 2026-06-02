@@ -22,13 +22,13 @@ const persistAlertState = async (key: string, downSinceTs: number, alerted: bool
     await knex('alert_state').insert({ key, down_since: downSinceTs, alerted: alerted ? 1 : 0 })
       .onConflict('key')
       .merge();
-  } catch { logger.warn('Failed to persist alert state'); }
+  } catch (e) { logger.warn('Failed to persist alert state', e); }
 };
 
 const deleteAlertState = async (key: string) => {
   try {
     await knex('alert_state').where({ key }).delete();
-  } catch { logger.warn('Failed to delete alert state'); }
+  } catch (e) { logger.warn('Failed to delete alert state', e); }
 };
 
 const processAlert = async (key: string, isDown: boolean): Promise<boolean> => {
@@ -62,7 +62,7 @@ export const handlePollAlerts = async (merged: Indexer[]): Promise<void> => {
         alertedDownIds.add(row.key);
         downSince.set(row.key, row.down_since);
       }
-    } catch { logger.warn('Failed to load persisted alert state'); }
+    } catch (e) { logger.warn('Failed to load persisted alert state', e); }
 
     for (const indexer of merged) {
       if (indexer.status === 'down') {
