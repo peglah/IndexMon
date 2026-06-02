@@ -39,7 +39,8 @@ const breakers: Record<string, BreakerState> = {
 
 export const breakerIsOpen = (name: string): boolean => {
   const b = breakers[name];
-  return b.failures >= BREAKER_THRESHOLD && Date.now() - b.lastFailure < BREAKER_COOLDOWN_MS;
+  const jitteredCooldown = BREAKER_COOLDOWN_MS * (0.5 + Math.random() * 0.5);
+  return b.failures >= BREAKER_THRESHOLD && Date.now() - b.lastFailure < jitteredCooldown;
 };
 
 export const breakerOnSuccess = (name: string) => { breakers[name].failures = 0; };
