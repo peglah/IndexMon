@@ -7,6 +7,8 @@ const GITHUB_API = 'https://api.github.com/repos/autobrr/autobrr/contents/intern
 const REFRESH_INTERVAL = 24 * 60 * 60 * 1000;
 
 let knownDefinitions = new Set<string>();
+let timeoutHandle: ReturnType<typeof setTimeout>;
+let definitionShuttingDown = false;
 
 const fetchDefinitions = async () => {
   const log = logger.child(randomUUID());
@@ -30,10 +32,23 @@ const fetchDefinitions = async () => {
   }
 };
 
+const scheduleNext = async () => {
+  await fetchDefinitions();
+  if (!definitionShuttingDown) {
+    const jitter = (Math.random() - 0.5) * 60 * 60 * 1000;
+    timeoutHandle = setTimeout(scheduleNext, REFRESH_INTERVAL + jitter);
+  }
+};
+
 export const initDefinitionChecker = async () => {
   await fetchDefinitions();
   const jitter = (Math.random() - 0.5) * 60 * 60 * 1000;
-  setInterval(fetchDefinitions, REFRESH_INTERVAL + jitter);
+  timeoutHandle = setTimeout(scheduleNext, REFRESH_INTERVAL + jitter);
+};
+
+export const stopDefinitionChecker = () => {
+  definitionShuttingDown = true;
+  clearTimeout(timeoutHandle);
 };
 
 export const hasDefinition = (name: string): boolean => knownDefinitions.has(normalize(name));

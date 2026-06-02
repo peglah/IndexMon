@@ -4,7 +4,7 @@ import { logger } from './utils/logger';
 import app from './app';
 import { setPasswordHash, stopSessionCleanup } from './middleware/auth';
 import { drainIconCaches } from './services/indexer';
-import { initDefinitionChecker } from './services/definitions';
+import { initDefinitionChecker, stopDefinitionChecker } from './services/definitions';
 import { startQbitPolling, stopQbitPolling } from './services/qbittorrent';
 import { initTrackerStats, stopTrackerStats } from './services/tracker-stats';
 import { knex } from './config/database';
@@ -42,6 +42,7 @@ const startServer = async () => {
         logger.warn('Icon cache drain failed:', error);
       }
       server.close(() => {
+        stopDefinitionChecker();
         stopQbitPolling();
         stopTrackerStats();
         stopSessionCleanup();
