@@ -42,11 +42,40 @@ const DOMAIN_OVERRIDES: Record<string, string[]> = {
 const stripWww = (domain: string): string => domain.replace(/^www\./, '');
 
 let cache = new Map<string, QbitStatus>();
-let intervalId: ReturnType<typeof setInterval> | null = null;
 let cookie = '';
 
 let connectionStatus: string | null = null;
 let portOpen: boolean | null = null;
+
+interface BreakerState {
+  failures: number;
+  lastFailure: number;
+}
+
+const BREAKER_THRESHOLD = 3;
+const BREAKER_COOLDOWN_MS = 60_000;
+const PROBE_INTERVAL_MS = 60_000;
+const breaker: BreakerState = { failures: 0, lastFailure: 0 };
+
+let baseIntervalMs = 300_000;
+let pollTimeoutId: ReturnType<typeof setTimeout> | null = null;
+let policing = false;
+let stopped = false;
+
+const isBreakerOpen = (): boolean => {
+  if (breaker.failures < BREAKER_THRESHOLD) return false;
+  const jitteredCooldown = BREAKER_COOLDOWN_MS * (0.5 + Math.random() * 0.5);
+  return Date.now() - breaker.lastFailure < jitteredCooldown;
+};
+
+const closeBreaker = (): void => {
+  breaker.failures = 0;
+};
+
+const openBreaker = (): void => {
+  breaker.failures++;
+  breaker.lastFailure = Date.now();
+};
 
 const getBaseUrl = () => process.env.QBITTORRENT_BASE_URL || 'http://qbittorrent:8080';
 
@@ -81,6 +110,33 @@ const login = async (): Promise<boolean> => {
 const ensureAuth = async (): Promise<boolean> => {
   if (!cookie) return login();
   return true;
+};
+
+const probeQbit = async (): Promise<boolean> => {
+  try {
+    if (!(await ensureAuth())) return false;
+    try {
+      await axios.get(`${getBaseUrl()}/api/v2/app/webapiVersion`, {
+        headers: { Cookie: cookie },
+        timeout: 10000,
+      });
+      return true;
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        cookie = '';
+        if (await login()) {
+          await axios.get(`${getBaseUrl()}/api/v2/app/webapiVersion`, {
+            headers: { Cookie: cookie },
+            timeout: 10000,
+          });
+          return true;
+        }
+      }
+      return false;
+    }
+  } catch {
+    return false;
+  }
 };
 
 const fetchTorrents = async (): Promise<QbitTorrent[]> => {
@@ -166,99 +222,139 @@ const fetchGlobalStatus = async (): Promise<void> => {
   }
 };
 
-const refreshCache = async (): Promise<void> => {
+const fullPoll = async (): Promise<void> => {
   const log = logger.child(randomUUID());
+  if (!(await ensureAuth())) {
+    connectionStatus = 'disconnected';
+    portOpen = null;
+    return;
+  }
+
+  const torrents = await fetchTorrentsWithReauth();
+  if (!Array.isArray(torrents)) {
+    connectionStatus = 'disconnected';
+    portOpen = null;
+    return;
+  }
+
+  const domainToHash = new Map<string, string>();
+  for (const t of torrents) {
+    if (!t.tracker) continue;
+    const domain = extractDomain(t.tracker);
+    if (domain && !domainToHash.has(domain)) {
+      domainToHash.set(domain, t.hash);
+    }
+  }
+
+  if (domainToHash.size === 0) return;
+
+  const entries = Array.from(domainToHash.entries());
+  const results: Array<[string, QbitTracker[] | null]> = [];
+
+  for (let i = 0; i < entries.length; i += 10) {
+    const batch = entries.slice(i, i + 10);
+    const batchResults = await Promise.all(
+      batch.map(async ([domain, hash]) => {
+        try {
+          const trackers = await fetchTrackers(hash);
+          return [domain, trackers] as [string, QbitTracker[]];
+        } catch (e) {
+          log.debug(`qB tracker fetch failed for ${domain}`, e);
+          return [domain, null] as [string, null];
+        }
+      }),
+    );
+    results.push(...batchResults);
+  }
+
+  const newCache = new Map<string, QbitStatus>();
+  for (const [domain, trackers] of results) {
+    if (!trackers || trackers.length === 0) continue;
+
+    const matching = trackers.filter((t) => {
+      const td = extractDomain(t.url);
+      return td === domain || (td != null && td.endsWith('.' + domain));
+    });
+
+    const relevant = matching.length > 0 ? matching : trackers;
+
+    const statuses = relevant.map((t) => ({
+      code: t.status,
+      msg: t.msg || undefined,
+      seeds: t.num_seeds,
+    }));
+
+    newCache.set(domain, {
+      working: relevant.some((t) => t.status === 2),
+      hasTorrents: true,
+      statuses,
+      lastChecked: new Date().toISOString(),
+    });
+  }
+
+  cache = newCache;
+  log.info(`qB poll complete — ${cache.size} tracker domains cached`);
+  await fetchGlobalStatus();
+  closeBreaker();
+};
+
+const refreshCache = async (): Promise<void> => {
   try {
-    if (!(await ensureAuth())) {
+    if (isBreakerOpen()) {
+      logger.debug('Circuit breaker open for qBittorrent, running probe');
       connectionStatus = 'disconnected';
       portOpen = null;
-      return;
-    }
-
-    const torrents = await fetchTorrentsWithReauth();
-    if (!Array.isArray(torrents)) {
-      connectionStatus = 'disconnected';
-      portOpen = null;
-      return;
-    }
-
-    const domainToHash = new Map<string, string>();
-    for (const t of torrents) {
-      if (!t.tracker) continue;
-      const domain = extractDomain(t.tracker);
-      if (domain && !domainToHash.has(domain)) {
-        domainToHash.set(domain, t.hash);
+      if (await probeQbit()) {
+        logger.info('qBittorrent probe succeeded, closing breaker');
+        closeBreaker();
+        await fullPoll();
       }
+      return;
     }
 
-    if (domainToHash.size === 0) return;
-
-    const entries = Array.from(domainToHash.entries());
-    const results: Array<[string, QbitTracker[] | null]> = [];
-
-    for (let i = 0; i < entries.length; i += 10) {
-      const batch = entries.slice(i, i + 10);
-      const batchResults = await Promise.all(
-        batch.map(async ([domain, hash]) => {
-          try {
-            const trackers = await fetchTrackers(hash);
-            return [domain, trackers] as [string, QbitTracker[]];
-          } catch (e) {
-            log.debug(`qB tracker fetch failed for ${domain}`, e);
-            return [domain, null] as [string, null];
-          }
-        }),
-      );
-      results.push(...batchResults);
-    }
-
-    const newCache = new Map<string, QbitStatus>();
-    for (const [domain, trackers] of results) {
-      if (!trackers || trackers.length === 0) continue;
-
-      const matching = trackers.filter((t) => {
-        const td = extractDomain(t.url);
-        return td === domain || (td != null && td.endsWith('.' + domain));
-      });
-
-      const relevant = matching.length > 0 ? matching : trackers;
-
-      const statuses = relevant.map((t) => ({
-        code: t.status,
-        msg: t.msg || undefined,
-        seeds: t.num_seeds,
-      }));
-
-      newCache.set(domain, {
-        working: relevant.some((t) => t.status === 2),
-        hasTorrents: true,
-        statuses,
-        lastChecked: new Date().toISOString(),
-      });
-    }
-
-    cache = newCache;
-    log.info(`qB poll complete — ${cache.size} tracker domains cached`);
-    await fetchGlobalStatus();
+    await fullPoll();
   } catch (error) {
-    log.error('qBittorrent poll failed:', error);
+    logger.error('qBittorrent poll failed:', error);
     upstreamErrors.inc({ service: 'qbittorrent' });
+    openBreaker();
     connectionStatus = 'disconnected';
     portOpen = null;
   }
 };
 
+const runPoll = async (): Promise<void> => {
+  if (policing) return;
+  policing = true;
+  try {
+    await refreshCache();
+  } finally {
+    policing = false;
+    scheduleNext();
+  }
+};
+
+const scheduleNext = (): void => {
+  if (stopped) return;
+  const delay = isBreakerOpen() ? PROBE_INTERVAL_MS : baseIntervalMs;
+  pollTimeoutId = setTimeout(runPoll, delay);
+};
+
 export const startQbitPolling = (intervalS: number): void => {
-  refreshCache();
-  intervalId = setInterval(refreshCache, intervalS * 1000);
+  stopQbitPolling();
+  stopped = false;
+  baseIntervalMs = intervalS * 1000;
+  runPoll();
 };
 
 export const stopQbitPolling = (): void => {
-  if (intervalId !== null) {
-    clearInterval(intervalId);
-    intervalId = null;
+  stopped = true;
+  if (pollTimeoutId !== null) {
+    clearTimeout(pollTimeoutId);
+    pollTimeoutId = null;
   }
 };
+
+export { isBreakerOpen };
 
 export const getQbitStatus = (siteUrl: string | undefined): QbitStatus | null => {
   if (!siteUrl || cache.size === 0) return null;

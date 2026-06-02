@@ -4,7 +4,7 @@ import { logger } from '../utils/logger';
 import { normalize } from '../utils/normalize';
 import { hasDefinition } from './definitions';
 import { pollDuration, pollTotal, upstreamReachable, historyRows as historyRowsGauge, indexerUp, indexerUptimePercentage, announceAgeSeconds, trackerBufferBytes, trackerRatio, circuitBreakerOpen } from '../utils/metrics';
-import { getQbitStatus, getQbitGlobalStatus } from './qbittorrent';
+import { getQbitStatus, getQbitGlobalStatus, isBreakerOpen as isQbitBreakerOpen } from './qbittorrent';
 import { getTrackerStats } from './tracker-stats';
 import { knex } from '../config/database';
 import { Indexer, ServiceStatuses } from './indexer-types';
@@ -78,6 +78,7 @@ const recordMetrics = async (merged: Indexer[], services: ServiceStatuses, endTi
   }
   circuitBreakerOpen.set({ service: 'prowlarr' }, breakerIsOpen('prowlarr') ? 1 : 0);
   circuitBreakerOpen.set({ service: 'autobrr' }, breakerIsOpen('autobrr') ? 1 : 0);
+  circuitBreakerOpen.set({ service: 'qbittorrent' }, isQbitBreakerOpen() ? 1 : 0);
 };
 
 const dbPath = process.env.DB_PATH || '/app/data/indexmon.db';
