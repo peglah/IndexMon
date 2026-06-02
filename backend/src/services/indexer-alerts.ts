@@ -17,30 +17,22 @@ export const resetAlertState = (): void => {
   firstPoll = true;
 };
 
-const persistAlertState = async (key: string, downSinceTs: number, alerted: boolean) => {
-  try {
-    await knex('alert_state').insert({ key, down_since: downSinceTs, alerted: alerted ? 1 : 0 })
-      .onConflict('key')
-      .merge();
-  } catch (e) { logger.warn('Failed to persist alert state', e); }
-};
+const CHUNK_SIZE = 300;
 
-const deleteAlertState = async (key: string) => {
-  try {
-    await knex('alert_state').where({ key }).delete();
-  } catch (e) { logger.warn('Failed to delete alert state', e); }
-};
-
-const processAlert = async (key: string, isDown: boolean): Promise<boolean> => {
+const processKey = (
+  key: string, isDown: boolean, now: number,
+  toUpsert: Array<{ key: string; down_since: number; alerted: number }>,
+  toDelete: string[],
+): boolean => {
   if (isDown) {
     if (!alertedDownIds.has(key)) {
       if (!downSince.has(key)) {
-        downSince.set(key, Date.now());
-        await persistAlertState(key, Date.now(), false);
+        downSince.set(key, now);
+        toUpsert.push({ key, down_since: now, alerted: 0 });
       }
-      if (Date.now() - (downSince.get(key) || 0) >= ALERT_DELAY_MS) {
+      if (now - (downSince.get(key) || 0) >= ALERT_DELAY_MS) {
         alertedDownIds.add(key);
-        await persistAlertState(key, downSince.get(key)!, true);
+        toUpsert.push({ key, down_since: downSince.get(key)!, alerted: 1 });
         return true;
       }
     }
@@ -48,7 +40,7 @@ const processAlert = async (key: string, isDown: boolean): Promise<boolean> => {
     if (alertedDownIds.has(key) || downSince.has(key)) {
       alertedDownIds.delete(key);
       downSince.delete(key);
-      await deleteAlertState(key);
+      toDelete.push(key);
     }
   }
   return false;
@@ -82,12 +74,33 @@ export const handlePollAlerts = async (merged: Indexer[]): Promise<void> => {
     }
     firstPoll = false;
   } else {
+    const now = Date.now();
+    const toUpsert: Array<{ key: string; down_since: number; alerted: number }> = [];
+    const toDelete: string[] = [];
     let hasNewDown = false;
+
     for (const indexer of merged) {
-      if (await processAlert(`prowlarr:${indexer.id}`, indexer.status === 'down')) hasNewDown = true;
+      if (processKey(`prowlarr:${indexer.id}`, indexer.status === 'down', now, toUpsert, toDelete)) hasNewDown = true;
       if (indexer.autobrr) {
-        if (await processAlert(`autobrr:${indexer.id}`, !isChannelUp(indexer.autobrr))) hasNewDown = true;
+        if (processKey(`autobrr:${indexer.id}`, !isChannelUp(indexer.autobrr), now, toUpsert, toDelete)) hasNewDown = true;
       }
+    }
+
+    if (toDelete.length > 0) {
+      try {
+        await knex('alert_state').whereIn('key', toDelete).delete();
+      } catch (e) { logger.warn('Failed to delete alert states', e); }
+    }
+    if (toUpsert.length > 0) {
+      try {
+        const chunks: typeof toUpsert[] = [];
+        for (let i = 0; i < toUpsert.length; i += CHUNK_SIZE) {
+          chunks.push(toUpsert.slice(i, i + CHUNK_SIZE));
+        }
+        await Promise.all(chunks.map(chunk =>
+          knex('alert_state').insert(chunk).onConflict('key').merge()
+        ));
+      } catch (e) { logger.warn('Failed to persist alert states', e); }
     }
 
     if (hasNewDown) {
