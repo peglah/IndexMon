@@ -31,21 +31,32 @@ const startServer = async () => {
     });
     server.timeout = 30000;
 
-    process.on('SIGTERM', async () => {
-      logger.info('Shutting down...');
-      await drainIconCaches();
+    let shuttingDown = false;
+    const shutdown = async (signal: string) => {
+      if (shuttingDown) return;
+      shuttingDown = true;
+      logger.info(`Shutting down (${signal})...`);
+      try {
+        await drainIconCaches();
+      } catch (error) {
+        logger.warn('Icon cache drain failed:', error);
+      }
       server.close(() => {
         stopQbitPolling();
         stopTrackerStats();
         stopSessionCleanup();
         knex.destroy();
-        process.exit(0);
+        const code = signal === 'SIGINT' ? 130 : 0;
+        process.exit(code);
       });
       setTimeout(() => {
         logger.warn('Forced shutdown after timeout');
         process.exit(1);
       }, 10_000).unref();
-    });
+    };
+
+    process.on('SIGTERM', () => shutdown('SIGTERM'));
+    process.on('SIGINT', () => shutdown('SIGINT'));
 
     // Heavyweight init — no longer blocks the socket from accepting
     await initDefinitionChecker();
