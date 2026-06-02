@@ -7,4 +7,6 @@ if [ "$1" = "hash-password" ]; then
 fi
 
 # Normal startup
-exec sh -c "node ./scripts/init-db.cjs && nginx && node dist/server.js"
+node ./scripts/init-db.cjs
+nginx &
+exec node dist/server.js
