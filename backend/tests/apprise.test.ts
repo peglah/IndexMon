@@ -186,3 +186,55 @@ describe('sendAlert', () => {
     expect(mockAxiosPost).toHaveBeenCalled();
   });
 });
+
+describe('retry', () => {
+  jest.setTimeout(30_000);
+
+  beforeEach(() => {
+    delete process.env.APPRISE_URLS;
+  });
+
+  it('recovers after transient failures', async () => {
+    process.env.APPRISE_URLS = 'slack://token/chan';
+    let callCount = 0;
+    mockExecFile.mockImplementation((_f: string, _a: string[], _o: object, cb: (err: Error | null, result: object) => void) => {
+      callCount++;
+      if (callCount <= 2) {
+        cb(new Error('transient error'));
+      } else {
+        cb(null, { stdout: '', stderr: '' });
+      }
+    });
+
+    const { sendAlert } = await import('../src/services/apprise');
+    await sendAlert('test message');
+
+    expect(callCount).toBe(3);
+  });
+
+  it('does not throw when all retries exhausted', async () => {
+    process.env.APPRISE_URLS = 'slack://token/chan';
+    let callCount = 0;
+    mockExecFile.mockImplementation((_f: string, _a: string[], _o: object, cb: (err: Error | null, result: object) => void) => {
+      callCount++;
+      cb(new Error('persistent failure'));
+    });
+
+    const { sendAlert } = await import('../src/services/apprise');
+    await expect(sendAlert('test message')).resolves.toBeUndefined();
+    expect(callCount).toBe(3);
+  });
+
+  it('sendTestNotification does not retry on failure', async () => {
+    process.env.APPRISE_URLS = 'slack://token/chan';
+    let callCount = 0;
+    mockExecFile.mockImplementation((_f: string, _a: string[], _o: object, cb: (err: Error | null, result: object) => void) => {
+      callCount++;
+      cb(new Error('fail once'));
+    });
+
+    const { sendTestNotification } = await import('../src/services/apprise');
+    await expect(sendTestNotification()).rejects.toThrow('fail once');
+    expect(callCount).toBe(1);
+  });
+});

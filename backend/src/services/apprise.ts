@@ -6,6 +6,7 @@ import { logger } from '../utils/logger';
 const execFileAsync = promisify(execFile);
 const APPRISE_BIN = '/usr/local/bin/apprise-go';
 const FAVICON_URL = 'https://raw.githubusercontent.com/peglah/IndexMon/refs/heads/main/frontend/public/favicon.png';
+const DELAY_MS = [1_000, 2_000];
 
 interface NtfyConfig {
   baseUrl: string;
@@ -13,6 +14,25 @@ interface NtfyConfig {
   token: string;
   tags: string[];
 }
+
+const delay = (ms: number) => new Promise(r => setTimeout(r, ms));
+
+const withRetry = <T>(label: string, fn: () => Promise<T>): Promise<T> =>
+  (async () => {
+    let lastErr: unknown;
+    for (let attempt = 1; attempt <= DELAY_MS.length + 1; attempt++) {
+      try {
+        return await fn();
+      } catch (err) {
+        lastErr = err;
+        if (attempt <= DELAY_MS.length) {
+          logger.warn(`Apprise: ${label} failed (attempt ${attempt}/${DELAY_MS.length + 1}), retrying in ${DELAY_MS[attempt - 1]}ms:`, err);
+          await delay(DELAY_MS[attempt - 1]);
+        }
+      }
+    }
+    throw lastErr;
+  })();
 
 const parseNtfyUrl = (raw: string): NtfyConfig | null => {
   try {
@@ -61,40 +81,55 @@ const sendViaApprise = async (urls: string[], message: string, title: string) =>
   await execFileAsync(APPRISE_BIN, ['-t', title, '-b', message, '-a', '/usr/share/nginx/html/favicon.svg', ...urls], { timeout: 15000 });
 };
 
-export const sendAlert = async (message: string) => {
+type SendFn = () => Promise<void>;
+
+const buildSenders = (message: string, title: string, retry: boolean): SendFn[] => {
   const urls = process.env.APPRISE_URLS?.split(',').filter(Boolean) || [];
-  if (!urls.length) return;
+  if (!urls.length) return [];
 
   const { ntfy, other } = partitionUrls(urls);
+  const senders: SendFn[] = [];
 
-  try {
-    await Promise.all([
-      sendViaApprise(other, message, 'Indexer Alert'),
-      ...ntfy.map(u => {
-        const cfg = parseNtfyUrl(u);
-        return cfg ? sendNtfy(cfg, message, 'Indexer Alert') : Promise.resolve();
-      }),
-    ]);
+  for (const u of ntfy) {
+    const cfg = parseNtfyUrl(u);
+    if (!cfg) continue;
+    const label = `ntfy://${cfg.baseUrl}/${cfg.topic}`;
+    const send = () => sendNtfy(cfg, message, title);
+    senders.push(retry ? () => withRetry(label, send) : send);
+  }
 
-    logger.info(`Apprise alert sent to ${urls.length} URL(s)`);
-  } catch (error) {
-    logger.error('Failed to send alert:', error);
+  if (other.length > 0) {
+    const label = `apprise-go (${other.length} URL(s))`;
+    const send = () => sendViaApprise(other, message, title);
+    senders.push(retry ? () => withRetry(label, send) : send);
+  }
+
+  return senders;
+};
+
+export const sendAlert = async (message: string) => {
+  const senders = buildSenders(message, 'Indexer Alert', true);
+  if (!senders.length) return;
+
+  const results = await Promise.allSettled(senders.map(s => s()));
+
+  const succeeded = results.filter(r => r.status === 'fulfilled').length;
+  const failed = results.filter(r => r.status === 'rejected').length;
+
+  if (failed === 0) {
+    logger.info(`Apprise alert sent to all channels`);
+  } else if (succeeded > 0) {
+    logger.info(`Apprise alert sent to ${succeeded} channel(s), ${failed} failed — see errors above`);
+  } else {
+    logger.error(`Apprise alert failed on all ${failed} channel(s) — see errors above`);
   }
 };
 
 export const sendTestNotification = async (): Promise<{ ok: true }> => {
-  const urls = process.env.APPRISE_URLS?.split(',').filter(Boolean) || [];
-  if (!urls.length) throw new Error('APPRISE_URLS not configured');
+  const senders = buildSenders('Test notification from IndexMon', 'Indexer Alert', false);
+  if (!senders.length) throw new Error('APPRISE_URLS not configured');
 
-  const { ntfy, other } = partitionUrls(urls);
-
-  await Promise.all([
-    sendViaApprise(other, 'Test notification from IndexMon', 'Indexer Alert'),
-    ...ntfy.map(u => {
-      const cfg = parseNtfyUrl(u);
-      return cfg ? sendNtfy(cfg, 'Test notification from IndexMon', 'Indexer Alert') : Promise.resolve();
-    }),
-  ]);
+  await Promise.all(senders.map(s => s()));
 
   return { ok: true };
 };
