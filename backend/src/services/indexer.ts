@@ -151,8 +151,12 @@ const triggerBackgroundFetch = (): void => {
   if (backgroundPromise) return;
   backgroundPromise = doFetch()
     .then(result => {
-      cachedResult = result;
       backgroundPromise = null;
+      if (result.indexers.length === 0) {
+        logger.warn('Background fetch returned empty indexer list — keeping previous cache');
+        return;
+      }
+      cachedResult = result;
       const serialized = JSON.stringify(result);
       if (CACHE_FILE_PATH && serialized !== lastDiskSerialized) {
         try {

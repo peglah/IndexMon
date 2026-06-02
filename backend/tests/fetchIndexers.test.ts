@@ -1,4 +1,4 @@
-import { fetchIndexersFresh } from '../src/services/indexer';
+import { fetchIndexers, fetchIndexersFresh, resetIndexerCache } from '../src/services/indexer';
 import { knex } from '../src/config/database';
 import axios from 'axios';
 
@@ -209,7 +209,46 @@ describe('fetchIndexers', () => {
       expect(result.indexers[0].downtimeMinutes).toBeLessThanOrEqual(32);
     });
 
-    it('computes uptime percentage from 24h window', async () => {
+    describe('cache guard', () => {
+    it('does not overwrite cachedResult with empty data from background fetch', async () => {
+      resetIndexerCache();
+
+      mockedAxios.get.mockImplementation(async (url: string) => {
+        if (url.includes('/api/v1/indexer')) return successResponse([{ ...baseIndexer }]);
+        if (url.includes('/api/v1/health')) return successResponse([]);
+        if (url.includes('/api/irc')) return successResponse([]);
+        return successResponse('');
+      });
+
+      // Seed the cache by calling fetchIndexers (triggers background fetch with good data)
+      await fetchIndexers();
+      // Wait for background fetch microtask to complete
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      // Verify good data is now cached
+      const good = await fetchIndexers();
+      expect(good.indexers).toHaveLength(1);
+
+      // Now make Prowlarr return empty
+      mockedAxios.get.mockImplementation(async (url: string) => {
+        if (url.includes('/api/v1/indexer')) return successResponse([]);
+        if (url.includes('/api/v1/health')) return successResponse([]);
+        if (url.includes('/api/irc')) return successResponse([]);
+        return successResponse('');
+      });
+
+      // Trigger background fetch with empty data
+      await fetchIndexers();
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      // Cache should still have the good data
+      const afterEmpty = await fetchIndexers();
+      expect(afterEmpty.indexers).toHaveLength(1);
+      expect(afterEmpty.indexers[0].name).toBe('Test Indexer');
+    });
+  });
+
+  it('computes uptime percentage from 24h window', async () => {
       const id = 'prowlarr-1';
       const now = Date.now();
       // Up for the first 12h, down for the last 12h
