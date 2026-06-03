@@ -66,7 +66,9 @@ export const cacheIcons = async (indexers: Indexer[], isFirstPoll: boolean): Pro
         const resp = await axios.get(faviconUrl, { responseType: 'arraybuffer', timeout: 5000, maxBodyLength: 500000 });
         if (resp.data && resp.data.byteLength > 0) {
           const data = Buffer.from(resp.data);
-          await fs.promises.writeFile(cachePath, data);
+          const tmpPath = cachePath + '.tmp';
+          await fs.promises.writeFile(tmpPath, data);
+          await fs.promises.rename(tmpPath, cachePath);
           iconContentTypes.set(+prowlarrId, detectContentType(data));
         }
       } catch {
