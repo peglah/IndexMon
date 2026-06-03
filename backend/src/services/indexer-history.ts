@@ -24,14 +24,22 @@ export const insertTransitions = async (merged: Indexer[]): Promise<void> => {
   });
 
   const allIds = [...new Set(dbRows.map(r => r.indexer_id))];
-  const lastRows = await knex('indexer_history')
-    .select('indexer_id', 'source', 'status')
+  const latestPerId = knex('indexer_history')
+    .select('indexer_id', 'source')
+    .max('last_checked as max_checked')
     .whereIn('indexer_id', allIds)
-    .orderBy('last_checked', 'desc');
+    .groupBy('indexer_id', 'source')
+    .as('latest');
+  const lastRows = await knex('indexer_history')
+    .join(latestPerId, function () {
+      this.on('indexer_history.indexer_id', '=', 'latest.indexer_id')
+        .on('indexer_history.source', '=', 'latest.source')
+        .on('indexer_history.last_checked', '=', 'latest.max_checked');
+    })
+    .select('indexer_history.indexer_id', 'indexer_history.source', 'indexer_history.status');
   const lastStatusMap = new Map<string, string>();
   for (const r of lastRows) {
-    const key = `${r.indexer_id}:${r.source}`;
-    if (!lastStatusMap.has(key)) lastStatusMap.set(key, r.status);
+    lastStatusMap.set(`${r.indexer_id}:${r.source}`, r.status);
   }
   const toInsert = dbRows.filter(r => lastStatusMap.get(`${r.indexer_id}:${r.source}`) !== r.status);
   if (toInsert.length > 0) await knex('indexer_history').insert(toInsert);
