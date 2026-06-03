@@ -150,7 +150,7 @@ const doFetch = async (): Promise<{ indexers: Indexer[]; services: ServiceStatus
 const triggerBackgroundFetch = (): void => {
   if (backgroundPromise) return;
   backgroundPromise = doFetch()
-    .then(result => {
+    .then(async (result) => {
       backgroundPromise = null;
       if (result.indexers.length === 0) {
         logger.warn('Background fetch returned empty indexer list — keeping previous cache');
@@ -160,7 +160,7 @@ const triggerBackgroundFetch = (): void => {
       const serialized = JSON.stringify(result);
       if (CACHE_FILE_PATH && serialized !== lastDiskSerialized) {
         try {
-          fs.writeFileSync(CACHE_FILE_PATH, serialized);
+          await fs.promises.writeFile(CACHE_FILE_PATH, serialized);
           lastDiskSerialized = serialized;
         } catch (e) {
           logger.warn('Failed to write indexer cache to disk:', e);

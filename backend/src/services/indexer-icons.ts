@@ -29,16 +29,30 @@ const fetchFaviconUrl = async (siteUrl: string): Promise<string | null> => {
 };
 
 const pendingIconCaches = new Set<Promise<void>>();
+const iconContentTypes = new Map<number, string>();
+
+const detectContentType = (buf: Buffer): string => {
+  if (buf[0] === 0x89 && buf[1] === 0x50 && buf[2] === 0x4e && buf[3] === 0x47) return 'image/png';
+  if (buf[0] === 0x00 && buf[1] === 0x00 && buf[2] === 0x01 && buf[3] === 0x00) return 'image/x-icon';
+  if (buf[0] === 0x3c) {
+    const text = buf.toString('utf8', 0, 100).trimStart();
+    if (text.startsWith('<svg') || text.startsWith('<?xml') || text.startsWith('<!DOCTYPE')) return 'image/svg+xml';
+  }
+  return 'image/png';
+};
+
+export const getIconContentType = (prowlarrId: number): string =>
+  iconContentTypes.get(prowlarrId) ?? 'image/png';
 
 export const cacheIcons = async (indexers: Indexer[], isFirstPoll: boolean): Promise<void> => {
-  fs.mkdirSync(ICONS_DIR, { recursive: true });
+  await fs.promises.mkdir(ICONS_DIR, { recursive: true });
   await Promise.all(
     indexers.map(async (indexer) => {
       const prowlarrId = indexer.id.replace('prowlarr-', '');
       const cachePath = path.resolve(ICONS_DIR, `${prowlarrId}.png`);
       if (!cachePath.startsWith(ICONS_DIR + path.sep)) return;
       try {
-        const stat = fs.statSync(cachePath);
+        const stat = await fs.promises.stat(cachePath);
         const jitterMs = (Math.random() - 0.5) * 60 * 60 * 1000;
         if (!isFirstPoll && Date.now() - stat.mtimeMs < ICON_TTL_MS + jitterMs) return;
       } catch {
@@ -51,7 +65,9 @@ export const cacheIcons = async (indexers: Indexer[], isFirstPoll: boolean): Pro
         if (isPrivateUrl(faviconUrl)) return;
         const resp = await axios.get(faviconUrl, { responseType: 'arraybuffer', timeout: 5000, maxBodyLength: 500000 });
         if (resp.data && resp.data.byteLength > 0) {
-          fs.writeFileSync(cachePath, resp.data);
+          const data = Buffer.from(resp.data);
+          await fs.promises.writeFile(cachePath, data);
+          iconContentTypes.set(+prowlarrId, detectContentType(data));
         }
       } catch {
         logger.debug(`Icon download failed for ${indexer.name}`);
