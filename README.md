@@ -41,10 +41,10 @@ Open http://localhost. If you set `ADMIN_PASSWORD_HASH` in `.env`, use that pass
 
 ## Architecture
 
-Single container running three processes:
+Single container running nginx + Express (SQLite embedded in the Node process):
 
 - **nginx** (:80) — serves the frontend build and proxies `/api/*` → Express
-- **Express** (:3000) — backend API that polls upstream services on each `/api/indexers` request
+- **Express** (:3000) — backend API. `GET /api/indexers` returns a cached result immediately and triggers a background fetch from upstream services; first request reads from disk cache or returns empty state.
 - **SQLite** (`/app/data/indexmon.db`) — stores indexer history and alert state (no external DB needed)
 
 Favicon caches live in `/app/data/icons/` alongside the database.
@@ -57,12 +57,12 @@ Favicon caches live in `/app/data/icons/` alongside the database.
 |---|---|---|---|
 | `PROWLARR_API_KEY` | Yes | — | Prowlarr API key (Settings → General) |
 | `PROWLARR_BASE_URL` | No | `http://prowlarr:9696` | Prowlarr URL |
-| `AUTOBRR_API_KEY` | Yes | — | Autobrr API key (Settings → API Keys) |
+| `AUTOBRR_API_KEY` | No | — | Autobrr API key (Settings → API Keys) |
 | `AUTOBRR_BASE_URL` | No | `http://autobrr:7474` | Autobrr URL |
 | `ADMIN_PASSWORD_HASH` | No | random on each startup | Bcrypt hash (see Authentication below). Generate via `scripts/hash.sh yourpass`, `node backend/scripts/hash-password.js yourpass`, or `docker run --rm ghcr.io/peglah/indexmon hash-password yourpass`. |
 | `APPRISE_URLS` | No | — | Comma-separated Apprise notification URLs (e.g. `ntfy://host/topic?token=...`). ntfy URLs sent via direct HTTP API with `Icon` header; all others via bundled `apprise-go` binary. |
 | `ALERT_DELAY_M` | No | `0` | Minimum downtime (minutes) before an alert fires |
-| `QBITTORRENT_BASE_URL` | No | `http://qbittorrent:8080` | qBittorrent Web UI URL (omit to disable tracker checks) |
+| `QBITTORRENT_BASE_URL` | No | `http://qbittorrent:8080` | qBittorrent Web UI URL (set `QBITTORRENT_USERNAME` to enable tracker checks) |
 | `QBITTORRENT_USERNAME` | No | — | qBittorrent login username |
 | `QBITTORRENT_PASSWORD` | No | — | qBittorrent login password |
 | `QBITTORRENT_POLL_INTERVAL_S` | No | `300` | Tracker status poll interval in seconds |
@@ -100,11 +100,11 @@ Login is rate-limited to 10 attempts per 15 minutes.
 |---|---|---|
 | `GET /health` | No | Returns `{"ok":true}` for Docker HEALTHCHECK |
 | `GET /metrics` | No | Prometheus metrics (OpenMetrics format) |
-| `GET /api/indexers/icon/:prowlarrId` | No | Cached favicon (PNG/ICO/SVG auto-detected). Rate-limited 100/15min. |
+| `GET /api/indexers/icon/:prowlarrId` | No | Cached favicon (PNG/ICO/SVG auto-detected). Rate-limited 500/15min. |
 | `POST /api/auth/login` | No | Login with `{"password":"..."}`. Rate-limited 10/15min. |
 | `GET /api/auth/me` | Yes | Session validation |
 | `POST /api/auth/logout` | Yes | Destroy session |
-| `GET /api/indexers` | Yes | Poll Prowlarr + Autobrr, return merged indexers with health, downtime, uptime %, qB tracker status, buffer stats |
+| `GET /api/indexers` | Yes | Poll Prowlarr + Autobrr, return merged indexers with health, downtime, uptime %, qB tracker status, buffer stats. Rate-limited 900/15min. |
 | `GET /api/indexers/history` | Yes | `?limit=1000&offset=0` (clamped 1–5000). Returns transition history. |
 | `POST /api/apprise/test` | Yes | Send test Apprise notification |
 
@@ -146,6 +146,7 @@ IndexMon exposes custom metrics at `GET /metrics` (unauthenticated) plus Node.js
 | `indexmon_tracker_ratio` | Gauge | `indexer` | Per-indexer upload/download ratio |
 | `indexmon_http_request_duration_seconds` | Histogram | `method`, `route`, `status` | HTTP request duration |
 | `indexmon_http_requests_total` | Counter | `method`, `route`, `status` | HTTP request count |
+| `indexmon_alert_sends_total` | Counter | `result` | Alert send count (success/failure) |
 
 ## Development
 

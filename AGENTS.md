@@ -5,7 +5,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 ## Commands
 - **Docker**: `docker compose up --build` (single container from root `Dockerfile`)
 - **Local dev**: `cd frontend && npm run dev` (Vite :5173 proxies `/api` → :3000) / `cd backend && npm run dev` (tsx watch, :3000)
-- **Lint→typecheck→test order**: `cd frontend && npm run lint && npm test` (ESLint 10 flat config, `--max-warnings 0`; Vitest+jsdom) / `cd backend && npm run lint && npm run typecheck && npm test` (ESLint 10 flat config `eslint.config.mjs`; Jest+supertest, needs `DB_PATH` for test DB or defaults `:memory:`)
+- **Lint→typecheck→test order**: `cd frontend && npm run lint && npm test` (ESLint 10 flat config, `--max-warnings 0`; Vitest+jsdom, CI sets `NODE_OPTIONS=--no-webstorage`) / `cd backend && npm run lint && npm run typecheck && npm test` (ESLint 10 flat config `eslint.config.mjs`; Jest+supertest, `NODE_OPTIONS=--experimental-vm-modules` in npm script, DB defaults `:memory:` via `jest.config.js`)
 - **Frontend install**: `cd frontend && npm ci`
 - **Migrations**: `cd backend && npm run migrate:make <name>` / `npm run migrate` (uses `knexfile.ts` → `data/db.sqlite`, separate from runtime DB)
 
@@ -22,7 +22,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 | `POST /api/auth/login` | No | Rate-limited, returns `{ ok: true }` + sets httpOnly cookie |
 | `POST /api/auth/logout` | Yes | Removes session from in-memory Map |
 | `GET /api/auth/me` | Yes | Validates current session, used by AuthContext on mount |
-| `GET /api/indexers` | Yes | Fetches Prowlarr + Autobrr inline, writes history, computes downtime + 24h uptime % (time-weighted), fires Apprise alerts, merges qB + tracker stats |
+| `GET /api/indexers` | Yes | Rate-limited (900/15min). Fetches Prowlarr + Autobrr inline, writes history, computes downtime + 24h uptime % (time-weighted), fires Apprise alerts, merges qB + tracker stats |
 | `GET /api/indexers/history` | Yes | `?limit=1000&offset=0` (clamped 1–5000). Maps `indexer_id`→`indexerId`, `last_checked`→`timestamp` |
 | `GET /api/indexers/icon/:prowlarrId` | No | Before auth middleware — `<img>` tags can't send cookies. Rate-limited (500/15min). Detects PNG/ICO/SVG via magic bytes |
 | `POST /api/apprise/test` | Yes | Tests Apprise notification config with a test message |
@@ -94,11 +94,12 @@ Animates `alert-pulse` on transitions to red/orange, `recover` on transitions aw
 - `frontend/src/components/ErrorBoundary.tsx` — class component wrapping router in `main.tsx`
 
 ## CI/CD (`.github/workflows/ci.yml`)
-- **lint-test job**: Backend (install→lint→typecheck→test) then Frontend (install→lint→test) then Docker build (no push). Runs on all pushes/PRs to main. Node 22.
+- **lint-test job**: Backend (install→lint→typecheck→test) then Frontend (install→lint→test) then Docker build (no push). Runs on all pushes/PRs to main. Node 26.
+- Frontend tests run with `NODE_OPTIONS=--no-webstorage` (localStorage not available).
 - **build-and-publish** (needs lint-test, push to main + `v*` tags): buildx, push to `ghcr.io/<owner>/<repo>`. `main` → `develop` tag, `v*` → semver + `latest`. `APP_VERSION` from metadata output.
 - **Screenshot** (only on `v*` tags): starts container, runs `scripts/screenshot.mjs` (Playwright chromium, 10 mock indexers via route interception). Desktop 1280×900 full-page + mobile 412×915 Android phone frame. Uploads light+dark to release.
 - Requires `contents: write` and `packages: write` permissions.
 
 ## Testing
 - **Backend**: Jest + `ts-jest`. 8 test files: `auth.test.ts`, `apprise.test.ts`, `normalize.test.ts`, `indexers.test.ts` (route-level), `fetchIndexers.test.ts` (service-level), `indexer-alerts.test.ts`, `indexer-fetcher.test.ts`, `indexer-history.test.ts`. DB defaults to `:memory:` via `jest.config.js`; CI overrides with `DB_PATH=./test-data/test.db`. `knex.migrate.latest()` runs in `beforeAll`.
-- **Frontend**: Vitest + jsdom + `@testing-library/react`. `matchMedia` mocked in `setup-tests.ts`. Tests: `frontend/tests/LoginPage.test.tsx`, `frontend/src/components/DashboardPage.test.tsx`, `frontend/src/components/IndexerTable.test.tsx`.
+- **Frontend**: Vitest + jsdom + `@testing-library/react`. `matchMedia` mocked in `setup-tests.ts`. Tests: `frontend/tests/LoginPage.test.tsx`, `frontend/src/components/DashboardPage.test.tsx`, `frontend/src/components/IndexerTable.test.tsx`. CI sets `NODE_OPTIONS=--no-webstorage`.
