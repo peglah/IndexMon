@@ -335,8 +335,9 @@ const runPoll = async (): Promise<void> => {
 
 const scheduleNext = (): void => {
   if (stopped) return;
-  const delay = isBreakerOpen() ? PROBE_INTERVAL_MS : baseIntervalMs;
-  pollTimeoutId = setTimeout(runPoll, delay);
+  const baseDelay = isBreakerOpen() ? PROBE_INTERVAL_MS : baseIntervalMs;
+  const jitter = (Math.random() - 0.5) * baseDelay * 0.2;
+  pollTimeoutId = setTimeout(runPoll, baseDelay + jitter);
 };
 
 export const startQbitPolling = (intervalS: number): void => {

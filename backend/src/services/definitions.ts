@@ -35,14 +35,14 @@ const fetchDefinitions = async () => {
 const scheduleNext = async () => {
   await fetchDefinitions();
   if (!definitionShuttingDown) {
-    const jitter = (Math.random() - 0.5) * 60 * 60 * 1000;
+    const jitter = (Math.random() - 0.5) * REFRESH_INTERVAL * 0.2;
     timeoutHandle = setTimeout(scheduleNext, REFRESH_INTERVAL + jitter);
   }
 };
 
 export const initDefinitionChecker = async () => {
   await fetchDefinitions();
-  const jitter = (Math.random() - 0.5) * 60 * 60 * 1000;
+  const jitter = (Math.random() - 0.5) * REFRESH_INTERVAL * 0.2;
   timeoutHandle = setTimeout(scheduleNext, REFRESH_INTERVAL + jitter);
 };
 

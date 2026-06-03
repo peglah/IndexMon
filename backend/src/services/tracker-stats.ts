@@ -23,7 +23,9 @@ const isBlacklisted = (name: string): boolean => {
   return false;
 };
 
-let intervalId: ReturnType<typeof setInterval> | null = null;
+let intervalMs = 24 * 60 * 60 * 1000;
+let timeoutHandle: ReturnType<typeof setTimeout> | null = null;
+let trackerStatsShuttingDown = false;
 
 const getBaseUrl = () => process.env.PROWLARR_BASE_URL || 'http://prowlarr:9696';
 const getApiKey = () => process.env.PROWLARR_API_KEY;
@@ -187,10 +189,20 @@ const fetchAllStats = async (): Promise<void> => {
         }
 
         // Cached platform: use the known adapter
-        const statsCached = await fetchUnit3dStats(siteUrl, fieldApiKey);
+        let statsCached = await fetchUnit3dStats(siteUrl, fieldApiKey);
 
         if (statsCached) {
           log.debug(`Tracker stats: ${indexer.name} ${cachedPlatform}, buffer=${statsCached.buffer}`);
+          return { name: indexer.name, stats: statsCached };
+        }
+
+        // One retry with short delay before giving up
+        log.debug(`Tracker stats: ${indexer.name} ${cachedPlatform} fetch failed, retrying once`);
+        await new Promise(r => setTimeout(r, 1000));
+        statsCached = await fetchUnit3dStats(siteUrl, fieldApiKey);
+
+        if (statsCached) {
+          log.debug(`Tracker stats: ${indexer.name} ${cachedPlatform} recovered, buffer=${statsCached.buffer}`);
           return { name: indexer.name, stats: statsCached };
         }
 
@@ -219,19 +231,30 @@ const fetchAllStats = async (): Promise<void> => {
 
 export const getTrackerStats = (): Map<string, TrackerStats> => statsCache;
 
+const scheduleNext = async (): Promise<void> => {
+  await fetchAllStats();
+  if (!trackerStatsShuttingDown) {
+    const jitter = (Math.random() - 0.5) * intervalMs * 0.2;
+    timeoutHandle = setTimeout(scheduleNext, intervalMs + jitter);
+  }
+};
+
 export const initTrackerStats = async (): Promise<void> => {
   const ttlM = parseInt(process.env.TRACKER_STATS_TTL_M || '1440', 10);
   if (ttlM <= 0) {
     logger.info('Tracker stats disabled (TRACKER_STATS_TTL_M <= 0)');
     return;
   }
+  intervalMs = ttlM * 60 * 1000;
   await fetchAllStats();
-  intervalId = setInterval(fetchAllStats, ttlM * 60 * 1000);
+  const jitter = (Math.random() - 0.5) * intervalMs * 0.2;
+  timeoutHandle = setTimeout(scheduleNext, intervalMs + jitter);
 };
 
 export const stopTrackerStats = (): void => {
-  if (intervalId !== null) {
-    clearInterval(intervalId);
-    intervalId = null;
+  trackerStatsShuttingDown = true;
+  if (timeoutHandle !== null) {
+    clearTimeout(timeoutHandle);
+    timeoutHandle = null;
   }
 };

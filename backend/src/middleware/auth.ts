@@ -23,11 +23,15 @@ interface Session {
 const sessions = new Map<string, Session>();
 
 const cleanupInterval = setInterval(() => {
-  const now = new Date();
-  for (const [token, session] of sessions) {
-    if (session.expiresAt < now) {
-      sessions.delete(token);
+  try {
+    const now = new Date();
+    for (const [token, session] of sessions) {
+      if (session.expiresAt < now) {
+        sessions.delete(token);
+      }
     }
+  } catch (error) {
+    logger.error('Session cleanup failed:', error);
   }
 }, 15 * 60 * 1000);
 
