@@ -118,8 +118,8 @@ const fetchProwlarrHealth = async (healthUrl: string, apiKey: string | undefined
     const response = await fetchWithRetry<any>(healthUrl, { headers: { 'X-Api-Key': apiKey }, timeout: 10000 }, 1);
     if (!Array.isArray(response.data)) return new Set();
     for (const entry of response.data) {
-      if (entry.source === 'IndexerStatusCheck' && entry.message) {
-        const match = entry.message.match(/Indexers unavailable due to failures:\s*(.*)/);
+      if ((entry.source === 'IndexerStatusCheck' || entry.source === 'IndexerLongTermStatusCheck') && entry.message) {
+        const match = entry.message.match(/Indexers unavailable due to failures.*?:\s*(.*)/);
         if (match) {
           const names = match[1].split(',').map((n: string) => normalize(n.trim()));
           return new Set(names);
