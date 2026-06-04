@@ -79,7 +79,6 @@ Favicon caches live in `/app/data/icons/` alongside the database.
 | `QBITTORRENT_POLL_INTERVAL_S` | No | `300` | Tracker status poll interval in seconds |
 | `TRACKER_STATS_TTL_M` | No | `1440` | Per-indexer buffer/ratio refresh interval in minutes. `0` to disable. |
 | `LOG_LEVEL` | No | `info` | Log level — `debug`, `info`, `warn`, or `error` |
-| `APP_VERSION` | No | `dev` | Version string shown in dashboard (set by Docker build arg) |
 
 qBittorrent is optional. If `QBITTORRENT_USERNAME` is unset, the qB column is hidden entirely.
 Autobrr is optional. If `AUTOBRR_API_KEY` is unset, the Autobrr column is hidden entirely.
