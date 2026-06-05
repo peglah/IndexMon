@@ -285,7 +285,7 @@ const fullPoll = async (): Promise<void> => {
     }));
 
     newCache.set(domain, {
-      working: relevant.some((t) => t.status === 2),
+      working: relevant.some((t) => t.status === 1 || t.status === 2),
       hasTorrents: true,
       statuses,
       lastChecked: new Date().toISOString(),
