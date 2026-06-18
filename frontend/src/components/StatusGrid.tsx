@@ -27,27 +27,12 @@ const classify = (indexer: Indexer): TileStatus => {
 export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
   const prevStatuses = useRef<Record<string, TileStatus>>({});
   const [changedIds, setChangedIds] = useState<Set<string>>(new Set());
+  const hasLoaded = useRef(false);
 
   const sorted = useMemo(
     () => [...indexers].sort((a, b) => stripApi(a.name).localeCompare(stripApi(b.name))),
     [indexers],
   );
-
-  useEffect(() => {
-    const ids = new Set<string>();
-    for (const indexer of sorted) {
-      const status = classify(indexer);
-      if (status !== 'green') {
-        ids.add(indexer.id);
-      }
-      prevStatuses.current[indexer.id] = status;
-    }
-    if (ids.size === 0) return;
-    setChangedIds(ids);
-    const timer = setTimeout(() => setChangedIds(new Set()), 800);
-    return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     const ids = new Set<string>();
@@ -59,6 +44,16 @@ export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
       }
       prevStatuses.current[indexer.id] = status;
     }
+
+    if (!hasLoaded.current && sorted.length > 0) {
+      hasLoaded.current = true;
+      for (const indexer of sorted) {
+        if (classify(indexer) !== 'green') {
+          ids.add(indexer.id);
+        }
+      }
+    }
+
     if (ids.size === 0) return;
     setChangedIds(ids);
     const timer = setTimeout(() => setChangedIds(new Set()), 800);
