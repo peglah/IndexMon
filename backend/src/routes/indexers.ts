@@ -12,6 +12,7 @@ const indexerLimiter = rateLimit({
   max: 900,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'Too many requests. Try again later.' },
 });
 

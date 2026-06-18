@@ -40,6 +40,7 @@ const iconLimiter = rateLimit({
   max: 500,
   standardHeaders: true,
   legacyHeaders: false,
+  validate: { xForwardedForHeader: false },
   message: { error: 'Too many requests' },
 });
 
