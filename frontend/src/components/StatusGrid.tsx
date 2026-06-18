@@ -37,6 +37,22 @@ export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
     const ids = new Set<string>();
     for (const indexer of sorted) {
       const status = classify(indexer);
+      if (status !== 'green') {
+        ids.add(indexer.id);
+      }
+      prevStatuses.current[indexer.id] = status;
+    }
+    if (ids.size === 0) return;
+    setChangedIds(ids);
+    const timer = setTimeout(() => setChangedIds(new Set()), 800);
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const ids = new Set<string>();
+    for (const indexer of sorted) {
+      const status = classify(indexer);
       const prev = prevStatuses.current[indexer.id];
       if (prev !== undefined && prev !== status) {
         ids.add(indexer.id);
