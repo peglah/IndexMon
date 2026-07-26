@@ -19,6 +19,7 @@ RUN npm run build
 FROM node:26-alpine AS backend-builder
 WORKDIR /app
 COPY backend/package.json backend/package-lock.json ./
+RUN apk add --no-cache python3 make g++
 RUN --mount=type=cache,target=/root/.npm \
     npm ci
 COPY backend/src ./src
@@ -50,9 +51,11 @@ COPY --from=backend-builder /app/package.json ./
 COPY --from=backend-builder /app/package-lock.json ./
 COPY --from=backend-builder /app/scripts ./scripts
 
-# Install backend dependencies
+# Install backend dependencies (build tools needed for native modules like better-sqlite3)
+RUN apk add --no-cache python3 make g++
 RUN --mount=type=cache,target=/root/.npm \
     npm ci --omit=dev
+RUN apk del python3 make g++
 
 # Ensure data directory exists with correct permissions
 RUN mkdir -p /app/data && \
