@@ -19,7 +19,7 @@
     "better-sqlite3": "^13.0.2",
     "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.6.0",
+    "express-rate-limit": "^8.6.1",
     "helmet": "^8.3.0",
     "knex": "^3.3.0",
     "prom-client": "^15.1.3",
