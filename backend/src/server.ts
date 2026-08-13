@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import { logger } from './utils/logger';
 import app from './app';
 import { setPasswordHash, stopSessionCleanup } from './middleware/auth';
-import { drainIconCaches } from './services/indexer';
+import { drainIconCaches, startIndexerPolling, stopIndexerPolling } from './services/indexer';
 import { initDefinitionChecker, stopDefinitionChecker } from './services/definitions';
 import { startQbitPolling, stopQbitPolling } from './services/qbittorrent';
 import { initTrackerStats, stopTrackerStats } from './services/tracker-stats';
@@ -42,6 +42,7 @@ const startServer = async () => {
         logger.warn('Icon cache drain failed:', error);
       }
       server.close(() => {
+        stopIndexerPolling();
         stopDefinitionChecker();
         stopQbitPolling();
         stopTrackerStats();
@@ -61,6 +62,7 @@ const startServer = async () => {
 
     // Heavyweight init — no longer blocks the socket from accepting
     await initDefinitionChecker();
+    startIndexerPolling(parseInt(process.env.INDEXER_POLL_INTERVAL_S || '60', 10));
     startQbitPolling(parseInt(process.env.QBITTORRENT_POLL_INTERVAL_S || '300', 10));
     await initTrackerStats();
   } catch (error) {

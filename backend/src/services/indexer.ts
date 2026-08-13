@@ -175,6 +175,7 @@ const triggerBackgroundFetch = (): void => {
 
 // For testing: clear in-memory cache between test runs
 export const resetIndexerCache = (): void => {
+  stopIndexerPolling();
   cachedResult = null;
   backgroundPromise = null;
 };
@@ -189,4 +190,30 @@ export const fetchIndexers = async (): Promise<{ indexers: Indexer[]; services: 
 
   triggerBackgroundFetch();
   return cachedResult;
+};
+
+let pollIntervalMs = 60_000;
+let pollTimeoutId: ReturnType<typeof setTimeout> | null = null;
+let pollStopped = true;
+
+const scheduleNextPoll = (): void => {
+  if (pollStopped) return;
+  const jitter = (Math.random() - 0.5) * pollIntervalMs * 0.2;
+  pollTimeoutId = setTimeout(triggerBackgroundFetch, pollIntervalMs + jitter);
+};
+
+export const startIndexerPolling = (intervalS: number): void => {
+  stopIndexerPolling();
+  pollStopped = false;
+  pollIntervalMs = intervalS * 1000;
+  triggerBackgroundFetch();
+  scheduleNextPoll();
+};
+
+export const stopIndexerPolling = (): void => {
+  pollStopped = true;
+  if (pollTimeoutId !== null) {
+    clearTimeout(pollTimeoutId);
+    pollTimeoutId = null;
+  }
 };

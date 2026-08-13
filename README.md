@@ -44,7 +44,7 @@ Open http://localhost. If you set `ADMIN_PASSWORD_HASH` in `.env`, use that pass
 Single container running nginx + Express (SQLite embedded in the Node process):
 
 - **nginx** (:80) — serves the frontend build and proxies `/api/*` → Express
-- **Express** (:3000) — backend API. `GET /api/indexers` returns a cached result immediately and triggers a background fetch from upstream services; first request reads from disk cache or returns empty state.
+- **Express** (:3000) — backend API. `GET /api/indexers` returns a cached result immediately and triggers a background fetch from upstream services; first request reads from disk cache or returns empty state. A backend timer (`INDEXER_POLL_INTERVAL_S`, default 60s) also polls Prowlarr/Autobrr continuously, so history and alerts stay accurate even when the dashboard is closed.
 - **SQLite** (`/app/data/indexmon.db`) — stores indexer history and alert state (no external DB needed)
 
 Favicon caches live in `/app/data/icons/` alongside the database.
@@ -77,6 +77,7 @@ Favicon caches live in `/app/data/icons/` alongside the database.
 | `QBITTORRENT_USERNAME` | No | — | qBittorrent login username |
 | `QBITTORRENT_PASSWORD` | No | — | qBittorrent login password |
 | `QBITTORRENT_POLL_INTERVAL_S` | No | `300` | Tracker status poll interval in seconds |
+| `INDEXER_POLL_INTERVAL_S` | No | `60` | Prowlarr/Autobrr status poll interval in seconds (backend timer, independent of the frontend) |
 | `TRACKER_STATS_TTL_M` | No | `1440` | Per-indexer buffer/ratio refresh interval in minutes. `0` to disable. |
 | `LOG_LEVEL` | No | `info` | Log level — `debug`, `info`, `warn`, or `error` |
 

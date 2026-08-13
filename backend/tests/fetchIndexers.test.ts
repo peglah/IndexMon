@@ -1,4 +1,4 @@
-import { fetchIndexers, fetchIndexersFresh, resetIndexerCache } from '../src/services/indexer';
+import { fetchIndexers, fetchIndexersFresh, resetIndexerCache, startIndexerPolling, stopIndexerPolling } from '../src/services/indexer';
 import { knex } from '../src/config/database';
 import axios from 'axios';
 
@@ -272,6 +272,54 @@ describe('fetchIndexers', () => {
       // 12h up / 24h window = 50%
       expect(result.indexers[0].uptimePercentage).toBeGreaterThanOrEqual(48);
       expect(result.indexers[0].uptimePercentage).toBeLessThanOrEqual(52);
+    });
+  });
+
+  describe('poller', () => {
+    afterEach(() => {
+      stopIndexerPolling();
+    });
+
+    it('triggers an immediate fetch on start and populates the cache', async () => {
+      resetIndexerCache();
+      mockedAxios.get.mockImplementation(async (url: string) => {
+        if (url.includes('/api/v1/indexer')) return successResponse([{ ...baseIndexer }]);
+        if (url.includes('/api/v1/health')) return successResponse([]);
+        if (url.includes('/api/irc')) return successResponse([]);
+        return successResponse('');
+      });
+
+      startIndexerPolling(60);
+      await new Promise(resolve => setTimeout(resolve, 0));
+
+      const result = await fetchIndexers();
+      expect(result.indexers).toHaveLength(1);
+      expect(result.indexers[0].status).toBe('up');
+      const rows = await knex('indexer_history').select();
+      expect(rows).toHaveLength(2); // prowlarr + autobrr transitions
+    });
+
+    it('stopIndexerPolling halts subsequent scheduled fetches', async () => {
+      resetIndexerCache();
+      let indexerCalls = 0;
+      mockedAxios.get.mockImplementation(async (url: string) => {
+        if (url.includes('/api/v1/indexer')) {
+          indexerCalls++;
+          return successResponse([{ ...baseIndexer }]);
+        }
+        if (url.includes('/api/v1/health')) return successResponse([]);
+        if (url.includes('/api/irc')) return successResponse([]);
+        return successResponse('');
+      });
+
+      startIndexerPolling(0.01); // ~10ms cadence
+      await new Promise(resolve => setTimeout(resolve, 30));
+      stopIndexerPolling();
+      const countAfterStop = indexerCalls;
+      await new Promise(resolve => setTimeout(resolve, 50));
+
+      expect(indexerCalls).toBeGreaterThan(0);
+      expect(indexerCalls).toBe(countAfterStop);
     });
   });
 });
