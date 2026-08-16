@@ -6,3 +6,4 @@ dist/
 .env
 *.md
 .gitkeep
+.understand-anything/

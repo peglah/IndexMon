@@ -6,3 +6,4 @@ dist/
 *.sqlite
 screenshot.png
 .opencode/plans/
+.understand-anything/
