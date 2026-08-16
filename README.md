@@ -192,6 +192,8 @@ cd backend && npm run dev
 cd frontend && npm run dev
 ```
 
+Requires Node `^22.22.2 || ^24.15.0 || >=26.0.0` (declared in both `package.json` `engines`; pinned to `26` in the root `.nvmrc`). `engine-strict=true` in `backend/.npmrc` + `frontend/.npmrc` makes `npm ci` fail fast on an unsupported Node.
+
 ### Testing
 
 ```bash

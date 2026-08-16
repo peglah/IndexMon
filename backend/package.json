@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Backend for Dockerized Indexer Status Dashboard",
   "main": "dist/server.js",
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
   "scripts": {
     "build": "tsc",
     "start": "node dist/server.js",

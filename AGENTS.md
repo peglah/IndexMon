@@ -3,6 +3,7 @@
 Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlarr + Autobrr for indexer health, plus qBittorrent tracker status.
 
 ## Commands
+- **Node**: required `^22.22.2 || ^24.15.0 || >=26.0.0` (declared in both `package.json` `engines`; pinned to `26` in root `.nvmrc`). `engine-strict=true` in `backend/.npmrc` + `frontend/.npmrc` makes `npm ci` fail fast on a wrong Node instead of crashing at test runtime.
 - **Docker**: `docker compose up --build` (single container from root `Dockerfile`)
 - **Local dev**: `cd frontend && npm run dev` (Vite :5173 proxies `/api` → :3000) / `cd backend && npm run dev` (tsx watch, :3000)
 - **Lint→typecheck→test order**: `cd frontend && npm run lint && npm test` (ESLint 10 flat config, `--max-warnings 0`; Vitest+jsdom, CI sets `NODE_OPTIONS=--no-webstorage`) / `cd backend && npm run lint && npm run typecheck && npm test` (ESLint 10 flat config `eslint.config.mjs`; Jest+supertest, `NODE_OPTIONS=--experimental-vm-modules` in npm script, DB defaults `:memory:` via `jest.config.js`)
@@ -95,7 +96,7 @@ Animates `alert-pulse` on transitions to red/orange, `recover` on transitions aw
 - `frontend/src/components/ErrorBoundary.tsx` — class component wrapping router in `main.tsx`
 
 ## CI/CD (`.github/workflows/ci.yml`)
-- **lint-test job**: Backend (install→lint→typecheck→test) then Frontend (install→lint→test) then Docker build (no push). Runs on all pushes/PRs to main. Node 26.
+- **lint-test job**: Backend (install→lint→typecheck→test) then Frontend (install→lint→test) then Docker build (no push). Runs on all pushes/PRs to main. Node from root `.nvmrc` (`node-version-file`).
 - Frontend tests run with `NODE_OPTIONS=--no-webstorage` (localStorage not available).
 - **build-and-publish** (needs lint-test, push to main + `v*` tags): buildx, push to `ghcr.io/<owner>/<repo>`. `main` → `develop` tag, `v*` → semver + `latest`. `APP_VERSION` from metadata output.
 - **Screenshot** (only on `v*` tags): starts container, runs `scripts/screenshot.mjs` (Playwright chromium, 10 mock indexers via route interception). Desktop 1280×900 full-page + mobile 412×915 Android phone frame. Uploads light+dark to release.
