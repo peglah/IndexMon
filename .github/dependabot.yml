@@ -17,6 +17,12 @@ updates:
           - "eslint"
           - "@eslint/*"
           - "@typescript-eslint/*"
+      tooling:
+        patterns:
+          - "typescript"
+          - "tsx"
+          - "globals"
+          - "@types/*"
 
   - package-ecosystem: npm
     directory: /frontend
@@ -35,6 +41,21 @@ updates:
           - "eslint"
           - "@eslint/*"
           - "@typescript-eslint/*"
+      build:
+        patterns:
+          - "vite"
+          - "vitest"
+          - "@vitejs/*"
+          - "jsdom"
+          - "postcss"
+          - "tailwindcss"
+          - "@tailwindcss/*"
+          - "lightningcss"
+      tooling:
+        patterns:
+          - "typescript"
+          - "globals"
+          - "@types/*"
 
   - package-ecosystem: docker
     directory: /
