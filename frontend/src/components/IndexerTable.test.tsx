@@ -161,7 +161,7 @@ describe('IndexerTable', () => {
   it('links indexer name when siteUrl is provided', () => {
     render(<IndexerTable indexers={[{ ...baseIndexer, siteUrl: 'https://example.com' }]} services={defaultServices} />);
     const link = screen.getAllByText('Test Indexer')[0].closest('a');
-    expect(link).toHaveAttribute('href', 'https://example.com');
-    expect(link).toHaveAttribute('target', '_blank');
+    expect(link?.getAttribute('href')).toBe('https://example.com');
+    expect(link?.getAttribute('target')).toBe('_blank');
   });
 });
