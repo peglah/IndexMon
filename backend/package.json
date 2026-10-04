@@ -33,15 +33,15 @@
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/jest": "^30.0.0",
-    "@types/node": "^26.2.0",
+    "@types/node": "^26.6.3",
     "@types/supertest": "^7.2.1",
     "@typescript-eslint/eslint-plugin": "^8.71.0",
     "@typescript-eslint/parser": "^8.0.0",
     "eslint": "^10.11.0",
-    "globals": "^17.11.0",
+    "globals": "^17.13.0",
     "supertest": "^7.3.0",
     "ts-jest": "^29.4.14",
-    "tsx": "^4.23.12",
-    "typescript": "^6.0.3"
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }
