@@ -3,6 +3,7 @@
 Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlarr + Autobrr for indexer health, plus qBittorrent tracker status.
 
 ## Commands
+
 - **Node**: required `^22.22.2 || ^24.15.0 || >=26.0.0` (declared in both `package.json` `engines`; pinned to `26` in root `.nvmrc`). `engine-strict=true` in `backend/.npmrc` + `frontend/.npmrc` makes `npm ci` fail fast on a wrong Node instead of crashing at test runtime.
 - **Docker**: `docker compose up --build` (single container from root `Dockerfile`)
 - **Local dev**: `cd frontend && npm run dev` (Vite :5173 proxies `/api` → :3000) / `cd backend && npm run dev` (tsx watch, :3000)
@@ -11,6 +12,7 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - **Migrations**: `cd backend && npm run migrate:make <name>` / `npm run migrate` (uses `knexfile.ts` → `data/db.sqlite`, separate from runtime DB)
 
 ## Auth
+
 - Cookie-based (httpOnly, `SameSite=strict`). Login returns `{ ok: true }` and sets a session cookie. Sessions stored in-memory Map, 24h expiry, cleaned every 15min.
 - Random 24-char hex password generated on every startup and printed to logs (`=== Generated admin password: ${password} ===`). Override via `ADMIN_PASSWORD_HASH` env var (bcrypt hash, generate with `scripts/hash.sh` or `node scripts/hash-password.js`). When setting in `.env`, enclose the value in single quotes to prevent Docker Compose from interpreting `$` signs as variable expansion (e.g. `ADMIN_PASSWORD_HASH='$2a$10$...'`).
 - `express-rate-limit` on `POST /api/auth/login` only (10 req/15min), NOT globally.
@@ -18,34 +20,27 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - `GET /api/auth/me` validates session (used on app mount).
 
 ## API
-| Endpoint | Auth | Notes |
-|---|---|---|
-| `POST /api/auth/login` | No | Rate-limited, returns `{ ok: true }` + sets httpOnly cookie |
-| `POST /api/auth/logout` | Yes | Removes session from in-memory Map |
-| `GET /api/auth/me` | Yes | Validates current session, used by AuthContext on mount |
-| `GET /api/indexers` | Yes | Rate-limited (900/15min). Fetches Prowlarr + Autobrr inline, writes history, computes downtime + 24h uptime % (time-weighted), fires Apprise alerts, merges qB + tracker stats |
-| `GET /api/indexers/history` | Yes | `?limit=1000&offset=0` (clamped 1–5000). Maps `indexer_id`→`indexerId`, `last_checked`→`timestamp` |
-| `GET /api/indexers/icon/:prowlarrId` | No | Before auth middleware — `<img>` tags can't send cookies. Rate-limited (500/15min). Detects PNG/ICO/SVG via magic bytes |
-| `POST /api/apprise/test` | Yes | Tests Apprise notification config with a test message |
-| `GET /health` | No | Returns `{ ok: true }` for Docker HEALTHCHECK |
-| `GET /metrics` | No | Prometheus metrics (OpenMetrics format) |
+
+| Endpoint                             | Auth | Notes                                                                                                                                                                          |
+| ------------------------------------ | ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `POST /api/auth/login`               | No   | Rate-limited, returns `{ ok: true }` + sets httpOnly cookie                                                                                                                    |
+| `POST /api/auth/logout`              | Yes  | Removes session from in-memory Map                                                                                                                                             |
+| `GET /api/auth/me`                   | Yes  | Validates current session, used by AuthContext on mount                                                                                                                        |
+| `GET /api/indexers`                  | Yes  | Rate-limited (900/15min). Fetches Prowlarr + Autobrr inline, writes history, computes downtime + 24h uptime % (time-weighted), fires Apprise alerts, merges qB + tracker stats |
+| `GET /api/indexers/history`          | Yes  | `?limit=1000&offset=0` (clamped 1–5000). Maps `indexer_id`→`indexerId`, `last_checked`→`timestamp`                                                                             |
+| `GET /api/indexers/icon/:prowlarrId` | No   | Before auth middleware — `<img>` tags can't send cookies. Rate-limited (500/15min). Detects PNG/ICO/SVG via magic bytes                                                        |
+| `POST /api/apprise/test`             | Yes  | Tests Apprise notification config with a test message                                                                                                                          |
+| `GET /health`                        | No   | Returns `{ ok: true }` for Docker HEALTHCHECK                                                                                                                                  |
+| `GET /metrics`                       | No   | Prometheus metrics (OpenMetrics format)                                                                                                                                        |
 
 ## StatusGrid Tile Colors
 
-Composite "worst wins" — first matching priority determines tile color (defined in `frontend/src/components/StatusGrid.tsx:18-25`):
-
-| Priority | Color | Condition | Source |
-|----------|-------|-----------|--------|
-| 1 | `bg-red-500` | `indexer.status === 'down'` | Prowlarr disabled/health failure |
-| 2 | `bg-orange-500` | `qbittorrent.hasTorrents && !qbittorrent.working` | qB tracker errors |
-| 3 | `bg-yellow-400` | Autobrr exists but not `connected && monitoring` | IRC not healthy |
-| 4 | `bg-gray-400` | `autobrrMissing` | No Autobrr entry (definition exists) |
-| 5 | `bg-amber-400` | `stats.ratio < 0.8` | Low buffer ratio |
-| 6 | `bg-green-500` | Default | All good |
+Composite "worst wins" — first matching priority determines tile color. See `CODING_STANDARDS.md` (Tile Color Priority table) for the authoritative priority list. Defined in code at `frontend/src/components/StatusGrid.tsx:18-25`.
 
 Animates `alert-pulse` on transitions to red/orange, `recover` on transitions away.
 
 ## Quirks
+
 - **Prowlarr 2.x** drops `status` from `GET /api/v1/indexer`. Auto-disabled indexers detected via `GET /api/v1/health` → `IndexerStatusCheck` warning (comma-separated names). Manually-disabled via `enable` field. Header: `X-Api-Key`.
 - **Autobrr**: endpoint `/api/irc`. Header `X-API-Token`. Health = `channel.monitoring && network.connected` — `channel.enabled` is user preference, NOT checked.
 - **Name matching**: `normalize()` = lowercase, strip `(API)`, strip `[\s_-]+`. Channel aliases (mtv→morethantv, td→torrentday, tl→torrentleech) defined in `backend/src/services/indexer-fetcher.ts:62-66`.
@@ -71,6 +66,7 @@ Animates `alert-pulse` on transitions to red/orange, `recover` on transitions aw
 - **`/api/indexers` endpoint** returns `{ indexers, services }` structure. `services` includes reachability flags for prowlarr/autobrr/qbittorrent + `appriseConfigured` boolean.
 
 ## Project Structure (key files)
+
 - `backend/src/server.ts` — entrypoint: sets password (env or random), inits definition checker + qB polling + tracker stats, graceful shutdown
 - `backend/src/app.ts` — Express app: helmet, cookie-parser, requestId, httpMetrics middlewares; routes: auth (unprotected) → health/metrics/icon (unprotected but icon rate-limited) → indexers/apprise (behind auth)
 - `backend/src/services/indexer.ts` — orchestrates `fetchIndexers()`: calls fetcher, merges data, records history, computes downtime/uptime, fires alerts, caches icons, records Prometheus metrics. Also hosts the autonomous poller (`startIndexerPolling`/`stopIndexerPolling`).
@@ -96,6 +92,7 @@ Animates `alert-pulse` on transitions to red/orange, `recover` on transitions aw
 - `frontend/src/components/ErrorBoundary.tsx` — class component wrapping router in `main.tsx`
 
 ## CI/CD (`.github/workflows/ci.yml`)
+
 - **lint-test job**: Backend (install→lint→typecheck→test) then Frontend (install→lint→test) then Docker build (no push). Runs on all pushes/PRs to main. Node from root `.nvmrc` (`node-version-file`).
 - Frontend tests run with `NODE_OPTIONS=--no-webstorage` (localStorage not available).
 - **build-and-publish** (needs lint-test, push to main + `v*` tags): buildx, push to `ghcr.io/<owner>/<repo>`. `main` → `develop` tag, `v*` → semver + `latest`. `APP_VERSION` from metadata output.
@@ -103,5 +100,6 @@ Animates `alert-pulse` on transitions to red/orange, `recover` on transitions aw
 - Requires `contents: write` and `packages: write` permissions.
 
 ## Testing
+
 - **Backend**: Jest + `ts-jest`. 8 test files: `auth.test.ts`, `apprise.test.ts`, `normalize.test.ts`, `indexers.test.ts` (route-level), `fetchIndexers.test.ts` (service-level), `indexer-alerts.test.ts`, `indexer-fetcher.test.ts`, `indexer-history.test.ts`. DB defaults to `:memory:` via `jest.config.js`; CI overrides with `DB_PATH=./test-data/test.db`. `knex.migrate.latest()` runs in `beforeAll`. Known accepted audit finding: `js-yaml@3` high (CVE-2026-59870, not backported) via `@istanbuljs/load-nyc-config` (jest coverage config parsing, dev-only) — cannot fix without a breaking v4 override.
 - **Frontend**: Vitest + jsdom + `@testing-library/react`. `matchMedia` mocked in `setup-tests.ts`. Tests: `frontend/tests/LoginPage.test.tsx`, `frontend/src/components/DashboardPage.test.tsx`, `frontend/src/components/IndexerTable.test.tsx`. CI sets `NODE_OPTIONS=--no-webstorage`.
