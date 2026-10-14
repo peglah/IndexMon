@@ -3,7 +3,7 @@ import tsparser from '@typescript-eslint/parser';
 import globals from 'globals';
 
 export default [
-  { ignores: ['dist', 'node_modules'] },
+  { ignores: ['dist', 'node_modules', 'node_modules_old'] },
   {
     files: ['**/*.ts', '**/*.tsx'],
     languageOptions: {
