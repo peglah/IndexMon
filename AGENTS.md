@@ -7,6 +7,8 @@ Single-container Docker dashboard (nginx:80 → Express:3000) that polls Prowlar
 - **Node**: required `^22.22.2 || ^24.15.0 || >=26.0.0` (declared in both `package.json` `engines`; pinned to `26` in root `.nvmrc`). `engine-strict=true` in `backend/.npmrc` + `frontend/.npmrc` makes `npm ci` fail fast on a wrong Node instead of crashing at test runtime.
 - **Docker**: `docker compose up --build` (single container from root `Dockerfile`)
 - **Local dev**: `cd frontend && npm run dev` (Vite :5173 proxies `/api` → :3000) / `cd backend && npm run dev` (tsx watch, :3000)
+- **Dev with log capture**: `cd backend && npm run dev:with-logs` — tees output to `/tmp/indexmon-backend.log` so the agent can Read/Grep during debugging
+- **Local env setup**: `./scripts/init-dev-env.sh` — copies `.env.example` → `backend/.env` and prompts for missing keys like `PROWLARR_API_KEY` (run from project root)
 - **Lint→typecheck→test order**: `cd frontend && npm run lint && npm test` (ESLint 10 flat config, `--max-warnings 0`; Vitest+jsdom, CI sets `NODE_OPTIONS=--no-webstorage`) / `cd backend && npm run lint && npm run typecheck && npm test` (ESLint 10 flat config `eslint.config.mjs`; Jest+supertest, `NODE_OPTIONS=--experimental-vm-modules` in npm script, DB defaults `:memory:` via `jest.config.js`)
 - **Frontend install**: `cd frontend && npm ci`
 - **Migrations**: `cd backend && npm run migrate:make <name>` / `npm run migrate` (uses `knexfile.ts` → `data/db.sqlite`, separate from runtime DB)
