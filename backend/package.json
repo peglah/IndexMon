@@ -11,7 +11,7 @@
     "start": "node dist/server.js",
     "dev": "tsx watch src/server.ts",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "typecheck": "tsc --noEmit",
     "migrate": "knex migrate:latest",
     "migrate:make": "knex migrate:make"
