@@ -41,29 +41,7 @@ Animates `alert-pulse` on transitions to red/orange, `recover` on transitions aw
 
 ## Quirks
 
-- **Prowlarr 2.x** drops `status` from `GET /api/v1/indexer`. Auto-disabled indexers detected via `GET /api/v1/health` → `IndexerStatusCheck` warning (comma-separated names). Manually-disabled via `enable` field. Header: `X-Api-Key`.
-- **Autobrr**: endpoint `/api/irc`. Header `X-API-Token`. Health = `channel.monitoring && network.connected` — `channel.enabled` is user preference, NOT checked.
-- **Name matching**: `normalize()` = lowercase, strip `(API)`, strip `[\s_-]+`. Channel aliases (mtv→morethantv, td→torrentday, tl→torrentleech) defined in `backend/src/services/indexer-fetcher.ts:62-66`.
-- **Autobrr absent vs down**: No Autobrr entry → green (`—`), grey tile if `autobrrMissing`. With Autobrr but disconnected → yellow tile, red `DOWN`.
-- **qBittorrent**: cookie-based auth (`POST /api/v2/auth/login`, re-auth on 403). Background `setInterval` polling (`QBITTORRENT_POLL_INTERVAL_S`, default 300s). Domain suffix matching with `DOMAIN_OVERRIDES` map (`backend/src/services/qbittorrent.ts:36-40`).
-- **Favicons**: discovers `<link rel="icon">` from each indexer's `siteUrl` (Prowlarr `indexerUrls[0]`), falls back to `/favicon.ico`. Cached in `/app/data/icons/` (alongside DB). 24h TTL; force-downloaded on container restart. SSRF-protected via `isPrivateUrl()`.
-- **Autobrr definitions**: fetched from GitHub API at startup and every 24h (±30min jitter) with 3 retries + exponential backoff. Used to detect `autobrrMissing`.
-- **Apprise alerts**: `APPRISE_URLS` comma-separated. Skipped if unset. Two delivery paths: `ntfy://` URLs sent via direct HTTP API (axios) with `Icon` header from GitHub raw favicon; all others dispatched via bundled `apprise-go` binary (`--attach` with favicon SVG). In-memory + DB-persisted dedup via `alertedDownIds` Set + `alert_state` table (resets on container restart). `ALERT_DELAY_M` (default `0`) delays alert until indexer has been continuously down for that duration. **Retry**: up to 3 attempts with 1s/2s exponential backoff per channel (ntfy and apprise-go treated independently — `Promise.allSettled`). `sendTestNotification` skips retry for fast UX. Persistent failures are dropped — no dead-letter queue.
-- **History**: transition-only inserts (only on up↔down state change per source: prowlarr/autobrr/qbittorrent). Downtime from most recent `up` entry per source. 24h uptime = time-weighted percentage from transition edges. Cleanup after 14 days (runs at most once per 24h).
-- **DB**: SQLite. Runtime path from `DB_PATH` env (default `/app/data/indexmon.db`). Knex runtime + `init-db.cjs` use `better-sqlite3`. `knexfile.ts` uses `data/db.sqlite` for migration CLI only. WAL mode + 5000ms busy timeout.
-- **`init-db.cjs`** creates `indexer_history` and `alert_state` tables at container startup (same schemas as knex migrations). Auth is in-memory Map, not DB-backed.
-- **Version**: from `process.env.APP_VERSION` (Docker build arg), NOT `package.json`. Shows `dev` locally.
-- **Nginx logging**: `daemon off;` in `nginx.conf` (foreground mode), `error_log /dev/stderr;`, `access_log /dev/stdout json;`. JSON log format matches Loki-compatible structured output (`time`, `remote_addr`, `status`, `request`, etc.). Entrypoint backgrounds nginx via `nginx &` then `exec node dist/server.js` so both processes stream to Docker's log driver.
-- **Logger**: structured JSON via `console.log`/`console.warn`. `LOG_LEVEL` env (debug/info/warn/error, default info). `requestIdMiddleware` attaches UUID per request for log correlation (`logger.child(id)`).
-- **Env vars**: all via `.env` injected by `docker-compose.yml`. No `VITE_` vars — frontend polling interval hardcoded 15s, Vite proxy target hardcoded `http://localhost:3000`. `TRACKER_STATS_TTL_M` (default `1440`, `0` to disable) controls per-indexer stats refresh. `INDEXER_POLL_INTERVAL_S` (default `60`) controls the backend's autonomous Prowlarr/Autobrr poll.
-- **Tracker stats**: Fetches per-indexer stats from UNIT3D API (`/api/user`) using API keys extracted from Prowlarr indexer fields. Platform cache avoids re-probing non-UNIT3D indexers. Handles Prowlarr-masked apiKey values (`********`). SSRF protection via `isPrivateUrl()`. Runs on startup + every `TRACKER_STATS_TTL_M`.
-- **10s timeouts** on all upstream `axios.get` calls (Prowlarr health, Prowlarr indexers, Autobrr IRC). 1 retry with 1s→2s backoff (exponential, capped at 10s).
-- **Circuit breaker**: 3 consecutive Prowlarr/Autobrr failures → 60s cooldown before retrying. Implemented in `backend/src/services/indexer-fetcher.ts:33-49`.
-- **Autonomous indexer poller**: Backend `setTimeout` chain polls Prowlarr/Autobrr on `INDEXER_POLL_INTERVAL_S` (default 60s, ±10% jitter), independent of the frontend. Runs immediately on startup, reuses `triggerBackgroundFetch` (concurrency/empty-cache guards + disk cache). Keeps history, downtime, and Apprise alerts accurate when the dashboard is closed. Frontend still triggers a warm fetch per request (15s cadence while open). `startIndexerPolling`/`stopIndexerPolling` in `backend/src/services/indexer.ts`; stopped in `resetIndexerCache` and graceful shutdown.
-- **Dark mode**: `class` strategy. Inline `<script>` in `index.html` sets `dark` before React renders. Dashboard toggle persists to `localStorage.theme`; `matchMedia` listener in `DashboardPage.tsx` stays in sync. Login page has no toggle.
-- **CollapsibleSection**: uses CSS grid `grid-rows-[0fr]`/`grid-rows-[1fr]` transition with `overflow-hidden` only when collapsed. State persisted per-section in `localStorage`.
-- **Graceful shutdown**: SIGTERM drains icon caches, closes server, stops qB/definition/tracker intervals, destroys knex. 10s forced exit timeout.
-- **`/api/indexers` endpoint** returns `{ indexers, services }` structure. `services` includes reachability flags for prowlarr/autobrr/qbittorrent + `appriseConfigured` boolean.
+See `docs/quirks.md` for Prowlarr/Autobrr/qBittorrent edge cases.
 
 ## Project Structure (key files)
 
