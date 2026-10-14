@@ -1,27 +1,43 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Indexer } from '../types';
-import { stripApi } from '../utils/stripApi';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Indexer } from "../types";
+import { stripApi } from "../utils/stripApi";
 
-type TileStatus = 'red' | 'orange' | 'yellow' | 'amber' | 'grey' | 'green';
+type TileStatus = "red" | "orange" | "yellow" | "amber" | "grey" | "green";
 
 const tileColor = (status: TileStatus): string => {
   switch (status) {
-    case 'red': return 'bg-red-500';
-    case 'orange': return 'bg-orange-500';
-    case 'yellow': return 'bg-yellow-400';
-    case 'amber': return 'bg-amber-400';
-    case 'grey': return 'bg-gray-400 dark:bg-gray-500';
-    case 'green': return 'bg-green-500';
+    case "red":
+      return "bg-red-500";
+    case "orange":
+      return "bg-orange-500";
+    case "yellow":
+      return "bg-yellow-400";
+    case "amber":
+      return "bg-amber-400";
+    case "grey":
+      return "bg-gray-400 dark:bg-gray-500";
+    case "green":
+      return "bg-green-500";
   }
 };
 
 const classify = (indexer: Indexer): TileStatus => {
-  if (indexer.status === 'down') return 'red';
-  if (indexer.qbittorrent?.hasTorrents && !indexer.qbittorrent.working) return 'orange';
-  if (indexer.autobrr && !(indexer.autobrr.connected && indexer.autobrr.monitoring)) return 'yellow';
-  if (indexer.autobrrMissing) return 'grey';
-  if (indexer.stats?.ratio !== null && indexer.stats?.ratio !== undefined && indexer.stats.ratio < 0.8) return 'amber';
-  return 'green';
+  if (indexer.status === "down") return "red";
+  if (indexer.qbittorrent?.hasTorrents && !indexer.qbittorrent.working)
+    return "orange";
+  if (
+    indexer.autobrr &&
+    !(indexer.autobrr.connected && indexer.autobrr.monitoring)
+  )
+    return "yellow";
+  if (indexer.autobrrMissing) return "grey";
+  if (
+    indexer.stats?.ratio !== null &&
+    indexer.stats?.ratio !== undefined &&
+    indexer.stats.ratio < 0.8
+  )
+    return "amber";
+  return "green";
 };
 
 export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
@@ -30,8 +46,11 @@ export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
   const hasLoaded = useRef(false);
 
   const sorted = useMemo(
-    () => [...indexers].sort((a, b) => stripApi(a.name).localeCompare(stripApi(b.name))),
-    [indexers],
+    () =>
+      [...indexers].sort((a, b) =>
+        stripApi(a.name).localeCompare(stripApi(b.name))
+      ),
+    [indexers]
   );
 
   useEffect(() => {
@@ -48,7 +67,7 @@ export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
     if (!hasLoaded.current && sorted.length > 0) {
       hasLoaded.current = true;
       for (const indexer of sorted) {
-        if (classify(indexer) !== 'green') {
+        if (classify(indexer) !== "green") {
           ids.add(indexer.id);
         }
       }
@@ -66,12 +85,14 @@ export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
         const status = classify(indexer);
         const displayName = stripApi(indexer.name);
         const changeAnim = changedIds.has(indexer.id)
-          ? status === 'red' || status === 'orange' ? 'animate-alert-pulse' : 'animate-recover'
-          : '';
+          ? status === "red" || status === "orange"
+            ? "animate-alert-pulse"
+            : "animate-recover"
+          : "";
         return (
           <div
             key={indexer.id}
-            className="animate-pop-in"
+            className="animate-pop-in opacity-0"
             style={{ animationDelay: `${i * 35}ms` }}
           >
             <div className="group relative flex">
@@ -79,10 +100,13 @@ export const StatusGrid = ({ indexers }: { indexers: Indexer[] }) => {
                 className={`aspect-square w-full rounded-md ${tileColor(status)} hover:scale-110 hover:shadow-lg hover:shadow-current/30 transition-all duration-500 cursor-default flex items-center justify-center ${changeAnim}`}
               >
                 <img
-                  src={`/api/indexers/icon/${indexer.id.replace('prowlarr-', '')}`}
+                  src={`/api/indexers/icon/${indexer.id.replace("prowlarr-", "")}`}
                   alt=""
                   className="w-5 h-5"
-                  onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }}
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).style.display =
+                      "none";
+                  }}
                 />
               </div>
               <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
