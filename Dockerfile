@@ -37,7 +37,7 @@ WORKDIR /app
 RUN apk add --no-cache nginx sqlite curl
 
 # Download apprise-go binary (Unraid Go port of Apprise)
-ARG APPRISE_GO_VERSION=v0.2.6
+ARG APPRISE_GO_VERSION=v0.4.0
 RUN curl -fsSLo /usr/local/bin/apprise-go \
       https://github.com/unraid/apprise-go/releases/download/${APPRISE_GO_VERSION}/apprise-go-linux-amd64 \
     && chmod +x /usr/local/bin/apprise-go
